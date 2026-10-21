@@ -883,6 +883,22 @@ html, body { overflow-x: clip; }
 .flt-note + .hscroll, .flt-note + * { margin-top: 0; }
 .sbar::before { inset: 0 calc(50% - 50vw) -8px; background: linear-gradient(to bottom, var(--fade-a) calc(100% - 8px), transparent 100%); }
 
+/* ===== desktop / wide windows: a calm centred phone-width column on a quiet ground ===== */
+@media (min-width: 700px) {
+  :root { --col: 520px; --edge: rgba(120, 130, 160, .22); --ground: #E3E6EE; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ground: #040508; --edge: rgba(255, 255, 255, .09); } }
+  :root[data-theme="dark"] { --ground: #040508; --edge: rgba(255, 255, 255, .09); }
+  body { background: var(--ground); }
+  .bgfx { left: 50%; right: auto; width: var(--col); transform: translateX(-50%); box-shadow: 0 0 0 1px var(--edge), 0 0 80px rgba(0, 0, 0, .18); }
+  .view.wrap { max-width: var(--col); padding-left: 16px; padding-right: 16px; }
+  .nav-in { max-width: var(--col); padding-left: 8px; padding-right: 8px; }
+  .nav::before { left: 50%; right: auto; width: var(--col); transform: translateX(-50%); }
+  .tabbar-in { max-width: 400px; }
+  .sbar::before { inset: 0 -16px -8px; }
+  .sheet { left: calc(50% - var(--col) / 2); right: calc(50% - var(--col) / 2); }
+  .bgfx::after { content: ""; position: absolute; inset: 0; }
+}
+
 </style>
 
 
