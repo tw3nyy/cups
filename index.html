@@ -636,6 +636,199 @@ details.old { padding: 14px 16px; font-size: 15px; }
 .fc-tap { margin-top: auto; }
 .dock::before { inset: -28px -16px -10px; background: linear-gradient(to bottom, transparent, var(--bg) 42%); }
 
+/* ======================= GLASS LAYER =======================
+   A tinted gradient ground (fixed) with frosted panels on top: every surface is translucent,
+   blurred, edged with a 1px light line and a top highlight. Photos carry glass label plates. */
+:root {
+  --glass: rgba(255, 255, 255, .56); --glass-strong: rgba(255, 255, 255, .78); --glass-line: rgba(255, 255, 255, .7); --glass-edge: rgba(255, 255, 255, .9);
+  --glass-shadow: 0 1px 1px rgba(30, 40, 70, .04), 0 10px 30px rgba(30, 40, 80, .10);
+  --blur: blur(22px) saturate(180%);
+  --accent-grad: linear-gradient(135deg, #2BB27E 0%, #12805A 100%);
+  --accent-glow: 0 8px 22px rgba(24, 150, 105, .35);
+  --muted: #6F6F7A; --ink-2: #3F3F49;
+  --g1: rgba(214, 170, 140, .62); --g2: rgba(70, 190, 150, .38); --g3: rgba(110, 150, 255, .34); --g4: rgba(255, 120, 150, .30); --g5: rgba(255, 190, 90, .26);
+  --bg: #EEF0F6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --glass: rgba(46, 46, 54, .52); --glass-strong: rgba(36, 36, 44, .78); --glass-line: rgba(255, 255, 255, .13); --glass-edge: rgba(255, 255, 255, .22);
+    --glass-shadow: 0 1px 1px rgba(0, 0, 0, .3), 0 12px 34px rgba(0, 0, 0, .45);
+    --accent-grad: linear-gradient(135deg, #46DFA0 0%, #1FAF7A 100%); --accent-glow: 0 8px 24px rgba(60, 203, 143, .28);
+    --muted: #A2A2AD; --ink-2: #D7D7DE;
+    --g1: rgba(205, 150, 110, .34); --g2: rgba(40, 190, 140, .26); --g3: rgba(70, 110, 255, .30); --g4: rgba(255, 80, 120, .22); --g5: rgba(255, 170, 60, .16);
+    --bg: #07080C;
+  }
+}
+:root[data-theme="dark"] {
+  --glass: rgba(46, 46, 54, .52); --glass-strong: rgba(36, 36, 44, .78); --glass-line: rgba(255, 255, 255, .13); --glass-edge: rgba(255, 255, 255, .22);
+  --glass-shadow: 0 1px 1px rgba(0, 0, 0, .3), 0 12px 34px rgba(0, 0, 0, .45);
+  --accent-grad: linear-gradient(135deg, #46DFA0 0%, #1FAF7A 100%); --accent-glow: 0 8px 24px rgba(60, 203, 143, .28);
+  --muted: #A2A2AD; --ink-2: #D7D7DE;
+  --g1: rgba(205, 150, 110, .34); --g2: rgba(40, 190, 140, .26); --g3: rgba(70, 110, 255, .30); --g4: rgba(255, 80, 120, .22); --g5: rgba(255, 170, 60, .16);
+  --bg: #07080C;
+}
+
+/* ground */
+.bgfx { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(60% 34% at 6% 4%, var(--g1), transparent 72%),
+    radial-gradient(52% 32% at 100% 14%, var(--g2), transparent 72%),
+    radial-gradient(64% 36% at 0% 52%, var(--g3), transparent 74%),
+    radial-gradient(56% 34% at 100% 70%, var(--g4), transparent 72%),
+    radial-gradient(64% 34% at 12% 100%, var(--g5), transparent 74%),
+    var(--bg); }
+.view { position: relative; z-index: 1; }
+.nav, .tabbar { z-index: 50; }
+body::before { background: transparent; }
+
+/* panels */
+.group, .ticket, .note, .scope, .qcard, .rcard, .empty, .done, .allergens, details.old, .brand-card .bc-top {
+  background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-line); }
+.group, .scope, .rcard { border: 0; }
+.cell:active, .qrow:active { background: rgba(120, 130, 160, .14); }
+.cell + .cell::before, .qrow + .qrow::before, .opt-row + .opt-row::before { border-top-color: rgba(120, 130, 160, .22); }
+.ticket-h { border-bottom-color: rgba(120, 130, 160, .24); }
+.tkt li, .tr { border-bottom-color: rgba(120, 130, 160, .20); }
+.stat + .stat, .gl details { border-top-color: rgba(120, 130, 160, .22); }
+.thumb { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .35), 0 2px 8px rgba(30, 40, 80, .08); }
+.thumb img { border-radius: inherit; }
+
+/* nav + tab bar */
+.nav.scrolled { background: var(--navbg); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: 0 .5px 0 var(--glass-line); }
+.nbtn.back, .nbtn.star, .nav-l .nbtn { background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-line), 0 4px 14px rgba(30, 40, 80, .10); height: 38px; border-radius: 19px; padding: 0 12px 0 8px; margin: 3px 0; }
+.nbtn.star { min-width: 38px; padding: 0; width: 38px; margin-right: 4px; }
+.tabbar-in { background: var(--glass-strong); -webkit-backdrop-filter: blur(26px) saturate(190%); backdrop-filter: blur(26px) saturate(190%);
+  box-shadow: 0 14px 40px rgba(20, 30, 70, .22), inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-line); }
+.tab[aria-current="page"] { background: var(--accent-soft); box-shadow: inset 0 0 0 1px rgba(40, 170, 120, .25), inset 0 1px 0 rgba(255, 255, 255, .35); }
+
+/* controls */
+.sfield input { background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-line); height: 44px; border-radius: 14px; }
+.sfield input:focus { background: var(--glass-strong); box-shadow: inset 0 0 0 2px var(--accent), 0 0 0 5px var(--accent-soft); }
+.sbar { background: transparent; box-shadow: none; clip-path: inset(0 -100vmax); }
+.sbar::before { content: ""; position: absolute; inset: 0 -100vmax; z-index: -1; background: var(--navbg); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: 0 .5px 0 var(--glass-line); opacity: 0; transition: opacity .2s; }
+.sbar.stuck::before { opacity: 1; }
+.chip { background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-line); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); box-shadow: 0 6px 16px rgba(20, 20, 40, .22); }
+.chip.tag[aria-pressed="true"] { background: var(--accent-grad); color: #fff; box-shadow: var(--accent-glow); }
+.seg { background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: inset 0 0 0 1px var(--glass-line), inset 0 1px 0 var(--glass-edge); }
+.seg button[aria-pressed="true"] { background: var(--glass-strong); box-shadow: 0 3px 10px rgba(20, 30, 70, .16), inset 0 1px 0 var(--glass-edge); }
+.btn { background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); color: var(--accent); box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-line), 0 6px 18px rgba(30, 40, 80, .08); }
+.btn.primary { background: var(--accent-grad); color: #fff; box-shadow: var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, .45); }
+:root[data-theme="dark"] .btn.primary { color: #03160E; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { color: #03160E; } }
+.btn.warn { background: var(--cherry-soft); color: var(--cherry); box-shadow: inset 0 0 0 1px rgba(229, 72, 77, .28); }
+.btn.plain { background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.prog { background: rgba(120, 130, 160, .22); }
+.prog i { background: var(--accent-grad); }
+.stat .prog i { background: var(--sf); }
+.switch i { background: rgba(120, 130, 160, .35); }
+.switch[aria-pressed="true"] i { background: var(--accent-grad); }
+
+/* hero + tiles: photos with frosted label plates */
+.hero { justify-content: space-between; padding: 16px; box-shadow: var(--glass-shadow), inset 0 0 0 1px rgba(255, 255, 255, .25); min-height: 200px; }
+.hero::before { background: linear-gradient(to bottom, rgba(14, 10, 8, .35) 0%, rgba(14, 10, 8, 0) 40%, rgba(14, 10, 8, .25) 100%); }
+.wm { padding: 0 4px; text-shadow: 0 2px 14px rgba(0, 0, 0, .45); }
+.plate { display: block; background: rgba(255, 255, 255, .20); -webkit-backdrop-filter: blur(18px) saturate(170%); backdrop-filter: blur(18px) saturate(170%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), inset 0 0 0 1px rgba(255, 255, 255, .28), 0 6px 20px rgba(0, 0, 0, .18); border-radius: 18px; color: #fff; text-shadow: 0 1px 8px rgba(0, 0, 0, .35); }
+.hero p.plate { margin: 0; padding: 12px 14px; max-width: none; font-size: 15px; font-weight: 600; }
+.tile { justify-content: flex-end; padding: 8px; box-shadow: var(--glass-shadow); }
+.tile::before { background: linear-gradient(to top, rgba(10, 8, 6, .25), transparent 55%); }
+.tile .plate { padding: 9px 12px 10px; border-radius: 16px; width: 100%; }
+.tile .plate b { display: block; font-size: 19px; line-height: 1.15; }
+.tile .plate > span { display: block; font-size: 12px; opacity: .95; margin-top: 2px; }
+.tile .ic { top: 10px; right: 10px; background: rgba(255, 255, 255, .24); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), inset 0 0 0 1px rgba(255, 255, 255, .25); }
+.tile { transition: transform .2s; }
+.tile:active { transform: scale(.97); }
+
+/* dish page */
+.dhero { box-shadow: var(--glass-shadow), inset 0 0 0 1px rgba(255, 255, 255, .25); }
+.gpill { position: absolute; left: 12px; bottom: 12px; padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; color: #fff;
+  background: rgba(255, 255, 255, .22); -webkit-backdrop-filter: blur(16px) saturate(170%); backdrop-filter: blur(16px) saturate(170%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), inset 0 0 0 1px rgba(255, 255, 255, .28); text-shadow: 0 1px 6px rgba(0, 0, 0, .35); }
+.gpill.r { left: auto; right: 12px; }
+.dbadge { background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-line), var(--glass-shadow); color: var(--sf); }
+.pill { background: var(--glass); color: var(--sf); box-shadow: inset 0 0 0 1px var(--glass-line), inset 0 1px 0 var(--glass-edge); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
+.pill.n { color: var(--ink-2); }
+.strip img { box-shadow: 0 0 0 1px var(--glass-line); }
+
+/* allergen tags */
+.allergens { margin-top: 18px; padding: 14px 16px 12px; border-radius: 20px; }
+.al-h { margin-bottom: 8px; }
+.al-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.atag { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: 999px; font-size: 13.5px; font-weight: 600; background: rgba(120, 130, 160, .16); color: var(--ink-2); }
+.atag::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.atag.none::before { display: none; }
+.atag.none { font-weight: 500; color: var(--muted); }
+.a-gluten { background: rgba(217, 126, 0, .16); color: #B26500; }
+.a-milk { background: rgba(10, 122, 239, .14); color: #0A66C9; }
+.a-egg { background: rgba(240, 190, 0, .20); color: #8F6D00; }
+.a-nut { background: rgba(160, 90, 40, .17); color: #8B4A18; }
+.a-fish { background: rgba(0, 170, 180, .16); color: #0A7F87; }
+.a-meat { background: rgba(229, 72, 77, .15); color: #C22F36; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ta: 1; }
+  :root:not([data-theme="light"]) .a-gluten { color: #FFB340; } :root:not([data-theme="light"]) .a-milk { color: #6DB4FF; } :root:not([data-theme="light"]) .a-egg { color: #FFD84D; }
+  :root:not([data-theme="light"]) .a-nut { color: #E9A872; } :root:not([data-theme="light"]) .a-fish { color: #5ED8E0; } :root:not([data-theme="light"]) .a-meat { color: #FF8F94; } }
+:root[data-theme="dark"] .a-gluten { color: #FFB340; } :root[data-theme="dark"] .a-milk { color: #6DB4FF; } :root[data-theme="dark"] .a-egg { color: #FFD84D; }
+:root[data-theme="dark"] .a-nut { color: #E9A872; } :root[data-theme="dark"] .a-fish { color: #5ED8E0; } :root[data-theme="dark"] .a-meat { color: #FF8F94; }
+.al-note { display: flex; gap: 10px; margin-top: 12px; font-size: 13.5px; color: var(--ink-2); line-height: 1.4; }
+.al-note .ic { width: 18px; height: 18px; color: var(--cherry); flex: none; margin-top: 1px; }
+.al-foot { margin-top: 10px; font-size: 12px; color: var(--muted); }
+.flt-note { margin-top: 8px; font-size: 13.5px; padding: 12px 14px; }
+.hscroll.flt { margin-top: 0; padding-bottom: 8px; }
+
+/* cards + quiz */
+.fc { background: var(--glass-strong); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-line); }
+.fc .stamp { background: var(--glass-strong); }
+.fc-body, .fc-tap { border-top-color: rgba(120, 130, 160, .24); }
+.opt, .bchip { background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-line); }
+.opt.right { box-shadow: inset 0 0 0 2px var(--accent), 0 6px 20px rgba(30, 160, 110, .22); }
+.opt.wrong { box-shadow: inset 0 0 0 2px var(--cherry), 0 6px 20px rgba(229, 72, 77, .18); }
+.bchip[aria-pressed="true"] { background: var(--accent-soft); box-shadow: inset 0 0 0 2px var(--accent); }
+.opt .k { background: rgba(120, 130, 160, .20); }
+.fb { -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
+.dock::before { background: linear-gradient(to bottom, transparent, var(--navbg) 55%); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-mask-image: linear-gradient(to bottom, transparent, #000 40%); mask-image: linear-gradient(to bottom, transparent, #000 40%); }
+.ring .bg { stroke: rgba(120, 130, 160, .25); }
+.ring .fg { stroke: url(#ringg); }
+
+/* sheet + brand */
+.scrim { background: rgba(10, 14, 28, .38); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.sheet { background: var(--glass-strong); -webkit-backdrop-filter: blur(34px) saturate(190%); backdrop-filter: blur(34px) saturate(190%); box-shadow: 0 -12px 50px rgba(10, 20, 50, .28), inset 0 1px 0 var(--glass-edge); }
+.grab { background: rgba(120, 130, 160, .45); }
+.brand-card { background: var(--brand); box-shadow: var(--glass-shadow); }
+.brand-card .bc-top { background: linear-gradient(160deg, rgba(255, 255, 255, .35), rgba(255, 255, 255, 0) 60%), var(--brand); box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.empty b, .done h2 { color: var(--ink); }
+.hint, .small, .cap, .lt-sub { color: var(--muted); }
+
+/* entrance */
+@keyframes rise { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
+.tiles .tile { animation: rise .55s cubic-bezier(.2, .8, .2, 1) both; }
+.tiles .tile:nth-child(2) { animation-delay: .06s; } .tiles .tile:nth-child(3) { animation-delay: .12s; } .tiles .tile:nth-child(4) { animation-delay: .18s; }
+.hero { animation: rise .5s cubic-bezier(.2, .8, .2, 1) both; }
+@media (prefers-reduced-motion: reduce) { .tiles .tile, .hero { animation: none; } .tile { transition: none; } }
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root { --glass: rgba(255, 255, 255, .9); --glass-strong: rgba(255, 255, 255, .96); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --glass: rgba(40, 40, 48, .94); --glass-strong: rgba(34, 34, 42, .98); } }
+  :root[data-theme="dark"] { --glass: rgba(40, 40, 48, .94); --glass-strong: rgba(34, 34, 42, .98); }
+}
+
+/* glass polish: stronger tab bar, quiz header always frosted */
+.tabbar-in { background: color-mix(in srgb, var(--glass-strong) 100%, transparent); }
+:root { --tabglass: rgba(255, 255, 255, .88); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --tabglass: rgba(30, 30, 38, .90); } }
+:root[data-theme="dark"] { --tabglass: rgba(30, 30, 38, .90); }
+.tabbar-in { background: var(--tabglass); }
+.nav.close-nav, .nav:has(.nbtn.close), .nav:has([data-act="qclose"]) { background: var(--navbg); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: 0 .5px 0 var(--glass-line); }
+:root { --tabglass: rgba(255, 255, 255, .95); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --tabglass: rgba(28, 28, 36, .95); } }
+:root[data-theme="dark"] { --tabglass: rgba(28, 28, 36, .95); }
+.dock::before { -webkit-backdrop-filter: none; backdrop-filter: none; -webkit-mask-image: none; mask-image: none; inset: -34px -100vmax -12px; background: linear-gradient(to bottom, transparent, var(--bg) 62%); opacity: .94; }
+.sbar { clip-path: none; }
+.sbar::before { inset: 0 -16px; }
+.dock::before { inset: -34px -16px -12px; }
+html, body { overflow-x: clip; }
+
 </style>
 
 
@@ -733,7 +926,7 @@ details.old { padding: 14px 16px; font-size: 15px; }
   applyTheme();
 
   var st = {
-    tab: 'menu', menu: [], q: '', sf: 'all', dp: 0,
+    tab: 'menu', menu: [], q: '', sf: 'all', dp: 0, flt: {},
     cardMode: 'n2c', cards: null, quiz: null, sheet: false,
     scrollTab: {}, anim: '', resetArm: false
   };
@@ -802,6 +995,64 @@ details.old { padding: 14px 16px; font-size: 15px; }
   };
   function sc(sec) { return 's-' + (sec === 'all' ? 'all' : sec); }
 
+  /* ---------- haptics ---------- */
+  function buzz(k) {
+    if (!inTG || !TG.HapticFeedback) return;
+    try {
+      if (k === 'ok') TG.HapticFeedback.notificationOccurred('success');
+      else if (k === 'err') TG.HapticFeedback.notificationOccurred('error');
+      else if (k === 'warn') TG.HapticFeedback.notificationOccurred('warning');
+      else if (k === 'sel') TG.HapticFeedback.selectionChanged();
+      else TG.HapticFeedback.impactOccurred(k === 'med' ? 'medium' : 'light');
+    } catch (e) {}
+  }
+
+  /* ---------- composition tags (automatic, conservative) ---------- */
+  var NL = '(?<![а-яё])', NR = '(?![а-яё])';
+  var RX = {
+    gluten: new RegExp('мук[аиеу]|пшениц|хлеб|тест[оау]|булк|булоч|тост|багет|бриош|круассан|вафл|панкейк|блин|макарон|лапш|спагетти|паккери|пенне|феттучин|тальятелл|рамен|удон|булгур|кус-?кус|ржан|овсян|овес|овсяны|манн|манк|сухар|панир|соев\\S* соус|терияки|тортиль|лепешк|роти|печенье|бисквит|слоен|слоён|песочн|эклер|тарталет|пирог|' + NL + 'киш' + NR + '|сэндвич|сендвич|бургер|гренк|кекс|пончик|бейгл|чиабатт|фокач|пицц|пельмен|слойк|штрудел|ячмен|солод|пив[оа]|крекер|гранол|мюсли|хлопья|отруб'),
+    milk: new RegExp('молок|молоч|сливк|сливочн|сыр|творог|творож|сметан|йогурт|кефир|ряженк|моцарелл|страчател|буррат|чеддер|пармезан|рикотт|маскарпон|брынз|' + NL + 'фета' + NR + '|горгонзол|камамбер|' + NL + 'бри' + NR + '|гауд|сулугуни|мороженое|пломбир|ганаш|сгущ|казеин|тирамису|' + NL + 'гхи' + NR + '|топлен'),
+    egg: new RegExp('яйц|яиц|омлет|глазун|пашот|безе|меренг|майонез|желтк|яичн|эггног|сабайон|заварн'),
+    nut: new RegExp('орех|орешк|фундук|миндал|фисташк|кешью|грецк|арахис|пекан|кедров|пралин|нутелл|марципан|нуга'),
+    fish: new RegExp('рыб|форел|лосос|семг|сёмг|креветк|кальмар|мидии|мидий|краб|тунец|анчоус|угор|' + NL + 'икр[аыу]|осьмин|гребешк|устриц|скумбри|сельд|шпрот|треск|судак|дорад|морепродукт|лангустин'),
+    meat: new RegExp('кур(иц|ин)|цыпл|индей|индюш|говяд|телят|свинин|ветчин|колбас|бекон|мортадел|' + NL + 'утк|утин|ягнен|баран|фарш|бифштекс|стейк|сосиск|пастрам|салями|прошутто|хамон|паштет|печень' + NR + '|грудинк')
+  };
+  var UNSURE = {
+    gluten: /соус|(?<![а-яё])пф(?![а-яё])|заготов|смесь|заправк|колбас|ветчин|фарш|начинк|паштет|основа|глазур|мусс|крем|конфет|гранол|бульон/,
+    milk: /шоколад|начинк|глазур|конфет|крем|мусс|соус|основа|заготов|(?<![а-яё])пф(?![а-яё])|смесь|карамел|тесто|слоен|слоён|круассан|бриош|булк|булоч|печенье|выпеч|десерт|кекс|вафл|панкейк|блин/,
+    egg: /бисквит|вафл|панкейк|блин|кекс|мусс|тесто|слоен|слоён|круассан|бриош|булк|булоч|печенье|эклер|макаронс|зефир|пирог|пончик|крем|соус|начинк|глазур|основа|заготов|(?<![а-яё])пф(?![а-яё])|смесь|мороженое|пудинг/,
+    nut: /шоколад|ганаш|начинк|глазур|конфет|смесь|заготов|(?<![а-яё])пф(?![а-яё])|основа|соус|крем|мусс|печенье|мюсли|гранол/
+  };
+  var BAKED = /тартен|татен|тарталет|(?<![а-яё])тарт(?![а-яё])|пирог|торт|пирожн|сдоб|кекс|маффин|брауни|чизкейк|эклер|пончик|запеканк|сырник|оладь|драник|хашбраун|макаронс|моти|тирамису|панна|десерт/;
+  Object.keys(UNSURE).forEach(function (k) { UNSURE[k] = new RegExp(UNSURE[k].source + '|' + BAKED.source); });
+  var PLANT = /(растительн|кокосов|миндальн|овсян|соев|банановый|рисов|фундучн|кешью)\S*\s+молок\S*/g;
+  var INCOMPLETE = /не указан|не написан|не расшифрован|состав не|какое именно|неизвестн|не уточнен/;
+  dishes.forEach(function (d) {
+    var nm = norm(d.name);
+    var txt = norm(realItems(d).map(function (x) { return x.n; }).join(' ; ') + ' ; ' + d.notes.join(' ; ')).replace(PLANT, ' ');
+    var all = nm + ' ; ' + txt;
+    d._tg = {};
+    Object.keys(RX).forEach(function (k) { d._tg[k] = RX[k].test(all); });
+    if (/(?<![а-яё])паст[аыу](?![а-яё])/.test(nm)) d._tg.gluten = true;
+    d._us = {};
+    Object.keys(UNSURE).forEach(function (k) { d._us[k] = UNSURE[k].test(all) || d.sec === 'Десерты' || d.sec === 'Выпечка'; });
+    d._unk = realItems(d).length < 2 || INCOMPLETE.test(norm(d.notes.join(' ')));
+  });
+  var TAGDEF = [['gluten', 'Глютен'], ['milk', 'Молоко'], ['egg', 'Яйца'], ['nut', 'Орехи'], ['fish', 'Рыба и морепродукты'], ['meat', 'Мясо']];
+  var FLTDEF = [['veg', 'Вегетарианское'], ['nomilk', 'Без молока'], ['nogluten', 'Без глютена'], ['nonut', 'Без орехов'], ['noegg', 'Без яиц']];
+  var FLTKEY = { nomilk: 'milk', nogluten: 'gluten', nonut: 'nut', noegg: 'egg' };
+  function fltActive() { return FLTDEF.some(function (f) { return st.flt[f[0]]; }); }
+  function passFlt(d) {
+    for (var i = 0; i < FLTDEF.length; i++) {
+      var k = FLTDEF[i][0];
+      if (!st.flt[k]) continue;
+      if (d._unk) return false;
+      if (k === 'veg') { if (d._tg.meat || d._tg.fish || /желатин|бульон/.test(norm(d.name + ' ' + d.items.map(function (x) { return x.n || ''; }).join(' ')))) return false; }
+      else { var a = FLTKEY[k]; if (d._tg[a] || d._us[a]) return false; }
+    }
+    return true;
+  }
+
   /* ---------- search ---------- */
   function norm(s) { return String(s).toLowerCase().replace(/ё/g, 'е'); }
   function wordsStr(s) { return ' ' + norm(s).split(/[^а-яa-z0-9]+/).filter(Boolean).join(' '); }
@@ -815,7 +1066,7 @@ details.old { padding: 14px 16px; font-size: 15px; }
   function qStems(q) { return norm(q).split(/[^а-яa-z0-9]+/).filter(Boolean).map(stem); }
   function search(q) {
     var sts = qStems(q);
-    if (!sts.length) return [];
+    if (!sts.length) return fltActive() ? filterOnly() : [];
     var out = [];
     dishes.forEach(function (d) {
       var score = 0, hint = '';
@@ -834,10 +1085,13 @@ details.old { padding: 14px 16px; font-size: 15px; }
         else return;
         score += w;
       }
-      out.push({ d: d, score: score, hint: hint });
+      if (passFlt(d)) out.push({ d: d, score: score, hint: hint });
     });
     out.sort(function (a, b) { return b.score - a.score || sortName(a.d, b.d); });
     return out;
+  }
+  function filterOnly() {
+    return dishes.filter(passFlt).map(function (d) { return { d: d, score: 0, hint: '' }; }).sort(function (a, b) { return sortName(a.d, b.d); });
   }
   function hl(text, sts) {
     var tn = norm(text), ranges = [];
@@ -975,7 +1229,7 @@ details.old { padding: 14px 16px; font-size: 15px; }
     var shown = st.sf === 'all' ? res : res.filter(function (r) { return r.d.sec === st.sf; });
     var h = '';
     if (!res.length) {
-      return '<div class="empty" style="margin-top:12px"><b>Ничего не нашли</b>Попробуй короче или другое слово: «сыр», «матча», «круассан».<br><br><button class="btn plain" data-act="qclear">Показать меню</button></div>';
+      return '<div class="empty" style="margin-top:12px"><b>Ничего не нашли</b>' + (fltActive() ? 'Под выбранные фильтры ничего не подошло. Сними один из них.' : 'Попробуй короче или другое слово: «сыр», «матча», «круассан».') + '<br><br><button class="btn plain" data-act="' + (fltActive() && !st.q.trim() ? 'fltclear' : 'qclear') + '">' + (fltActive() ? 'Сбросить фильтры' : 'Показать меню') + '</button></div>';
     }
     h += '<div class="hscroll" role="group" aria-label="Раздел">' + ['all'].concat(SECS).filter(function (s) { return counts[s]; }).map(function (s) {
       return '<button class="chip" data-act="sf" data-v="' + s + '" aria-pressed="' + (st.sf === s) + '">' + (s === 'all' ? 'Везде' : s) + '<small>' + counts[s] + '</small></button>';
@@ -986,7 +1240,7 @@ details.old { padding: 14px 16px; font-size: 15px; }
   function homeBodyHTML() {
     var h = '<div class="tiles">' + SECS.map(function (s) {
       var l = bySec(s), k = knownIn(l);
-      return '<button class="tile ' + sc(s) + '" style="background-image:url(' + BR[SEC[s].img] + ')" data-act="sec" data-v="' + s + '">' + ic(s) + '<b>' + s + '</b><span>' + l.length + ' · ' + SEC[s].blurb + '</span></button>';
+      return '<button class="tile ' + sc(s) + '" style="background-image:url(' + BR[SEC[s].img] + ')" data-act="sec" data-v="' + s + '">' + ic(s) + '<span class="plate"><b>' + s + '</b><span>' + l.length + ' · ' + SEC[s].blurb + '</span></span></button>';
     }).join('') + '</div>';
     var rec = store.recent.map(function (id) { return byId[id]; }).filter(Boolean);
     if (rec.length) {
@@ -1000,10 +1254,11 @@ details.old { padding: 14px 16px; font-size: 15px; }
     return h;
   }
   function secBodyHTML(e) {
-    var list = bySec(e.sec), cats = catsOf[e.sec];
+    var list = bySec(e.sec).filter(passFlt), cats = catsOf[e.sec];
     var h = '<div class="hscroll" role="group" aria-label="Категория">' + [['all', 'Все', list.length]].concat(cats.map(function (c) { return [c, c, list.filter(function (d) { return d.cat === c; }).length]; })).map(function (c) {
       return '<button class="chip" data-act="scat" data-v="' + esc(c[0]) + '" aria-pressed="' + (e.cat === c[0]) + '">' + esc(c[1]) + '<small>' + c[2] + '</small></button>';
     }).join('') + '</div>';
+    if (!list.length) return h + '<div class="empty" style="margin-top:12px"><b>Ничего не подошло</b>В этом разделе нет позиций под выбранные фильтры.</div>';
     if (e.cat === 'all') {
       cats.forEach(function (c) {
         var l = list.filter(function (d) { return d.cat === c; }).sort(sortName);
@@ -1015,23 +1270,41 @@ details.old { padding: 14px 16px; font-size: 15px; }
     }
     return h;
   }
+  function fltRowHTML() {
+    var h = '<div class="hscroll flt" role="group" aria-label="Фильтры по составу">' + FLTDEF.map(function (f) {
+      return '<button class="chip tag" data-act="flt" data-v="' + f[0] + '" aria-pressed="' + !!st.flt[f[0]] + '">' + f[1] + '</button>';
+    }).join('') + '</div>';
+    if (fltActive()) h += '<div class="note warn flt-note">' + ic('warn') + '<span>Подборка автоматическая, по составу из ТТК. Позиции с неполным составом и со скрытыми соусами, кремами и заготовками не показываем. Если у гостя аллергия, уточни у шефа.</span></div>';
+    return h;
+  }
   function menuInner() {
     var e = topMenu();
-    if (st.q.trim()) return resultsHTML();
-    return e.kind === 'sec' ? secBodyHTML(e) : homeBodyHTML();
+    var body;
+    if (st.q.trim() || (fltActive() && e.kind !== 'sec')) body = resultsHTML();
+    else body = e.kind === 'sec' ? secBodyHTML(e) : homeBodyHTML();
+    return fltRowHTML() + body;
+  }
+  function tagsHTML(d) {
+    var on = TAGDEF.filter(function (t) { return d._tg[t[0]]; });
+    var unsure = d._unk || d.sec === 'Десерты' || d.sec === 'Выпечка' || Object.keys(d._us).some(function (k) { return d._us[k] && !d._tg[k]; }) || /соус|крем|мусс|начинк|основа|заготов/.test(norm(d.items.map(function (x) { return x.n || ''; }).join(' ')));
+    var h = '<section class="allergens"><div class="al-h"><span class="eyebrow">Содержит</span></div><div class="al-row">';
+    h += on.length ? on.map(function (t) { return '<span class="atag a-' + t[0] + '">' + t[1] + '</span>'; }).join('') : '<span class="atag none">Из списка ничего не нашли</span>';
+    h += '</div>';
+    if (unsure) h += '<p class="al-note">' + ic('warn') + '<span>' + (d._unk ? 'Состав в ТТК неполный.' : (d.sec === 'Десерты' || d.sec === 'Выпечка') ? 'В ТТК перечислены не все ингредиенты теста, кремов и начинок.' : 'В составе есть соусы, кремы или заготовки, их состав в ТТК не раскрыт.') + ' Теги могут быть неполными.</span></p>';
+    return h + '<p class="al-foot">Определено автоматически по тексту ТТК. При аллергии уточни у шефа.</p></section>';
   }
   function dishViewHTML(d) {
     var ap = allPhotos(d);
     var h = '<div class="' + sc(d.sec) + '">';
     if (ap.length) {
       var i = Math.min(st.dp, ap.length - 1);
-      h += '<div class="dhero"><img alt="' + esc(d.name) + '" src="' + PH[ap[i]] + '"></div>';
+      h += '<div class="dhero"><img alt="' + esc(d.name) + '" src="' + PH[ap[i]] + '"><span class="gpill">' + esc(d.sec) + '</span>' + (ap.length > 1 ? '<span class="gpill r">' + (i + 1) + ' / ' + ap.length + '</span>' : '') + '</div>';
       if (ap.length > 1) h += '<div class="strip">' + ap.map(function (p, k) { return '<button data-act="ph" data-i="' + k + '" aria-label="Фото ' + (k + 1) + '"><img class="' + (k === i ? 'on' : '') + '" alt="" src="' + PH[p] + '"></button>'; }).join('') + '</div>';
     } else {
       h += '<div class="dbadge">' + ic(d.sec) + '</div>';
     }
     h += '<h1 class="dtitle">' + esc(d.name) + '</h1><div class="pills"><span class="pill">' + esc(d.sec) + '</span><span class="pill n">' + esc(d.cat) + '</span>' + (d.meta ? '<span class="pill n">' + esc(d.meta) + '</span>' : '') + (store.known[d.id] ? '<span class="pill n">' + ic('check') + 'выучено</span>' : '') + '</div>';
-    h += ticketHTML(d) + notesHTML(d);
+    h += tagsHTML(d) + ticketHTML(d) + notesHTML(d);
     h += '<p class="src">Из чата: ' + esc(d.src) + '</p>';
     h += '<div class="btns"><button class="btn' + (store.known[d.id] ? '' : ' primary') + '" data-act="learn" data-v="' + esc(d.id) + '">' + ic(store.known[d.id] ? 'x' : 'check') + (store.known[d.id] ? 'Снять отметку «выучено»' : 'Отметить выученным') + '</button>' +
       '<button class="btn plain" data-act="train" data-v="' + esc(d.id) + '">Учить «' + esc(d.cat) + '»' + ic('chevR') + '</button></div></div>';
@@ -1044,7 +1317,7 @@ details.old { padding: 14px 16px; font-size: 15px; }
       var l = bySec(e.sec);
       return '<div class="' + sc(e.sec) + '"><h1 class="lt">' + esc(e.sec) + '</h1><p class="lt-sub">' + cnt(l.length) + ' · выучено ' + knownIn(l) + '</p></div>' + searchBar() + '<div id="mres">' + menuInner() + '</div>';
     }
-    return '<div class="hero" style="background-image:url(' + BR.hero + ')"><span class="wm"><small>КАПС · breakfast &amp; bakery</small><b>CUPS</b></span><p>Меню для своих: состав, граммовка, фото</p></div>' + searchBar() + '<div id="mres">' + menuInner() + '</div>';
+    return '<div class="hero" style="background-image:url(' + BR.hero + ')"><span class="wm"><small>КАПС · breakfast &amp; bakery</small><b>CUPS</b></span><p class="plate">Меню для своих: состав, граммовка, фото</p></div>' + searchBar() + '<div id="mres">' + menuInner() + '</div>';
   }
 
   /* ---------- cards tab ---------- */
@@ -1191,7 +1464,7 @@ details.old { padding: 14px 16px; font-size: 15px; }
     }
     if (q.done) {
       var tot = q.qs.length, C = 2 * Math.PI * 56, off = C * (1 - (tot ? q.score / tot : 0));
-      var h2 = '<h1 class="lt">Результат</h1><p class="lt-sub">' + esc(q.title) + '</p><div class="done"><div class="ring"><svg viewBox="0 0 132 132"><circle class="bg" cx="66" cy="66" r="56"/><circle class="fg" cx="66" cy="66" r="56" stroke-dasharray="' + C.toFixed(1) + '" stroke-dashoffset="' + off.toFixed(1) + '"/></svg><b>' + q.score + '/' + tot + '</b></div>';
+      var h2 = '<h1 class="lt">Результат</h1><p class="lt-sub">' + esc(q.title) + '</p><div class="done"><div class="ring"><svg viewBox="0 0 132 132"><defs><linearGradient id="ringg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#46DFA0"/><stop offset="1" stop-color="#12805A"/></linearGradient></defs><circle class="bg" cx="66" cy="66" r="56"/><circle class="fg" cx="66" cy="66" r="56" stroke-dasharray="' + C.toFixed(1) + '" stroke-dashoffset="' + off.toFixed(1) + '"/></svg><b>' + q.score + '/' + tot + '</b></div>';
       h2 += q.mistakes.length ? '<p>Над чем поработать:</p><ul class="miss">' + q.mistakes.map(function (id) { return '<li><button data-act="openq" data-v="' + esc(id) + '" style="color:var(--accent);font-weight:500;text-align:left">' + esc(byId[id].name) + '</button></li>'; }).join('') + '</ul>' : '<p>Без ошибок. Так держать.</p>';
       h2 += '</div><div class="btns">';
       if (q.mistakes.length) h2 += '<button class="btn primary" data-act="qretry">Повторить ошибки</button>';
@@ -1273,7 +1546,8 @@ details.old { padding: 14px 16px; font-size: 15px; }
   }
   function navHTML() {
     var n = navState();
-    var left = n.back ? '<button class="nbtn back" data-act="back">' + ic('chevL') + n.back + '</button>' : (n.close ? '<button class="nbtn" data-act="qclose">' + ic('x') + '<span>Закрыть</span></button>' : '');
+    var nativeBack = inTG && TG.BackButton && !TG.isFullscreen && TG.isVersionAtLeast && TG.isVersionAtLeast('6.1');
+    var left = (n.back && !nativeBack) ? '<button class="nbtn back" data-act="back">' + ic('chevL') + n.back + '</button>' : (n.close ? '<button class="nbtn" data-act="qclose">' + ic('x') + '<span>Закрыть</span></button>' : '');
     return '<header class="nav' + (n.always ? ' always' : '') + '"><div class="nav-in"><div class="nav-l">' + left + '</div><div class="nav-title">' + esc(n.title) + '</div><div class="nav-r">' + n.right + '</div></div></header>';
   }
   function tabbarHTML() {
@@ -1294,18 +1568,25 @@ details.old { padding: 14px 16px; font-size: 15px; }
     var oldSheet = document.getElementById('sheet'), sheetTop = oldSheet ? oldSheet.scrollTop : 0;
     var anim = st.anim; st.anim = '';
     var ns = navState();
-    root.innerHTML = navHTML() + '<main class="view wrap' + (ns.back || ns.close ? '' : ' flat') + (anim ? ' ' + anim : '') + '">' + bodyHTML() + '</main>' + tabbarHTML() + (st.sheet ? sheetHTML() : '');
+    root.innerHTML = '<div class="bgfx" aria-hidden="true"></div>' + navHTML() + '<main class="view wrap' + (ns.back || ns.close ? '' : ' flat') + (anim ? ' ' + anim : '') + '">' + bodyHTML() + '</main>' + tabbarHTML() + (st.sheet ? sheetHTML() : '');
     st.sheetNew = false;
     document.body.style.overflow = st.sheet ? 'hidden' : '';
     var sh = document.getElementById('sheet'); if (sh) sh.scrollTop = sheetTop;
     if (opts.scroll != null) window.scrollTo(0, opts.scroll);
     onScroll();
+    syncBack();
+  }
+  function syncBack() {
+    if (!inTG || !TG.BackButton) return;
+    try { if ((st.tab === 'menu' && st.menu.length) || st.sheet) TG.BackButton.show(); else TG.BackButton.hide(); } catch (e) {}
   }
   function onScroll() {
     var nav = root.querySelector('.nav'); if (!nav) return;
     var y = window.scrollY || 0;
     nav.classList.toggle('scrolled', y > 4);
     nav.classList.toggle('titled', nav.classList.contains('always') || y > 56);
+    var sb = root.querySelector('.sbar');
+    if (sb) sb.classList.toggle('stuck', sb.getBoundingClientRect().top <= nav.offsetHeight + 0.5 && y > 8);
   }
   window.addEventListener('scroll', onScroll, { passive: true });
 
@@ -1339,8 +1620,9 @@ details.old { padding: 14px 16px; font-size: 15px; }
   }
   function resetDecks() { st.cards = null; st.quiz = null; }
   function markKnown(id) { store.known[id] = true; save(); }
-  function cardKnow() { var c = st.cards; markKnown(c.deck[c.idx]); c.idx++; c.flipped = false; render({ scroll: window.scrollY }); }
+  function cardKnow() { buzz('ok'); var c = st.cards; markKnown(c.deck[c.idx]); c.idx++; c.flipped = false; render({ scroll: window.scrollY }); }
   function cardAgain() {
+    buzz('warn');
     var c = st.cards, id = c.deck.splice(c.idx, 1)[0]; delete store.known[id]; save();
     c.deck.splice(Math.min(c.idx + 4, c.deck.length), 0, id); c.flipped = false; render({ scroll: window.scrollY });
   }
@@ -1355,7 +1637,11 @@ details.old { padding: 14px 16px; font-size: 15px; }
     if (!t || t.disabled) return;
     var act = t.getAttribute('data-act'), v = t.getAttribute('data-v');
     var c = st.cards, q = st.quiz;
+    var HK = { tab: 'sel', open: 'light', sec: 'light', scat: 'sel', sf: 'sel', flt: 'sel', setsec: 'sel', setcat: 'sel', only: 'sel', cmode: 'sel', bchip: 'sel', star: 'med', sheet: 'light', qstart: 'med', qnext: 'light', theme: 'sel', back: 'light', ph: 'sel', openq: 'light' };
+    if (HK[act]) buzz(HK[act]);
     switch (act) {
+      case 'flt': st.flt[v] = !st.flt[v]; document.getElementById('mres').innerHTML = menuInner(); return;
+      case 'fltclear': st.flt = {}; document.getElementById('mres').innerHTML = menuInner(); return;
       case 'tab': switchTab(v); return;
       case 'back': popMenu(); return;
       case 'sec': pushMenu({ kind: 'sec', sec: v, cat: 'all' }); return;
@@ -1364,7 +1650,7 @@ details.old { padding: 14px 16px; font-size: 15px; }
       case 'openq': openDish(v); return;
       case 'ph': st.dp = parseInt(t.getAttribute('data-i'), 10); render({ scroll: window.scrollY }); return;
       case 'star': if (store.fav[v]) delete store.fav[v]; else store.fav[v] = true; save(); render({ scroll: window.scrollY }); return;
-      case 'learn': if (store.known[v]) delete store.known[v]; else store.known[v] = true; save(); render({ scroll: window.scrollY }); return;
+      case 'learn': buzz(store.known[v] ? 'light' : 'ok'); if (store.known[v]) delete store.known[v]; else store.known[v] = true; save(); render({ scroll: window.scrollY }); return;
       case 'train': { var d = byId[v]; store.sec = d.sec; store.cat = d.cat; store.only = false; save(); resetDecks(); switchTab('cards'); return; }
       case 'qclear': st.q = ''; st.sf = 'all'; render({ scroll: window.scrollY }); return;
       case 'sf': st.sf = v; document.getElementById('mres').innerHTML = menuInner(); return;
@@ -1386,7 +1672,7 @@ details.old { padding: 14px 16px; font-size: 15px; }
       case 'ans': {
         if (q.answered) return;
         var i = parseInt(t.getAttribute('data-i'), 10), cur = q.qs[q.i];
-        q.answered = true; q.picked = i; qResult(cur.dish, cur.options[i].ok); render({ scroll: window.scrollY }); revealFb(); return;
+        q.answered = true; q.picked = i; buzz(cur.options[i].ok ? 'ok' : 'err'); qResult(cur.dish, cur.options[i].ok); render({ scroll: window.scrollY }); revealFb(); return;
       }
       case 'bchip': {
         var cu = q.qs[q.i]; if (cu.checked) return;
@@ -1395,6 +1681,7 @@ details.old { padding: 14px 16px; font-size: 15px; }
       }
       case 'bcheck': {
         var cb = q.qs[q.i]; cb.checked = true;
+        buzz(cb.chips.every(function (ch, k) { return !!cb.sel[k] === ch.ok; }) ? 'ok' : 'err');
         qResult(cb.dish, cb.chips.every(function (ch, k) { return !!cb.sel[k] === ch.ok; })); render({ scroll: window.scrollY }); revealFb(); return;
       }
       case 'qnext': q.i++; q.answered = false; q.picked = -1; if (q.i >= q.qs.length) q.done = true; render({ scroll: 0 }); return;
@@ -1448,6 +1735,8 @@ details.old { padding: 14px 16px; font-size: 15px; }
       else return;
     }
     drag.dx = dx;
+    var armed = Math.abs(dx) > 90;
+    if (armed !== !!drag.armed) { drag.armed = armed; if (armed) buzz('sel'); }
     drag.el.style.transform = 'translateX(' + dx + 'px) rotate(' + (dx / 28) + 'deg)';
     var a = Math.min(Math.abs(dx) / 90, 1);
     var sl = drag.el.querySelector('.stamp.l'), sr = drag.el.querySelector('.stamp.r');
@@ -1474,10 +1763,24 @@ details.old { padding: 14px 16px; font-size: 15px; }
   root.addEventListener('pointerup', function (ev) { endDrag(ev, false); });
   root.addEventListener('pointercancel', function (ev) { endDrag(ev, true); });
 
+  /* iOS-style swipe back from the left edge */
+  var edge = null;
+  document.addEventListener('pointerdown', function (ev) {
+    edge = (ev.clientX < 24 && st.tab === 'menu' && st.menu.length && !st.sheet) ? { x: ev.clientX, y: ev.clientY, id: ev.pointerId } : null;
+  });
+  document.addEventListener('pointerup', function (ev) {
+    if (!edge || ev.pointerId !== edge.id) return;
+    var dx = ev.clientX - edge.x, dy = Math.abs(ev.clientY - edge.y);
+    edge = null;
+    if (dx > 70 && dy < 60) { buzz('light'); popMenu(); }
+  });
+  document.addEventListener('pointercancel', function () { edge = null; });
+
   render({ scroll: 0 });
   if (inTG) {
     try {
       TG.ready(); TG.expand();
+      if (TG.BackButton) TG.BackButton.onClick(function () { if (st.sheet) { st.sheet = false; render({ scroll: window.scrollY }); } else popMenu(); });
       TG.onEvent('themeChanged', function () { applyTheme(); render({ scroll: window.scrollY }); });
     } catch (e) {}
     cloudLoad();
