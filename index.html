@@ -899,6 +899,12 @@ html, body { overflow-x: clip; }
   .bgfx::after { content: ""; position: absolute; inset: 0; }
 }
 
+/* tab bar: slide a finger across it */
+.tabbar-in { touch-action: none; user-select: none; -webkit-user-select: none; }
+.tab { transition: background .15s, color .15s, transform .15s; }
+.tab.hot { background: var(--accent-soft); color: var(--accent); transform: scale(1.07); box-shadow: inset 0 0 0 1px rgba(40, 170, 120, .25), inset 0 1px 0 rgba(255, 255, 255, .35); }
+.tabbar-in.sliding .tab[aria-current="page"]:not(.hot) { background: none; box-shadow: none; color: var(--muted); }
+
 </style>
 
 
@@ -1702,7 +1708,39 @@ html, body { overflow-x: clip; }
   }
 
   /* ---------- events ---------- */
+  /* slide a finger along the tab bar: tabs light up under it, release to switch */
+  var tbDrag = null, tbSwallow = false;
+  function tbPick(bar, x) {
+    var tabs = bar.querySelectorAll('.tab'), r0 = tabs[0].getBoundingClientRect(), r1 = tabs[tabs.length - 1].getBoundingClientRect();
+    var i = Math.floor((Math.min(Math.max(x, r0.left), r1.right - 1) - r0.left) / (r0.width || 1));
+    return tabs[Math.min(Math.max(i, 0), tabs.length - 1)];
+  }
+  root.addEventListener('pointerdown', function (ev) {
+    var bar = ev.target.closest && ev.target.closest('.tabbar-in');
+    tbDrag = bar ? { bar: bar, x: ev.clientX, id: ev.pointerId, moved: false, hot: null } : null;
+  });
+  root.addEventListener('pointermove', function (ev) {
+    var d = tbDrag; if (!d || ev.pointerId !== d.id) return;
+    if (!d.moved) { if (Math.abs(ev.clientX - d.x) < 8) return; d.moved = true; d.bar.classList.add('sliding'); try { d.bar.setPointerCapture(d.id); } catch (e) {} }
+    var el = tbPick(d.bar, ev.clientX);
+    if (el !== d.hot) {
+      if (d.hot) d.hot.classList.remove('hot');
+      d.hot = el; el.classList.add('hot'); buzz('sel');
+    }
+  });
+  function tbEnd(ev) {
+    var d = tbDrag; if (!d || ev.pointerId !== d.id) return;
+    tbDrag = null;
+    if (!d.moved) return;
+    tbSwallow = true; setTimeout(function () { tbSwallow = false; }, 400);
+    var hot = d.hot, ok = ev.type === 'pointerup' && hot;
+    d.bar.classList.remove('sliding'); if (hot) hot.classList.remove('hot');
+    if (ok && hot.getAttribute('data-v') !== st.tab) switchTab(hot.getAttribute('data-v'));
+  }
+  root.addEventListener('pointerup', tbEnd);
+  root.addEventListener('pointercancel', tbEnd);
   root.addEventListener('click', function (ev) {
+    if (tbSwallow) { tbSwallow = false; ev.preventDefault(); return; }
     var t = ev.target.closest('[data-act]');
     if (!t || t.disabled) return;
     var act = t.getAttribute('data-act'), v = t.getAttribute('data-v');
