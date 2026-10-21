@@ -872,6 +872,17 @@ html, body { overflow-x: clip; }
 .sbar::before { inset: 0 calc(50% - 50vw) -16px; -webkit-backdrop-filter: none; backdrop-filter: none; background: linear-gradient(to bottom, var(--fade-a) 0%, var(--fade-a) 66%, transparent 100%); }
 .dock::before { display: none; }
 
+/* round 3: solid headers (only a thin soft edge), spacing after filter note */
+:root { --fade-a: rgba(238, 240, 246, .98); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --fade-a: rgba(8, 9, 13, .98); } }
+:root[data-theme="dark"] { --fade-a: rgba(8, 9, 13, .98); }
+.nav::before { background: linear-gradient(to bottom, var(--fade-a) calc(100% - 18px), transparent 100%); }
+.sbar::before { background: linear-gradient(to bottom, var(--fade-a) calc(100% - 16px), transparent 100%); }
+.sbar.stuck .sfield input { background: var(--tabglass); }
+.flt-note { margin: 12px 0 16px; }
+.flt-note + .hscroll, .flt-note + * { margin-top: 0; }
+.sbar::before { inset: 0 calc(50% - 50vw) -8px; background: linear-gradient(to bottom, var(--fade-a) calc(100% - 8px), transparent 100%); }
+
 </style>
 
 
