@@ -1764,7 +1764,7 @@ color-scheme: dark;
       var l = bySec(e.sec);
       return '<div class="' + sc(e.sec) + '"><h1 class="lt">' + esc(e.sec) + '</h1><p class="lt-sub">' + cnt(l.length) + ' · выучено ' + knownIn(l) + '</p></div>' + searchBar() + '<div id="mres">' + menuInner() + '</div>';
     }
-    return studySegHTML() + '<div class="hero" style="background-image:url(' + BR.hero + ')"><span class="wm"><small>КАПС · breakfast &amp; bakery</small><b>CUPS</b></span><p class="plate">Меню для своих: состав, граммовка, фото</p></div>' + searchBar() + '<div id="mres">' + menuInner() + '</div>';
+    return studySegHTML() + (navNew() ? '' : '<div class="hero" style="background-image:url(' + BR.hero + ')"><span class="wm"><small>КАПС · breakfast &amp; bakery</small><b>CUPS</b></span><p class="plate">Меню для своих: состав, граммовка, фото</p></div>') + searchBar() + '<div id="mres">' + menuInner() + '</div>';
   }
 
   /* ---------- cards tab ---------- */
