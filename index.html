@@ -1261,6 +1261,12 @@ color-scheme: dark;
 .note, .scope, details.old, .pf-stats > div, .btn { border-radius: 18px; }
 .chip { min-height: 38px; }
 
+/* search mode: works on Home and on Study → Menu; pills follow the keyboard via JS */
+#root.sa .study-seg { display: none; }
+#root.sa .sbar { top: var(--top-inset, 0px); padding-top: 10px; }
+.sfb { bottom: 0; padding: 18px 0 calc(var(--bottom-inset) + 12px); }
+.sfb.kb { padding-bottom: 10px; }
+
 </style>
 
 
@@ -1671,8 +1677,8 @@ color-scheme: dark;
 
   /* ---------- menu tab ---------- */
   function topMenu() { return st.menu.length ? st.menu[st.menu.length - 1] : { kind: 'home' }; }
-  function searchBar(ph, cls) {
-    return '<div class="sbar' + (cls ? ' ' + cls : '') + '"><div class="sfield">' + ic('search') + '<input id="q" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="' + esc(ph || 'Блюдо или ингредиент') + '" value="' + esc(st.q) + '" aria-label="Поиск по всему меню"><button class="sclear" data-act="qclear" aria-label="Очистить"' + (st.q ? '' : ' hidden') + '>' + ic('xc') + '</button></div>' + (cls === 'big' ? '<button class="sx" data-act="sclose" aria-label="Закрыть поиск">' + ic('x') + '</button>' : '') + '</div>';
+  function searchBar(ph, cls, sx) {
+    return '<div class="sbar' + (cls ? ' ' + cls : '') + '"><div class="sfield">' + ic('search') + '<input id="q" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="' + esc(ph || 'Блюдо или ингредиент') + '" value="' + esc(st.q) + '" aria-label="Поиск по всему меню"><button class="sclear" data-act="qclear" aria-label="Очистить"' + (st.q ? '' : ' hidden') + '>' + ic('xc') + '</button></div>' + (cls === 'big' || sx ? '<button class="sx" data-act="sclose" aria-label="Закрыть поиск">' + ic('x') + '</button>' : '') + '</div>';
   }
   function resultsHTML() {
     var sts = qStems(st.q), res = search(st.q);
@@ -1731,8 +1737,8 @@ color-scheme: dark;
     return h;
   }
   function menuInner() {
+    if (saOn()) return fltRowHTML(true) + ((st.q.trim() || fltActive()) ? resultsHTML() : saRestHTML());
     if (st.tab === 'home') {
-      if (saOn()) return fltRowHTML(true) + ((st.q.trim() || fltActive()) ? resultsHTML() : saRestHTML());
       return fltRowHTML() + ((st.q.trim() || fltActive()) ? resultsHTML() : homeRestHTML());
     }
     var e = topMenu();
@@ -1780,7 +1786,7 @@ color-scheme: dark;
       var l = bySec(e.sec);
       return '<div class="' + sc(e.sec) + '"><h1 class="lt">' + esc(e.sec) + '</h1><p class="lt-sub">' + cnt(l.length) + ' · выучено ' + knownIn(l) + '</p></div>' + searchBar() + '<div id="mres">' + menuInner() + '</div>';
     }
-    return studySegHTML() + (navNew() ? '' : '<div class="hero" style="background-image:url(' + BR.hero + ')"><span class="wm"><small>КАПС · breakfast &amp; bakery</small><b>CUPS</b></span><p class="plate">Меню для своих: состав, граммовка, фото</p></div>') + searchBar() + '<div id="mres">' + menuInner() + '</div>';
+    return studySegHTML() + (navNew() ? '' : '<div class="hero" style="background-image:url(' + BR.hero + ')"><span class="wm"><small>КАПС · breakfast &amp; bakery</small><b>CUPS</b></span><p class="plate">Меню для своих: состав, граммовка, фото</p></div>') + searchBar('', '', navNew()) + '<div id="mres">' + menuInner() + '</div>';
   }
 
   /* ---------- cards tab ---------- */
@@ -2255,7 +2261,8 @@ color-scheme: dark;
     return '<div class="gh"><span class="eyebrow">Учёба</span><span class="cnt">' + k + ' из ' + n + '</span></div><div class="hm-card learn"><div class="prog"><i style="width:' + p + '%"></i></div><span class="p-sub">Выучено ' + p + '% позиций меню</span><div class="btns two"><button class="btn" data-act="go" data-v="cards">Карточки</button><button class="btn" data-act="go" data-v="quiz">Тест</button></div></div>';
   }
   /* Telegram-style search mode: tab bar hides, recents show, filters sit at the bottom */
-  function saOn() { return !!st.sa && navNew() && st.tab === 'home' && !st.menu.length; }
+  function saOk() { return navNew() && !st.menu.length && (st.tab === 'home' || st.tab === 'menu'); }
+  function saOn() { return !!st.sa && saOk(); }
   function saRestHTML() {
     var fav = dishes.filter(function (d) { return store.fav[d.id]; }).sort(sortName).slice(0, 14);
     var rec = store.recent.map(function (id) { return byId[id]; }).filter(Boolean);
@@ -2282,12 +2289,12 @@ color-scheme: dark;
     Array.prototype.forEach.call(b.querySelectorAll('[data-act="flt"]'), function (c) { c.setAttribute('aria-pressed', String(!!st.flt[c.getAttribute('data-v')])); });
   }
   function openSearch() {
-    if (st.sa || !navNew() || st.tab !== 'home' || st.menu.length) return;
+    if (st.sa || !saOk()) return;
     st.sa = true; root.classList.add('sa');
     if (!document.getElementById('sfb')) root.insertAdjacentHTML('beforeend', sfbHTML());
     var m = document.getElementById('mres'); if (m) m.innerHTML = menuInner();
     window.scrollTo(0, 0);
-    syncBack();
+    syncBack(); sfbStart();
   }
   function closeSearch() {
     st.sa = false; st.q = ''; st.sf = 'all'; st.flt = {};
@@ -2386,7 +2393,7 @@ color-scheme: dark;
     var anim = st.anim; st.anim = '';
     var ns = navState();
     root.innerHTML = '<div class="bgfx" aria-hidden="true"></div>' + navHTML() + '<main class="view wrap' + (ns.back || ns.close ? '' : ' flat') + (anim ? ' ' + anim : '') + '">' + bodyHTML() + '</main>' + tabbarHTML() + (saOn() ? sfbHTML() : '') + (st.sheet ? sheetHTML() : '');
-    root.classList.toggle('sa', saOn());
+    root.classList.toggle('sa', saOn()); if (saOn()) { sfbLast = -1; sfbStart(); }
     st.sheetNew = false;
     document.body.style.overflow = st.sheet ? 'hidden' : '';
     var sh = document.getElementById('sheet'); if (sh) sh.scrollTop = sheetTop;
@@ -2621,15 +2628,22 @@ color-scheme: dark;
   });
   root.addEventListener('focusin', function (ev) {
     if (!ev.target || ev.target.id !== 'q') return;
-    if (st.tab === 'home' && navNew()) openSearch();
+    if (saOk()) openSearch();
     else if (st.menu.length === 0) setFocusScroll();
   });
-  /* keep the filter pills under the thumb when the keyboard pushes the viewport */
-  if (window.visualViewport) {
-    var vv = window.visualViewport;
-    var kbSync = function () { document.documentElement.style.setProperty('--kb', Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)) + 'px'); };
-    vv.addEventListener('resize', kbSync); vv.addEventListener('scroll', kbSync);
+  /* keep the filter pills right above the keyboard: poll the visual viewport while search is open,
+     because iOS/Telegram fire resize events mid-animation and leave a stale value behind */
+  var sfbRaf = 0, sfbLast = -1;
+  function sfbPlace() {
+    var b = document.getElementById('sfb'), vv = window.visualViewport; if (!b || !vv) return;
+    var off = Math.max(0, Math.round(document.documentElement.clientHeight - vv.offsetTop - vv.height));
+    if (off === sfbLast) return;
+    sfbLast = off;
+    b.style.bottom = off + 'px'; b.classList.toggle('kb', off > 60);
+    document.documentElement.style.setProperty('--kb', off + 'px');
   }
+  function sfbLoop() { if (!saOn()) { sfbRaf = 0; return; } sfbPlace(); sfbRaf = requestAnimationFrame(sfbLoop); }
+  function sfbStart() { sfbLast = -1; if (!sfbRaf && window.requestAnimationFrame) sfbRaf = requestAnimationFrame(sfbLoop); }
   /* tapping a bottom pill must not drop the keyboard */
   root.addEventListener('mousedown', function (ev) { if (ev.target.closest && ev.target.closest('.sfb')) ev.preventDefault(); });
   root.addEventListener('keydown', function (ev) {
