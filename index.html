@@ -1105,6 +1105,65 @@ html, body { overflow-x: clip; }
 .fut-r small { font-size: 11px; color: var(--muted); text-transform: uppercase; }
 .fut-r i { font-style: normal; color: var(--muted); }
 
+/* ---- staff mode: study switcher, home, profile ---- */
+.study-seg { margin: calc(var(--nav-h) - 2px) 0 14px; }
+.hm { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+.hm .gh { padding: 10px 4px 0; }
+.hm-card { border-radius: 22px; padding: 16px 18px; background: var(--glass-strong); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-line), var(--glass-shadow); display: flex; flex-direction: column; gap: 6px; text-align: left; width: 100%; }
+.hm-card.pick > b { font-size: 17px; font-weight: 650; }
+.hm-card.pick > span { font-size: 14px; color: var(--muted); }
+.hm-card.pick .me-row { margin: 8px -18px 0; padding: 0 18px; }
+.pickrow { margin-top: 6px; }
+.hm-hero { border-radius: 26px; padding: 20px 22px; color: #fff; background: var(--accent-grad, var(--accent)); box-shadow: var(--accent-glow, none); display: flex; flex-direction: column; gap: 6px; }
+.hm-hero .eyebrow { color: rgba(255, 255, 255, .82); display: flex; align-items: center; gap: 8px; }
+.hm-big { font-size: 27px; line-height: 1.15; font-weight: 750; letter-spacing: -.02em; font-variant-numeric: tabular-nums; text-wrap: balance; }
+.hm-sub { font-size: 15px; opacity: .9; font-variant-numeric: tabular-nums; }
+.hm-hero.idle { background: var(--glass-strong); color: var(--ink); box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-line), var(--glass-shadow); }
+.hm-hero.idle .eyebrow { color: var(--muted); }
+.pulse { width: 9px; height: 9px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 0 rgba(255, 255, 255, .6); animation: pulse 1.8s infinite; }
+@keyframes pulse { 70% { box-shadow: 0 0 0 9px rgba(255, 255, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); } }
+.pay2 { cursor: pointer; }
+.pay2:active { transform: scale(.985); }
+.pay2 .p-top { display: flex; align-items: center; justify-content: space-between; }
+.pay2 .p-top .ic { width: 18px; height: 18px; color: var(--muted); }
+.p-nums { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.p-nums b { font-size: 26px; font-weight: 750; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.p-nums b.rub { color: var(--accent); }
+.p-sub { font-size: 13.5px; color: var(--muted); }
+.hm-card.team { padding: 6px 0; gap: 0; }
+.tm-row { display: grid; grid-template-columns: 14px 1fr auto; align-items: center; gap: 10px; padding: 11px 18px; font-size: 15.5px; }
+.tm-row + .tm-row { border-top: .5px solid var(--line); }
+.tm-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line-2); }
+.tm-row.on .tm-dot { background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.tm-row.me .tm-n { color: var(--accent); font-weight: 650; }
+.tm-n small { margin-left: 6px; font-size: 11.5px; color: var(--muted); }
+.tm-t { font-variant-numeric: tabular-nums; color: var(--ink-2); }
+.hm-card.learn { gap: 10px; }
+.hm-card.learn .btns { margin-top: 4px; }
+.hm-card.learn .btn { min-height: 46px; font-size: 15.5px; }
+/* profile */
+.pf-head { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 14px 0 6px; }
+.av { width: 96px; height: 96px; border-radius: 50%; display: grid; place-items: center; font-size: 40px; font-weight: 700; color: #fff; background: var(--accent-grad, var(--accent)); box-shadow: var(--accent-glow, none); background-size: cover; background-position: center; }
+.av.ph { color: transparent; }
+.pf-name { margin-top: 12px; font-size: 24px; font-weight: 750; letter-spacing: -.02em; }
+.pf-sub { margin-top: 2px; font-size: 14px; color: var(--muted); }
+.pf-stats { display: flex; gap: 10px; margin-top: 18px; }
+.pf-stats > div { flex: 1; min-width: 0; border-radius: 18px; padding: 12px 8px; text-align: center; background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-line); display: flex; flex-direction: column; gap: 2px; }
+.pf-stats b { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pf-stats small { font-size: 11.5px; color: var(--muted); }
+.pf-rows { margin-top: 18px; border-radius: 22px; overflow: hidden; background: var(--glass-strong); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-line), var(--glass-shadow); }
+.pf-row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 54px; padding: 8px 16px; text-align: left; }
+.pf-row + .pf-row, .pf-pick + .pf-row { border-top: .5px solid var(--line); }
+.pf-row:active { background: var(--fill); }
+.pf-ic { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); flex: none; }
+.pf-ic .ic { width: 19px; height: 19px; }
+.pf-t { flex: 1; font-size: 16px; }
+.pf-v { color: var(--muted); font-size: 15px; }
+.pf-row > .ic { width: 17px; height: 17px; color: var(--muted); transition: transform .2s; }
+.pf-row > .ic.open { transform: rotate(90deg); }
+.pf-pick { display: flex; flex-wrap: wrap; gap: 8px; padding: 6px 16px 14px; }
+.pf-clear { display: block; width: 100%; padding: 0 16px 14px; text-align: left; color: var(--cherry); font-size: 14.5px; }
+
 </style>
 
 
@@ -1132,7 +1191,7 @@ html, body { overflow-x: clip; }
   var inTG = !!(TG && TG.initData);
 
   /* ---------- state ---------- */
-  var store = { known: {}, fav: {}, recent: [], sec: 'all', cat: 'all', only: false, theme: 'auto', me: '', cl: false, sh: false, ex: {} };
+  var store = { known: {}, fav: {}, recent: [], sec: 'all', cat: 'all', only: false, theme: 'auto', me: '', cl: false, sh: false, ex: {}, nv: '' };
   try {
     var raw = localStorage.getItem(KEY);
     var old = localStorage.getItem(OLDKEY);
@@ -1141,7 +1200,7 @@ html, body { overflow-x: clip; }
       store.known = s0.known || {};
       if (raw) {
         store.fav = s0.fav || {}; store.recent = Array.isArray(s0.recent) ? s0.recent : [];
-        store.sec = s0.sec || 'all'; store.cat = s0.cat || 'all'; store.only = !!s0.only; store.theme = s0.theme || 'auto'; store.t = s0.t || 0; store.me = typeof s0.me === 'string' ? s0.me : ''; store.cl = !!s0.cl; store.sh = !!s0.sh; store.ex = (s0.ex && typeof s0.ex === 'object') ? s0.ex : {};
+        store.sec = s0.sec || 'all'; store.cat = s0.cat || 'all'; store.only = !!s0.only; store.theme = s0.theme || 'auto'; store.t = s0.t || 0; store.me = typeof s0.me === 'string' ? s0.me : ''; store.cl = !!s0.cl; store.sh = !!s0.sh; store.ex = (s0.ex && typeof s0.ex === 'object') ? s0.ex : {}; store.nv = s0.nv === 'old' ? 'old' : '';
       }
     }
   } catch (e) {}
@@ -1186,7 +1245,7 @@ html, body { overflow-x: clip; }
     if (!inTG || !TG.CloudStorage || !TG.CloudStorage.getItem) return;
     try {
       TG.CloudStorage.getItem('ttk_sh', function (err, v) {
-        if (!err && (v === '1' || v === '0') && (v === '1') !== store.sh) { store.sh = v === '1'; try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} render({ scroll: window.scrollY }); }
+        if (!err && (v === '1' || v === '0') && (v === '1') !== store.sh) { store.sh = v === '1'; if (store.sh && navNew() && st.tab === 'menu' && !st.menu.length) st.tab = 'home'; tabsFix(); try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} render({ scroll: window.scrollY }); }
       });
       TG.CloudStorage.getItem('ttk2', function (err, val) {
         if (err || !val) { cloudSave(); return; }
@@ -1209,8 +1268,19 @@ html, body { overflow-x: clip; }
   var st = {
     tab: 'menu', menu: [], q: '', sf: 'all', dp: 0, flt: {},
     cardMode: 'n2c', cards: null, quiz: null, sheet: false,
-    scrollTab: {}, anim: '', resetArm: false, sd: null, sv: 'day', wi: null, pk: null
+    scrollTab: {}, anim: '', resetArm: false, sd: null, sv: 'day', wi: null, pk: null, study: 'menu', pm: false
   };
+  var tgUser = (inTG && TG.initDataUnsafe && TG.initDataUnsafe.user) || null;
+  /* staff mode (store.sh) gets the new 4-tab navigation unless the user switched back to the classic one */
+  function navNew() { return !!store.sh && store.nv !== 'old'; }
+  function inStudy(t) { return t === 'menu' || t === 'cards' || t === 'quiz'; }
+  function curKey() { return navNew() && inStudy(st.tab) ? 'study' : st.tab; }
+  function tabsFix() {
+    var t = st.tab;
+    if (!store.sh) { if (t === 'home' || t === 'profile' || t === 'shifts') { st.tab = 'menu'; st.menu = []; } return; }
+    if (navNew()) { if (t === 'more') st.tab = 'profile'; } else if (t === 'home' || t === 'profile') st.tab = 'more';
+  }
+  if (navNew()) st.tab = 'home';
 
   /* ---------- helpers ---------- */
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -1246,6 +1316,9 @@ html, body { overflow-x: clip; }
     menu: '<path d="M2.5 4.5H8a4 4 0 0 1 4 4V20a3 3 0 0 0-3-3H2.5z"/><path d="M21.5 4.5H16a4 4 0 0 0-4 4V20a3 3 0 0 1 3-3h6.5z"/>',
     cards: '<rect x="3" y="7" width="14" height="14" rx="2.5"/><path d="M7 3.5h11.5A2.5 2.5 0 0 1 21 6v11.5"/>',
     quiz: '<circle cx="12" cy="12" r="9"/><path d="M9.4 9.3a2.7 2.7 0 1 1 3.8 2.4c-.8.4-1.2 1-1.2 1.9"/><path d="M12 17h.01"/>',
+    home: '<path d="M4 11.2L12 4l8 7.2V19a1.5 1.5 0 0 1-1.5 1.5H15v-5.2h-6v5.2H5.5A1.5 1.5 0 0 1 4 19z"/>',
+    study: '<path d="M2.5 9.2L12 4.5l9.5 4.7L12 14z"/><path d="M6.5 11.4v4.3c0 1.3 2.5 2.8 5.5 2.8s5.5-1.5 5.5-2.8v-4.3"/><path d="M21.5 9.2v5"/>',
+    profile: '<circle cx="12" cy="8.5" r="3.7"/><path d="M4.8 20c.6-3.6 3.4-5.6 7.2-5.6s6.6 2 7.2 5.6"/>',
     more: '<circle cx="5.5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18.5" cy="12" r="1.3"/>',
     shifts: '<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14.2h2.2M13.8 14.2H16M8 17.2h2.2"/>',
     clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/>',
@@ -1593,6 +1666,12 @@ html, body { overflow-x: clip; }
       '<button class="btn plain" data-act="train" data-v="' + esc(d.id) + '">Учить «' + esc(d.cat) + '»' + ic('chevR') + '</button></div></div>';
     return h;
   }
+  function studySegHTML() {
+    if (!navNew()) return '';
+    return '<div class="seg study-seg" role="group" aria-label="Раздел учёбы">' + [['menu', 'Меню'], ['cards', 'Карточки'], ['quiz', 'Тесты']].map(function (t) {
+      return '<button data-act="tab" data-v="' + t[0] + '" aria-pressed="' + (st.tab === t[0]) + '">' + t[1] + '</button>';
+    }).join('') + '</div>';
+  }
   function menuViewHTML() {
     var e = topMenu();
     if (e.kind === 'dish') return dishViewHTML(byId[e.id]);
@@ -1600,7 +1679,7 @@ html, body { overflow-x: clip; }
       var l = bySec(e.sec);
       return '<div class="' + sc(e.sec) + '"><h1 class="lt">' + esc(e.sec) + '</h1><p class="lt-sub">' + cnt(l.length) + ' · выучено ' + knownIn(l) + '</p></div>' + searchBar() + '<div id="mres">' + menuInner() + '</div>';
     }
-    return '<div class="hero" style="background-image:url(' + BR.hero + ')"><span class="wm"><small>КАПС · breakfast &amp; bakery</small><b>CUPS</b></span><p class="plate">Меню для своих: состав, граммовка, фото</p></div>' + searchBar() + '<div id="mres">' + menuInner() + '</div>';
+    return studySegHTML() + '<div class="hero" style="background-image:url(' + BR.hero + ')"><span class="wm"><small>КАПС · breakfast &amp; bakery</small><b>CUPS</b></span><p class="plate">Меню для своих: состав, граммовка, фото</p></div>' + searchBar() + '<div id="mres">' + menuInner() + '</div>';
   }
 
   /* ---------- cards tab ---------- */
@@ -1624,7 +1703,7 @@ html, body { overflow-x: clip; }
   function cardsViewHTML() {
     if (!st.cards) buildDeck();
     var c = st.cards, modes = [['n2c', 'По названию'], ['c2n', 'По составу'], ['p2n', 'По фото']];
-    var h = '<h1 class="lt">Карточки</h1><p class="lt-sub">Свайп вправо: знаю. Влево: ещё раз.</p>' + scopeBtn() +
+    var h = studySegHTML() + '<h1 class="lt">Карточки</h1><p class="lt-sub">Свайп вправо: знаю. Влево: ещё раз.</p>' + scopeBtn() +
       '<div class="seg" role="group" aria-label="Режим">' + modes.map(function (m) { return '<button data-act="cmode" data-v="' + m[0] + '" aria-pressed="' + (st.cardMode === m[0]) + '">' + m[1] + '</button>'; }).join('') + '</div>';
     if (!c.deck.length) {
       return h + '<div class="empty" style="margin-top:14px"><b>В этой колоде пусто</b>' + (store.only ? 'Всё из выбранного уже отмечено выученным.' : st.cardMode === 'p2n' ? 'Для режима с фото нужны позиции с фотографиями, в этом разделе их нет.' : 'Для этого режима нужны позиции хотя бы с двумя продуктами.') +
@@ -1738,7 +1817,7 @@ html, body { overflow-x: clip; }
   function quizViewHTML() {
     var q = st.quiz;
     if (!q) {
-      var h = '<h1 class="lt">Тесты</h1><p class="lt-sub">Раунд из 10 вопросов. Ошибка снимает отметку «выучено».</p>' + scopeBtn() + '<div class="gh"><span class="eyebrow">Выбери тест</span></div><div class="group">';
+      var h = studySegHTML() + '<h1 class="lt">Тесты</h1><p class="lt-sub">Раунд из 10 вопросов. Ошибка снимает отметку «выучено».</p>' + scopeBtn() + '<div class="gh"><span class="eyebrow">Выбери тест</span></div><div class="group">';
       QTYPES.forEach(function (t) {
         var n = eligible(t).length;
         h += '<button class="qrow" data-act="qstart" data-v="' + t.id + '"' + (n ? '' : ' disabled') + '><span class="thumb">' + ic(t.ic) + '</span><span class="ctx"><b>' + t.title + '</b><small>' + (n ? t.desc : 'Нет подходящих позиций в выбранном') + '</small></span><span class="trail">' + (n ? '<span class="cnt">' + n + '</span>' : '') + ic('chevR') + '</span></button>';
@@ -1940,9 +2019,9 @@ html, body { overflow-x: clip; }
     return out.sort(function (x, y) { return x.dt - y.dt || x.s.s - y.s.s; });
   }
   function copyLine(r) { return pad2(r.dt.getDate()) + '.' + pad2(r.dt.getMonth() + 1) + ' - с ' + hhmm(r.s.s) + ' до ' + hhmm(endOf(r.s)) + ' (' + (Math.round(r.h * 10) / 10) + ' ч)'; }
-  function payData() {
+  function payData(cur) {
     var ps = allPeriods(); if (!ps.length || !store.me) return null;
-    var today = periodKey(new Date()), pk = st.pk && ps.indexOf(st.pk) >= 0 ? st.pk : (ps.indexOf(today) >= 0 ? today : ps[ps.length - 1]);
+    var today = periodKey(new Date()), pk = !cur && st.pk && ps.indexOf(st.pk) >= 0 ? st.pk : (ps.indexOf(today) >= 0 ? today : ps[ps.length - 1]);
     var rows = personShifts(store.me).filter(function (r) { return r.pk === pk; });
     var done = 0, fut = 0;
     rows.forEach(function (r) { if (store.ex[r.key]) return; if (r.done) done += r.h; else fut += r.h; });
@@ -1990,31 +2069,123 @@ html, body { overflow-x: clip; }
       return '<button data-act="sview" data-v="' + t[0] + '" aria-pressed="' + (st.sv === t[0]) + '">' + t[1] + '</button>';
     }).join('') + '</div>';
     if (info.missing && st.sv !== 'hours') h += '<div class="note warn" style="margin-top:12px">' + ic('warn') + '<span>Графика на текущую неделю в приложении ещё нет, показана неделя ' + weekRange(w) + '.</span></div>';
-    h += meRowHTML(schedPeople());
+    if (!(navNew() && store.me)) h += meRowHTML(schedPeople());
     if (st.sv === 'week') h += weekViewHTML(w, today);
     else if (st.sv === 'hours') h += payViewHTML();
     else h += dayViewHTML(w, sd, today);
-    h += '<p class="small">График из рабочего чата. Если что-то поменяли, ориентируйся на чат.</p>';
+    h += '<p class="small">График из рабочего чата. Если что-то поменяли, ориентируйся на чат.' + (navNew() && store.me ? ' Это не ты? Имя меняется в профиле.' : '') + '</p>';
     return h;
   }
 
-  function moreViewHTML() {
+  function progressBlock() {
     var k = knownIn(dishes), n = dishes.length;
-    var h = '<h1 class="lt">Ещё</h1>';
-    h += '<div class="gh"><span class="eyebrow">Прогресс</span><span class="cnt">' + k + ' из ' + n + '</span></div><div class="group">' + SECS.map(function (s) {
+    return '<div class="gh"><span class="eyebrow">Прогресс</span><span class="cnt">' + k + ' из ' + n + '</span></div><div class="group">' + SECS.map(function (s) {
       var l = bySec(s), kk = knownIn(l);
       return '<div class="stat ' + sc(s) + '"><span class="thumb">' + ic(s) + '</span><span class="ctx"><b><span>' + s + '</span><span class="cnt">' + kk + ' / ' + l.length + '</span></b><div class="prog"><i style="width:' + Math.round(kk / l.length * 100) + '%"></i></div></span></div>';
-    }).join('') + '</div>';
-    var fv = Object.keys(store.fav).length;
-    h += '<p class="hint">Избранных позиций: ' + fv + '. Отметки хранятся только в этом браузере, на другом устройстве прогресс будет с нуля.</p>';
-    h += '<div class="gh"><span class="eyebrow">Оформление</span></div><div class="seg" style="margin-top:0" role="group" aria-label="Тема">' + [['auto', 'Как в системе'], ['light', 'Светлая'], ['dark', 'Тёмная']].map(function (t) {
+    }).join('') + '</div><p class="hint">Избранных позиций: ' + Object.keys(store.fav).length + '. Отметки хранятся в Телеграме и в этом браузере.</p>';
+  }
+  function themeBlock() {
+    return '<div class="gh"><span class="eyebrow">Оформление</span></div><div class="seg" style="margin-top:0" role="group" aria-label="Тема">' + [['auto', 'Как в системе'], ['light', 'Светлая'], ['dark', 'Тёмная']].map(function (t) {
       return '<button data-act="theme" data-v="' + t[0] + '" aria-pressed="' + (store.theme === t[0]) + '">' + t[1] + '</button>';
     }).join('') + '</div>';
+  }
+  function notesBlock() {
+    var h = '';
     if (rules.length) h += '<div class="gh"><span class="eyebrow">Правила и заметки из чата</span></div><div class="group gl">' + rules.map(function (g) { return '<details><summary>' + esc(g.t) + ic('chevD') + '</summary><p>' + esc(g.d) + '</p></details>'; }).join('') + '</div>';
     h += '<div class="gh"><span class="eyebrow">Термины и заготовки</span><span class="cnt">' + glossary.length + '</span></div><div class="group gl">' + glossary.map(function (g) { return '<details><summary>' + esc(g.t) + ic('chevD') + '</summary><p>' + esc(g.d) + '</p></details>'; }).join('') + '</div>';
-    h += '<div class="btns"><button class="btn warn" data-act="reset">' + (st.resetArm ? 'Точно сбросить? Нажми ещё раз' : 'Сбросить прогресс и избранное') + '</button></div>';
-    h += '<p class="small">Источники: чат «Ттк КУХНЯ» (апрель 2025 – октябрь 2026) и чат с напитками, десертами и выпечкой (февраль 2024 – октябрь 2026). Описания 2024–2025 годов могли устареть, при сомнениях уточняй у шефа или кондитера. Цены и КБЖУ сюда не вошли.</p>';
     return h;
+  }
+  function resetBlock() {
+    return '<div class="btns"><button class="btn warn" data-act="reset">' + (st.resetArm ? 'Точно сбросить? Нажми ещё раз' : 'Сбросить прогресс и избранное') + '</button></div>' +
+      '<p class="small">Источники: чат «Ттк КУХНЯ» (апрель 2025 – октябрь 2026) и чат с напитками, десертами и выпечкой (февраль 2024 – октябрь 2026). Описания 2024–2025 годов могли устареть, при сомнениях уточняй у шефа или кондитера. Цены и КБЖУ сюда не вошли.</p>';
+  }
+  function moreViewHTML() {
+    var h = '<h1 class="lt">Ещё</h1>';
+    if (store.sh) h += '<div class="btns" style="margin-top:14px"><button class="btn primary" data-act="navnew">Включить новую навигацию</button></div>';
+    return h + progressBlock() + themeBlock() + notesBlock() + resetBlock();
+  }
+
+  /* ---------- home + profile (staff mode) ---------- */
+  function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  function startMs(r) { return new Date(r.dt.getFullYear(), r.dt.getMonth(), r.dt.getDate(), 0, r.s.s).getTime(); }
+  function endMs(r) { return new Date(r.dt.getFullYear(), r.dt.getMonth(), r.dt.getDate(), 0, endOf(r.s)).getTime(); }
+  function dur(ms) { var m = Math.max(1, Math.round(ms / 60000)); if (m < 60) return m + ' мин'; var h = Math.floor(m / 60), mm = m % 60; if (h >= 36) return Math.round(h / 24) + ' дн'; return h + ' ч' + (mm ? ' ' + mm + ' мин' : ''); }
+  function dayWord(dt) {
+    var n = new Date(), t0 = new Date(n.getFullYear(), n.getMonth(), n.getDate()), k = Math.round((dt - t0) / 864e5);
+    if (k === 0) return 'Сегодня'; if (k === 1) return 'Завтра'; if (k === 2) return 'Послезавтра';
+    return cap(DOWFULL[(dt.getDay() + 6) % 7]) + ', ' + dt.getDate() + ' ' + MON[dt.getMonth()];
+  }
+  function todayDay() {
+    var ws = weeksSorted(), n = new Date(), t0 = new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime();
+    for (var i = 0; i < ws.length; i++) { var k = Math.round((t0 - ws[i]._d.getTime()) / 864e5); if (k >= 0 && k < 7) return { w: ws[i], k: k, d: ws[i].days[k] }; }
+    return null;
+  }
+  function tgName() { return tgUser ? ((tgUser.first_name || '') + (tgUser.last_name ? ' ' + tgUser.last_name : '')).trim() : ''; }
+  function tgMatch() {
+    if (!tgUser || !tgUser.first_name) return '';
+    var f = tgUser.first_name.toLowerCase(), hit = schedPeople().filter(function (p) { return p.toLowerCase() === f; });
+    return hit.length === 1 ? hit[0] : '';
+  }
+  function whoHTML() {
+    var m = tgMatch();
+    return '<div class="hm-card pick"><b>Выбери себя в графике</b><span>Тогда здесь появятся твои смены, часы и зарплата.</span>' +
+      (m ? '<div class="pickrow"><button class="chip tag" data-act="sme" data-v="' + esc(m) + '" aria-pressed="false">Это я: ' + esc(m) + '</button></div>' : '') +
+      meRowHTML(schedPeople()) + '</div>';
+  }
+  function homeHeroHTML() {
+    var r = personShifts(store.me).filter(function (x) { return !x.done && !store.ex[x.key]; })[0];
+    if (!r) return '<div class="hm-hero idle"><span class="eyebrow">Ближайшая смена</span><b class="hm-big">Смен в графике пока нет</b><span class="hm-sub">Как появится новый график, он покажется здесь.</span></div>';
+    var now = Date.now(), live = now >= startMs(r);
+    return '<div class="hm-hero' + (live ? ' live' : '') + '"><span class="eyebrow">' + (live ? '<i class="pulse"></i>Сейчас на смене' : 'Ближайшая смена') + '</span><b class="hm-big">' + dayWord(r.dt) + ', ' + hhmm(r.s.s) + '–' + hhmm(endOf(r.s)) + '</b><span class="hm-sub">' + (live ? 'Осталось ' + dur(endMs(r) - now) : 'Через ' + dur(startMs(r) - now)) + ' · ' + fmtH(r.h) + '</span></div>';
+  }
+  function homePayHTML() {
+    var d = payData(true); if (!d) return '';
+    return '<button class="hm-card pay2" data-act="gohours"><span class="p-top"><span class="eyebrow">Часы за ' + periodName(d.pk, true) + '</span>' + ic('chevR') + '</span><span class="p-nums"><b>' + fmtH(d.done) + '</b><b class="rub">' + money(d.done * RATE) + '</b></span>' + (d.fut > 0 ? '<span class="p-sub">Впереди ещё ' + fmtH(d.fut) + ' по графику</span>' : '<span class="p-sub">Закрытие считается до 21:00</span>') + '</button>';
+  }
+  function homeTeamHTML() {
+    var t = todayDay(); if (!t) return '';
+    var n = new Date(), nm = n.getHours() * 60 + n.getMinutes(), list = sortShifts(t.d.shifts);
+    var staff = list.filter(function (s) { return s.p; }), gaps = list.filter(function (s) { return !s.p; });
+    var h = '<div class="gh"><span class="eyebrow">Сегодня в смену</span><span class="cnt">' + staff.length + '</span></div><div class="hm-card team">' + staff.map(function (s) {
+      var on = s.s <= nm && nm < endOf(s);
+      return '<div class="tm-row' + (store.me === s.p ? ' me' : '') + (on ? ' on' : '') + '"><i class="tm-dot"></i><span class="tm-n">' + esc(s.p) + (s.t ? '<small>стажёр</small>' : '') + '</span><span class="tm-t">' + hm(s.s) + '–' + hm(endOf(s)) + '</span></div>';
+    }).join('') + '</div>';
+    if (gaps.length) h += '<div class="note warn" style="margin-top:10px">' + ic('warn') + '<span><b>Пока никого нет на ' + gaps.map(function (s) { return hm(s.s) + '–' + hm(endOf(s)); }).join(' и ') + '.</b></span></div>';
+    return h;
+  }
+  function homeLearnHTML() {
+    var k = knownIn(dishes), n = dishes.length, p = n ? Math.round(k / n * 100) : 0;
+    return '<div class="gh"><span class="eyebrow">Учёба</span><span class="cnt">' + k + ' из ' + n + '</span></div><div class="hm-card learn"><div class="prog"><i style="width:' + p + '%"></i></div><span class="p-sub">Выучено ' + p + '% позиций меню</span><div class="btns two"><button class="btn" data-act="go" data-v="cards">Карточки</button><button class="btn" data-act="go" data-v="quiz">Тест</button></div></div>';
+  }
+  function homeViewHTML() {
+    var n = new Date(), nm = store.me || (tgUser && tgUser.first_name) || '';
+    var h = '<h1 class="lt">' + (nm ? 'Привет, ' + esc(nm) : 'Привет') + '</h1><p class="lt-sub">' + cap(DOWFULL[(n.getDay() + 6) % 7]) + ', ' + n.getDate() + ' ' + MON[n.getMonth()] + '</p>';
+    h += '<div class="hm">';
+    if (!store.me) h += whoHTML(); else h += homeHeroHTML() + homePayHTML();
+    h += homeTeamHTML() + homeLearnHTML() + '</div>';
+    return h;
+  }
+  function profileViewHTML() {
+    var name = store.me || tgName() || 'Гость', pd = store.me ? payData(true) : null, k = knownIn(dishes);
+    var h = '<div class="pf-head"><div class="av" id="av">' + esc(name.trim().charAt(0).toUpperCase()) + '</div><h1 class="pf-name">' + esc(name) + '</h1><p class="pf-sub">' + (store.me ? 'Сотрудник Cups' : 'Имя в графике не выбрано') + (tgUser && tgUser.username ? ' · @' + esc(tgUser.username) : '') + '</p></div>';
+    h += '<div class="pf-stats">' + (pd ? '<div><b>' + fmtH(pd.done) + '</b><small>часов, ' + periodName(pd.pk) + '</small></div><div><b>' + money(pd.done * RATE) + '</b><small>за период</small></div>' : '') + '<div><b>' + k + '/' + dishes.length + '</b><small>выучено</small></div></div>';
+    h += '<div class="pf-rows"><button class="pf-row" data-act="pickme" aria-expanded="' + st.pm + '"><span class="pf-ic">' + ic('profile') + '</span><span class="pf-t">Имя в графике</span><span class="pf-v">' + (store.me ? esc(store.me) : 'выбрать') + '</span>' + ic('chevR', st.pm ? 'open' : '') + '</button>';
+    if (st.pm) {
+      var m = tgMatch();
+      h += '<div class="pf-pick">' + (m && store.me !== m ? '<button class="chip tag" data-act="sme" data-v="' + esc(m) + '" aria-pressed="false">Из Телеграма: ' + esc(m) + '</button>' : '') + schedPeople().map(function (p) {
+        return '<button class="chip" data-act="sme" data-v="' + esc(p) + '" aria-pressed="' + (store.me === p) + '">' + esc(p) + '</button>';
+      }).join('') + '</div>' + (store.me ? '<button class="pf-clear" data-act="sme" data-v="' + esc(store.me) + '">Это не я, сбросить</button>' : '');
+    }
+    h += '<button class="pf-row" data-act="gohours"><span class="pf-ic">' + ic('clock') + '</span><span class="pf-t">Мои часы и зарплата</span><span class="pf-v"></span>' + ic('chevR') + '</button></div>';
+    h += progressBlock() + themeBlock() + notesBlock();
+    h += '<div class="gh"><span class="eyebrow">Приложение</span></div><div class="btns" style="margin-top:0"><button class="btn" data-act="navold">Вернуть старую навигацию</button></div>';
+    h += resetBlock();
+    return h;
+  }
+  function mountAvatar() {
+    var a = document.getElementById('av');
+    if (!a || !tgUser || !tgUser.photo_url) return;
+    try { var im = new Image(); im.onload = function () { var e = document.getElementById('av'); if (e) { e.style.backgroundImage = 'url("' + tgUser.photo_url + '")'; e.classList.add('ph'); } }; im.src = tgUser.photo_url; } catch (e) {}
   }
 
   /* ---------- chrome ---------- */
@@ -2026,12 +2197,15 @@ html, body { overflow-x: clip; }
       else if (e.kind === 'dish') {
         var d = byId[e.id]; n.back = 'Назад'; n.title = d.name;
         n.right = '<button class="nbtn star' + (store.fav[d.id] ? ' on' : '') + '" data-act="star" data-v="' + esc(d.id) + '" aria-label="' + (store.fav[d.id] ? 'Убрать из избранного' : 'В избранное') + '" aria-pressed="' + !!store.fav[d.id] + '">' + ic('star') + '</button>';
-      }
-    } else if (st.tab === 'cards') n.title = 'Карточки';
+      } else if (navNew()) { n.title = 'Учёба'; n.always = true; }
+    } else if (st.tab === 'cards') { n.title = navNew() ? 'Учёба' : 'Карточки'; if (navNew()) n.always = true; }
     else if (st.tab === 'quiz') {
-      n.title = st.quiz && !st.quiz.done ? st.quiz.title : 'Тесты';
+      n.title = st.quiz && !st.quiz.done ? st.quiz.title : (navNew() && !st.quiz ? 'Учёба' : 'Тесты');
+      if (navNew() && !st.quiz) n.always = true;
       if (st.quiz) { n.close = true; n.always = !st.quiz.done; }
     } else if (st.tab === 'shifts' && store.sh) n.title = 'Смены';
+    else if (st.tab === 'home' && navNew()) n.title = 'Главная';
+    else if (st.tab === 'profile' && navNew()) n.title = 'Профиль';
     else n.title = 'Ещё';
     return n;
   }
@@ -2042,11 +2216,10 @@ html, body { overflow-x: clip; }
     return '<header class="nav' + (n.always ? ' always' : '') + '"><div class="nav-in"><div class="nav-l">' + left + '</div><div class="nav-title">' + esc(n.title) + '</div><div class="nav-r">' + n.right + '</div></div></header>';
   }
   function tabbarHTML() {
-    var tabs = [['menu', 'Меню'], ['cards', 'Карточки'], ['quiz', 'Тесты']];
-    if (store.sh) tabs.push(['shifts', 'Смены']);
-    tabs.push(['more', 'Ещё']);
+    var tabs = navNew() ? [['home', 'Главная'], ['shifts', 'Смены'], ['study', 'Учёба'], ['profile', 'Профиль']] : [['menu', 'Меню'], ['cards', 'Карточки'], ['quiz', 'Тесты']];
+    if (!navNew()) { if (store.sh) tabs.push(['shifts', 'Смены']); tabs.push(['more', 'Ещё']); }
     return '<nav class="tabbar" aria-label="Разделы"><div class="tabbar-in" style="grid-template-columns:repeat(' + tabs.length + ',1fr)">' + tabs.map(function (t) {
-      return '<button class="tab" data-act="tab" data-v="' + t[0] + '"' + (st.tab === t[0] ? ' aria-current="page"' : '') + '>' + ic(t[0]) + '<span>' + t[1] + '</span></button>';
+      return '<button class="tab" data-act="tab" data-v="' + t[0] + '"' + (curKey() === t[0] ? ' aria-current="page"' : '') + '>' + ic(t[0]) + '<span>' + t[1] + '</span></button>';
     }).join('') + '</div></nav>';
   }
   function bodyHTML() {
@@ -2054,6 +2227,8 @@ html, body { overflow-x: clip; }
     if (st.tab === 'cards') return cardsViewHTML();
     if (st.tab === 'quiz') return quizViewHTML();
     if (st.tab === 'shifts' && store.sh) return shiftsViewHTML();
+    if (st.tab === 'home' && navNew()) return homeViewHTML();
+    if (st.tab === 'profile' && navNew()) return profileViewHTML();
     return moreViewHTML();
   }
 
@@ -2074,6 +2249,7 @@ html, body { overflow-x: clip; }
     }
     if (opts.scroll != null) window.scrollTo(0, opts.scroll);
     fitRep(opts.fit);
+    mountAvatar();
     onScroll();
     syncBack();
   }
@@ -2128,13 +2304,17 @@ html, body { overflow-x: clip; }
   }
   function toggleShifts() {
     store.sh = !store.sh;
-    if (!store.sh && st.tab === 'shifts') { st.tab = 'menu'; st.menu = []; }
+    if (!store.sh) { if (st.tab === 'shifts' || st.tab === 'home' || st.tab === 'profile') { st.tab = 'menu'; st.menu = []; } }
+    else if (navNew()) { st.tab = 'home'; st.menu = []; }
+    tabsFix();
     save(); buzz('ok');
     if (inTG && TG.CloudStorage && TG.CloudStorage.setItem) { try { TG.CloudStorage.setItem('ttk_sh', store.sh ? '1' : '0', function () {}); } catch (e) {} }
     render({ scroll: window.scrollY });
-    toast(store.sh ? 'Вкладка «Смены» включена' : 'Вкладка «Смены» скрыта');
+    toast(store.sh ? 'Режим сотрудника включён' : 'Режим сотрудника выключен');
   }
   function switchTab(t) {
+    if (t === 'study') t = inStudy(st.tab) ? st.tab : (st.study || 'menu');
+    if (inStudy(t)) st.study = t;
     if (t === st.tab) {
       if (t === 'menu' && st.menu.length) { st.menu = []; st.anim = ''; render({ scroll: 0 }); }
       else window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2185,7 +2365,7 @@ html, body { overflow-x: clip; }
     tbSwallow = true; setTimeout(function () { tbSwallow = false; }, 400);
     var hot = d.hot, ok = ev.type === 'pointerup' && hot;
     d.bar.classList.remove('sliding'); if (hot) hot.classList.remove('hot');
-    if (ok && hot.getAttribute('data-v') !== st.tab) switchTab(hot.getAttribute('data-v'));
+    if (ok && hot.getAttribute('data-v') !== curKey()) switchTab(hot.getAttribute('data-v'));
   }
   root.addEventListener('pointerup', tbEnd);
   root.addEventListener('pointercancel', tbEnd);
@@ -2195,19 +2375,24 @@ html, body { overflow-x: clip; }
     if (!t || t.disabled) return;
     var act = t.getAttribute('data-act'), v = t.getAttribute('data-v');
     var c = st.cards, q = st.quiz;
-    var HK = { tab: 'sel', open: 'light', sec: 'light', scat: 'sel', sf: 'sel', flt: 'sel', setsec: 'sel', setcat: 'sel', only: 'sel', cmode: 'sel', bchip: 'sel', star: 'med', sheet: 'light', qstart: 'med', qnext: 'light', theme: 'sel', sday: 'sel', sview: 'sel', swk: 'sel', spr: 'sel', sex: 'sel', scp: 'light', sme: 'sel', back: 'light', ph: 'sel', openq: 'light' };
+    var HK = { tab: 'sel', open: 'light', sec: 'light', scat: 'sel', sf: 'sel', flt: 'sel', setsec: 'sel', setcat: 'sel', only: 'sel', cmode: 'sel', bchip: 'sel', star: 'med', sheet: 'light', qstart: 'med', qnext: 'light', theme: 'sel', go: 'sel', gohours: 'light', pickme: 'sel', navold: 'med', navnew: 'med', sday: 'sel', sview: 'sel', swk: 'sel', spr: 'sel', sex: 'sel', scp: 'light', sme: 'sel', back: 'light', ph: 'sel', openq: 'light' };
     if (HK[act]) buzz(HK[act]);
     switch (act) {
       case 'flt': st.flt[v] = !st.flt[v]; document.getElementById('mres').innerHTML = menuInner(); return;
       case 'fltclear': st.flt = {}; document.getElementById('mres').innerHTML = menuInner(); return;
       case 'tab':
-        if (v === 'more') {
+        if (v === 'more' || v === 'profile') {
           var tn = Date.now();
           secret = (tn - secretT < 1500) ? secret + 1 : 1; secretT = tn;
           if (secret >= 5) { secret = 0; toggleShifts(); return; }
         } else secret = 0;
         switchTab(v); return;
       case 'back': popMenu(); return;
+      case 'go': switchTab(v); return;
+      case 'gohours': st.sv = 'hours'; st.scrollTab.shifts = 0; if (st.tab !== 'shifts') switchTab('shifts'); else render({ scroll: 0 }); fitRep(true); return;
+      case 'pickme': st.pm = !st.pm; render({ scroll: window.scrollY }); return;
+      case 'navold': store.nv = 'old'; st.tab = 'more'; st.menu = []; save(); render({ scroll: 0 }); toast('Классическая навигация'); return;
+      case 'navnew': store.nv = ''; st.tab = 'home'; st.menu = []; save(); render({ scroll: 0 }); toast('Новая навигация'); return;
       case 'sec': pushMenu({ kind: 'sec', sec: v, cat: 'all' }); return;
       case 'scat': topMenu().cat = v; document.getElementById('mres').innerHTML = menuInner(); return;
       case 'open': openDish(v); return;
@@ -2256,7 +2441,7 @@ html, body { overflow-x: clip; }
       case 'scp': { var pd = payData(); if (pd) copyText(pd.text); return; }
       case 'sview': st.sv = v; render({ scroll: window.scrollY, fit: v === 'hours' }); return;
       case 'sme': {
-        store.me = store.me === v ? '' : v; save(); render({ scroll: window.scrollY, fit: st.sv === 'hours' && !!store.me });
+        store.me = store.me === v ? '' : v; if (st.tab === 'profile') st.pm = false; save(); render({ scroll: window.scrollY, fit: st.sv === 'hours' && !!store.me });
         return;
       }
       case 'theme': store.theme = v; save(); applyTheme(); render({ scroll: window.scrollY }); return;
