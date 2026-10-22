@@ -1164,6 +1164,26 @@ html, body { overflow-x: clip; }
 .pf-pick { display: flex; flex-wrap: wrap; gap: 8px; padding: 6px 16px 14px; }
 .pf-clear { display: block; width: 100%; padding: 0 16px 14px; text-align: left; color: var(--cherry); font-size: 14.5px; }
 
+/* week matrix, round 3: readable type, one size everywhere, scrolls sideways under a pinned name column */
+.seg + .dstrip, .seg + .wkc, .seg + .prs, .seg + .tl, .seg + .note { margin-top: 14px; }
+.wkc { margin-top: 14px; }
+.me-row + .wkc { margin-top: 0; }
+.wk { table-layout: auto; width: max-content; min-width: 100%; font-size: 15px; }
+.wk th, .wk td { padding: 11px 6px; white-space: nowrap; line-height: 1.25; }
+.wk td { min-width: 80px; font-size: 15px; font-weight: 600; letter-spacing: 0; }
+.wk thead th { min-width: 80px; padding: 12px 6px 8px; }
+.wk thead small { font-size: 11.5px; }
+.wk thead b { font-size: 18px; }
+.wk .wk-n { width: 96px; min-width: 96px; max-width: 96px; padding: 11px 8px 11px 16px; font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; box-shadow: 1px 0 0 var(--line); }
+.wk tr.wk-gap .wk-n { white-space: normal; font-size: 13.5px; line-height: 1.2; }
+.wk td.sh-gap { white-space: nowrap; font-size: 14.5px; }
+.wk td.off { font-weight: 400; font-size: 15px; }
+.wk td span, .wk td span.long { font-size: inherit; letter-spacing: 0; }
+.wk .wk-n { width: 108px; min-width: 108px; max-width: 108px; padding: 11px 6px 11px 14px; background: var(--surface); z-index: 3; }
+.wk thead th.wk-n { z-index: 4; }
+.wk tr.me .wk-n { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+.wk tr.wk-gap .wk-n { background: color-mix(in srgb, var(--cherry) 12%, var(--surface)); }
+
 </style>
 
 
@@ -1972,7 +1992,7 @@ html, body { overflow-x: clip; }
   function weekViewHTML(w, todayIdx) {
     var people = {}, order = [];
     w.days.forEach(function (d) { d.shifts.forEach(function (s) { if (s.p && !people[s.p]) { people[s.p] = 1; order.push(s.p); } }); });
-    order.sort(function (x, y) { return x.localeCompare(y, 'ru'); });
+    order.sort(function (x, y) { return (y === store.me) - (x === store.me) || x.localeCompare(y, 'ru'); });
     var hasGap = w.days.some(function (d) { return d.shifts.some(function (s) { return s.p == null; }); });
     var th = '<tr><th class="wk-n"></th>' + w.days.map(function (d, i) { return '<th class="' + (i === todayIdx ? 'today' : '') + '"><small>' + d.dow + '</small><b>' + d.n + '</b></th>'; }).join('') + '</tr>';
     var rows = order.map(function (p) {
@@ -1980,17 +2000,17 @@ html, body { overflow-x: clip; }
         var l = d.shifts.filter(function (s) { return s.p === p; });
         if (!l.length) return '<td class="off' + (i === todayIdx ? ' today' : '') + '">·</td>';
         var s = l[0];
-        return '<td class="sh-' + shKind(s) + (s.t ? ' sh-trn' : '') + (i === todayIdx ? ' today' : '') + '">' + l.map(function (x) { return '<span' + (/:/.test(rngw(x)) ? ' class="long"' : '') + '>' + rngw(x) + '</span>'; }).join('<br>') + '</td>';
+        return '<td class="sh-' + shKind(s) + (s.t ? ' sh-trn' : '') + (i === todayIdx ? ' today' : '') + '">' + l.map(function (x) { return rngw(x); }).join('<br>') + '</td>';
       }).join('');
       return '<tr class="' + (store.me === p ? 'me' : '') + '"><th class="wk-n" scope="row">' + esc(p) + '</th>' + tds + '</tr>';
     }).join('');
     if (hasGap) {
       rows += '<tr class="wk-gap"><th class="wk-n" scope="row">Нужен человек</th>' + w.days.map(function (d, i) {
         var g = d.shifts.filter(function (s) { return s.p == null; });
-        return g.length ? '<td class="sh-gap"><span>' + g.map(rngw).join('<br>') + '</span></td>' : '<td class="off">·</td>';
+        return g.length ? '<td class="sh-gap">' + g.map(rngw).join('<br>') + '</td>' : '<td class="off">·</td>';
       }).join('') + '</tr>';
     }
-    return '<div class="group wkc"><div class="wk-scroll"><table class="wk"><thead>' + th + '</thead><tbody>' + rows + '</tbody></table></div></div><p class="hint">Зелёный: утренние смены, синий: с обеда и вечер, штрих: стажёр.</p>';
+    return '<div class="group wkc"><div class="wk-scroll" data-today="' + todayIdx + '"><table class="wk"><thead>' + th + '</thead><tbody>' + rows + '</tbody></table></div></div><p class="hint">Зелёный: утренние смены, синий: с обеда и вечер, штрих: стажёр.</p>';
   }
 
   /* ---- hours + pay for a half-month period ---- */
@@ -2236,6 +2256,7 @@ html, body { overflow-x: clip; }
     opts = opts || {};
     var oldSheet = document.getElementById('sheet'), sheetTop = oldSheet ? oldSheet.scrollTop : 0;
     var oldMe = root.querySelector('.me-row'), meX = oldMe ? oldMe.scrollLeft : null;
+    var oldWk = root.querySelector('.wk-scroll'), wkX = oldWk ? oldWk.scrollLeft : null;
     var anim = st.anim; st.anim = '';
     var ns = navState();
     root.innerHTML = '<div class="bgfx" aria-hidden="true"></div>' + navHTML() + '<main class="view wrap' + (ns.back || ns.close ? '' : ' flat') + (anim ? ' ' + anim : '') + '">' + bodyHTML() + '</main>' + tabbarHTML() + (st.sheet ? sheetHTML() : '');
@@ -2248,6 +2269,8 @@ html, body { overflow-x: clip; }
       if (meX != null) newMe.scrollLeft = meX; else if (on) newMe.scrollLeft = Math.max(0, on.offsetLeft - 90);
     }
     if (opts.scroll != null) window.scrollTo(0, opts.scroll);
+    var newWk = root.querySelector('.wk-scroll');
+    if (newWk) { if (wkX != null) newWk.scrollLeft = wkX; else { var ti = parseInt(newWk.getAttribute('data-today'), 10); newWk.scrollLeft = ti > 0 ? Math.max(0, (ti - 1) * 80) : 0; } }
     fitRep(opts.fit);
     mountAvatar();
     onScroll();
