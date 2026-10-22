@@ -1343,6 +1343,19 @@ color-scheme: dark;
 .wh-i.on { color: var(--ink); font-weight: 650; }
 .rq-o.no[aria-checked="true"] { background: color-mix(in srgb, var(--ink) 11%, transparent); color: var(--ink-2); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ink) 22%, transparent); }
 
+/* sheets: real slide-up / slide-down */
+@keyframes sheetin { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes sheetout { from { transform: none; } to { transform: translateY(100%); } }
+@keyframes fadeout { from { opacity: 1; } to { opacity: 0; } }
+.sheet.new { animation: sheetin .5s cubic-bezier(.32, .72, 0, 1) both; }
+.sheet.out { animation: sheetout .26s cubic-bezier(.5, 0, .9, .6) both; pointer-events: none; }
+.scrim.new { animation: fade .32s ease-out both; }
+.scrim.out { animation: fadeout .26s ease-in both; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .sheet.new, .sheet.out, .scrim.new, .scrim.out { animation-duration: .01s; } }
+/* the wheel sheet does not scroll, so no opaque sticky strip behind the button */
+.rq-sheet .btns { position: static; background: none; padding: 0; margin-top: 10px; }
+.rq-sheet .btn.primary { box-shadow: var(--accent-glow); }
+
 </style>
 
 
@@ -2617,9 +2630,20 @@ color-scheme: dark;
     st.anim = '';
     render({ scroll: st.menu.length ? (e.sy || 0) : (st.homeSy || 0) });
   }
+  /* sheets slide down before they are removed */
+  function sheetOut(fn) {
+    var sh = document.getElementById('sheet');
+    if (!sh) { fn(); return; }
+    if (sh.classList.contains('out')) return;
+    sh.classList.add('out');
+    var sc = root.querySelector('.scrim'); if (sc) sc.classList.add('out');
+    setTimeout(fn, 250);
+  }
+  function closeSheets() {
+    sheetOut(function () { st.sheet = false; st.rqs = -1; render({ scroll: window.scrollY }); });
+  }
   function goBack() {
-    if (st.sheet) { st.sheet = false; render({ scroll: window.scrollY }); }
-    else if (rqOn()) { st.rqs = -1; render({ scroll: window.scrollY }); }
+    if (st.sheet || rqOn()) closeSheets();
     else if (saOn()) closeSearch();
     else if (st.tab === 'shifts' && st.sv === 'req') { st.sv = st.svPrev && st.svPrev !== 'req' ? st.svPrev : 'day'; render({ scroll: 0 }); }
     else popMenu();
@@ -2785,7 +2809,7 @@ color-scheme: dark;
         render({ scroll: window.scrollY }); return;
       case 'sf': st.sf = v; document.getElementById('mres').innerHTML = menuInner(); return;
       case 'sheet': st.sheet = true; st.sheetNew = true; render({ scroll: window.scrollY }); return;
-      case 'sheetclose': st.sheet = false; render({ scroll: window.scrollY }); return;
+      case 'sheetclose': closeSheets(); return;
       case 'setsec': store.sec = v; store.cat = 'all'; save(); resetDecks(); render({ scroll: window.scrollY }); return;
       case 'setcat': store.cat = v; save(); resetDecks(); render({ scroll: window.scrollY }); return;
       case 'only': store.only = !store.only; save(); resetDecks(); render({ scroll: window.scrollY }); return;
@@ -2825,8 +2849,8 @@ color-scheme: dark;
         save(); render({ scroll: window.scrollY }); return;
       }
       case 'rqc': { var cr = rqData()[+v]; st.rqs = +v; st.rqt = { s: cr ? cr[0] : 840, e: cr ? cr[1] : 1200 }; st.sheetNew = true; render({ scroll: window.scrollY }); return; }
-      case 'rqsx': st.rqs = -1; render({ scroll: window.scrollY }); return;
-      case 'rqsd': { var sd0 = st.rqt, ri2 = st.rqs; rqData()[ri2] = [sd0.s, sd0.e]; st.rqs = -1; save(); render({ scroll: window.scrollY }); return; }
+      case 'rqsx': closeSheets(); return;
+      case 'rqsd': { if (document.querySelector('#sheet.out')) return; rqData()[st.rqs] = [st.rqt.s, st.rqt.e]; save(); closeSheets(); return; }
       case 'rqcp': { var rt = rqText(); if (rt) copyText(rt); return; }
       case 'rqclr': store.rq = { k: rqWeek().key, d: {} };  save(); render({ scroll: window.scrollY }); return;
       case 'scp': { var pd = payData(); if (pd) copyText(pd.text); return; }
@@ -2882,8 +2906,7 @@ color-scheme: dark;
   });
   document.addEventListener('keydown', function (ev) {
     var tag = (ev.target && ev.target.tagName) || '';
-    if (ev.key === 'Escape' && st.sheet) { st.sheet = false; render({ scroll: window.scrollY }); return; }
-    if (ev.key === 'Escape' && rqOn()) { st.rqs = -1; render({ scroll: window.scrollY }); return; }
+    if (ev.key === 'Escape' && (st.sheet || rqOn())) { closeSheets(); return; }
     if (tag === 'INPUT' || tag === 'TEXTAREA' || st.tab !== 'cards' || !st.cards || st.sheet) return;
     var c = st.cards;
     if (c.idx >= c.deck.length) return;
