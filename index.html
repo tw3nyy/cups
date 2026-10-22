@@ -1184,6 +1184,14 @@ html, body { overflow-x: clip; }
 .wk tr.me .wk-n { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
 .wk tr.wk-gap .wk-n { background: color-mix(in srgb, var(--cherry) 12%, var(--surface)); }
 
+/* home search is the main action */
+.sbar.big .sfield input { height: 54px; border-radius: 18px; font-size: 17px; padding-left: 46px; }
+.sbar.big .sfield .ic { left: 16px; width: 21px; height: 21px; }
+.lt-sub + .sbar.big { padding-top: 14px; }
+.sbar.big + #mres > .hscroll.flt { margin-top: 0; }
+.hscroll.rec { margin-top: 0; }
+#mres > .gh:first-child { padding-top: 14px; }
+
 </style>
 
 
@@ -1288,13 +1296,13 @@ html, body { overflow-x: clip; }
   var st = {
     tab: 'menu', menu: [], q: '', sf: 'all', dp: 0, flt: {},
     cardMode: 'n2c', cards: null, quiz: null, sheet: false,
-    scrollTab: {}, anim: '', resetArm: false, sd: null, sv: 'day', wi: null, pk: null, study: 'menu', pm: false
+    scrollTab: {}, anim: '', resetArm: false, sd: null, sv: 'day', wi: null, pk: null, study: 'menu', pm: false, from: ''
   };
   var tgUser = (inTG && TG.initDataUnsafe && TG.initDataUnsafe.user) || null;
   /* staff mode (store.sh) gets the new 4-tab navigation unless the user switched back to the classic one */
   function navNew() { return !!store.sh && store.nv !== 'old'; }
   function inStudy(t) { return t === 'menu' || t === 'cards' || t === 'quiz'; }
-  function curKey() { return navNew() && inStudy(st.tab) ? 'study' : st.tab; }
+  function curKey() { return navNew() && inStudy(st.tab) ? (st.tab === 'menu' && st.from === 'home' ? 'home' : 'study') : st.tab; }
   function tabsFix() {
     var t = st.tab;
     if (!store.sh) { if (t === 'home' || t === 'profile' || t === 'shifts') { st.tab = 'menu'; st.menu = []; } return; }
@@ -1594,8 +1602,8 @@ html, body { overflow-x: clip; }
 
   /* ---------- menu tab ---------- */
   function topMenu() { return st.menu.length ? st.menu[st.menu.length - 1] : { kind: 'home' }; }
-  function searchBar(ph) {
-    return '<div class="sbar"><div class="sfield">' + ic('search') + '<input id="q" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="' + esc(ph || 'Блюдо, напиток или ингредиент') + '" value="' + esc(st.q) + '" aria-label="Поиск по всему меню"><button class="sclear" data-act="qclear" aria-label="Очистить"' + (st.q ? '' : ' hidden') + '>' + ic('xc') + '</button></div></div>';
+  function searchBar(ph, cls) {
+    return '<div class="sbar' + (cls ? ' ' + cls : '') + '"><div class="sfield">' + ic('search') + '<input id="q" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="' + esc(ph || 'Блюдо, напиток или ингредиент') + '" value="' + esc(st.q) + '" aria-label="Поиск по всему меню"><button class="sclear" data-act="qclear" aria-label="Очистить"' + (st.q ? '' : ' hidden') + '>' + ic('xc') + '</button></div></div>';
   }
   function resultsHTML() {
     var sts = qStems(st.q), res = search(st.q);
@@ -1654,6 +1662,7 @@ html, body { overflow-x: clip; }
     return h;
   }
   function menuInner() {
+    if (st.tab === 'home') return fltRowHTML() + ((st.q.trim() || fltActive()) ? resultsHTML() : homeRestHTML());
     var e = topMenu();
     var body;
     if (st.q.trim() || (fltActive() && e.kind !== 'sec')) body = resultsHTML();
@@ -2177,13 +2186,22 @@ html, body { overflow-x: clip; }
     var k = knownIn(dishes), n = dishes.length, p = n ? Math.round(k / n * 100) : 0;
     return '<div class="gh"><span class="eyebrow">Учёба</span><span class="cnt">' + k + ' из ' + n + '</span></div><div class="hm-card learn"><div class="prog"><i style="width:' + p + '%"></i></div><span class="p-sub">Выучено ' + p + '% позиций меню</span><div class="btns two"><button class="btn" data-act="go" data-v="cards">Карточки</button><button class="btn" data-act="go" data-v="quiz">Тест</button></div></div>';
   }
+  function homeRecentHTML() {
+    var rec = store.recent.map(function (id) { return byId[id]; }).filter(Boolean).slice(0, 8);
+    if (!rec.length) return '';
+    return '<div class="gh"><span class="eyebrow">Недавно смотрел</span></div><div class="hscroll rec" role="group" aria-label="Недавние позиции">' + rec.map(function (d) {
+      return '<button class="chip" data-act="open" data-v="' + esc(d.id) + '">' + esc(shortName(d.name)) + '</button>';
+    }).join('') + '</div>';
+  }
+  function homeRestHTML() {
+    var h = homeRecentHTML() + '<div class="hm">';
+    if (!store.me) h += whoHTML(); else h += homeHeroHTML() + homePayHTML();
+    return h + homeTeamHTML() + homeLearnHTML() + '</div>';
+  }
   function homeViewHTML() {
     var n = new Date(), nm = store.me || (tgUser && tgUser.first_name) || '';
     var h = '<h1 class="lt">' + (nm ? 'Привет, ' + esc(nm) : 'Привет') + '</h1><p class="lt-sub">' + cap(DOWFULL[(n.getDay() + 6) % 7]) + ', ' + n.getDate() + ' ' + MON[n.getMonth()] + '</p>';
-    h += '<div class="hm">';
-    if (!store.me) h += whoHTML(); else h += homeHeroHTML() + homePayHTML();
-    h += homeTeamHTML() + homeLearnHTML() + '</div>';
-    return h;
+    return h + searchBar('Найти блюдо или ингредиент', 'big') + '<div id="mres">' + menuInner() + '</div>';
   }
   function profileViewHTML() {
     var name = store.me || tgName() || 'Гость', pd = store.me ? payData(true) : null, k = knownIn(dishes);
@@ -2308,6 +2326,7 @@ html, body { overflow-x: clip; }
   function popMenu() {
     if (!st.menu.length) return;
     st.menu.pop();
+    if (!st.menu.length && st.from === 'home' && navNew()) { st.from = ''; st.tab = 'home'; st.anim = ''; render({ scroll: st.scrollTab.home || 0 }); return; }
     var e = topMenu();
     st.anim = '';
     render({ scroll: st.menu.length ? (e.sy || 0) : (st.homeSy || 0) });
@@ -2315,7 +2334,7 @@ html, body { overflow-x: clip; }
   function openDish(id) {
     store.recent = [id].concat(store.recent.filter(function (x) { return x !== id; })).slice(0, 10);
     save();
-    if (st.tab !== 'menu') { st.scrollTab[st.tab] = window.scrollY; st.tab = 'menu'; st.menu = [{ kind: 'dish', id: id }]; st.anim = 'push'; st.dp = 0; render({ scroll: 0 }); return; }
+    if (st.tab !== 'menu') { st.from = st.tab === 'home' ? 'home' : ''; st.scrollTab[st.tab] = window.scrollY; st.tab = 'menu'; st.menu = [{ kind: 'dish', id: id }]; st.anim = 'push'; st.dp = 0; render({ scroll: 0 }); return; }
     pushMenu({ kind: 'dish', id: id });
   }
   var secret = 0, secretT = 0;
@@ -2339,11 +2358,12 @@ html, body { overflow-x: clip; }
     if (t === 'study') t = inStudy(st.tab) ? st.tab : (st.study || 'menu');
     if (inStudy(t)) st.study = t;
     if (t === st.tab) {
+      st.from = '';
       if (t === 'menu' && st.menu.length) { st.menu = []; st.anim = ''; render({ scroll: 0 }); }
       else window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
-    st.scrollTab[st.tab] = window.scrollY;
+    st.scrollTab[st.tab] = window.scrollY; st.from = '';
     st.tab = t; st.anim = 'enter';
     render({ scroll: st.scrollTab[t] || 0 });
   }
