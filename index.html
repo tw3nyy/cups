@@ -1039,6 +1039,11 @@ html, body { overflow-x: clip; }
 .sbar::before { background: var(--fade-a); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
   -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 8px), transparent 100%); mask-image: linear-gradient(to bottom, #000 calc(100% - 8px), transparent 100%); }
 
+/* toast */
+.toast { position: fixed; left: 50%; bottom: calc(var(--tab-h) + var(--bottom-inset) + 24px); transform: translateX(-50%); z-index: 120; max-width: min(86vw, 360px); padding: 12px 18px; border-radius: 999px; font-size: 14.5px; font-weight: 600; text-align: center; color: var(--bg); background: var(--ink); box-shadow: 0 10px 30px rgba(0, 0, 0, .3); animation: toastin .25s cubic-bezier(.2, .8, .2, 1); transition: opacity .35s, transform .35s; pointer-events: none; }
+.toast.out { opacity: 0; transform: translateX(-50%) translateY(8px); }
+@keyframes toastin { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%); } }
+
 </style>
 
 
@@ -1066,7 +1071,7 @@ html, body { overflow-x: clip; }
   var inTG = !!(TG && TG.initData);
 
   /* ---------- state ---------- */
-  var store = { known: {}, fav: {}, recent: [], sec: 'all', cat: 'all', only: false, theme: 'auto', me: '', cl: false };
+  var store = { known: {}, fav: {}, recent: [], sec: 'all', cat: 'all', only: false, theme: 'auto', me: '', cl: false, sh: false };
   try {
     var raw = localStorage.getItem(KEY);
     var old = localStorage.getItem(OLDKEY);
@@ -1075,7 +1080,7 @@ html, body { overflow-x: clip; }
       store.known = s0.known || {};
       if (raw) {
         store.fav = s0.fav || {}; store.recent = Array.isArray(s0.recent) ? s0.recent : [];
-        store.sec = s0.sec || 'all'; store.cat = s0.cat || 'all'; store.only = !!s0.only; store.theme = s0.theme || 'auto'; store.t = s0.t || 0; store.me = typeof s0.me === 'string' ? s0.me : ''; store.cl = !!s0.cl;
+        store.sec = s0.sec || 'all'; store.cat = s0.cat || 'all'; store.only = !!s0.only; store.theme = s0.theme || 'auto'; store.t = s0.t || 0; store.me = typeof s0.me === 'string' ? s0.me : ''; store.cl = !!s0.cl; store.sh = !!s0.sh;
       }
     }
   } catch (e) {}
@@ -1119,6 +1124,9 @@ html, body { overflow-x: clip; }
   function cloudLoad() {
     if (!inTG || !TG.CloudStorage || !TG.CloudStorage.getItem) return;
     try {
+      TG.CloudStorage.getItem('ttk_sh', function (err, v) {
+        if (!err && (v === '1' || v === '0') && (v === '1') !== store.sh) { store.sh = v === '1'; try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} render({ scroll: window.scrollY }); }
+      });
       TG.CloudStorage.getItem('ttk2', function (err, val) {
         if (err || !val) { cloudSave(); return; }
         try {
@@ -1905,7 +1913,7 @@ html, body { overflow-x: clip; }
     else if (st.tab === 'quiz') {
       n.title = st.quiz && !st.quiz.done ? st.quiz.title : 'Тесты';
       if (st.quiz) { n.close = true; n.always = !st.quiz.done; }
-    } else if (st.tab === 'shifts') n.title = 'Смены';
+    } else if (st.tab === 'shifts' && store.sh) n.title = 'Смены';
     else n.title = 'Ещё';
     return n;
   }
@@ -1916,8 +1924,10 @@ html, body { overflow-x: clip; }
     return '<header class="nav' + (n.always ? ' always' : '') + '"><div class="nav-in"><div class="nav-l">' + left + '</div><div class="nav-title">' + esc(n.title) + '</div><div class="nav-r">' + n.right + '</div></div></header>';
   }
   function tabbarHTML() {
-    var tabs = [['menu', 'Меню'], ['cards', 'Карточки'], ['quiz', 'Тесты'], ['shifts', 'Смены'], ['more', 'Ещё']];
-    return '<nav class="tabbar" aria-label="Разделы"><div class="tabbar-in">' + tabs.map(function (t) {
+    var tabs = [['menu', 'Меню'], ['cards', 'Карточки'], ['quiz', 'Тесты']];
+    if (store.sh) tabs.push(['shifts', 'Смены']);
+    tabs.push(['more', 'Ещё']);
+    return '<nav class="tabbar" aria-label="Разделы"><div class="tabbar-in" style="grid-template-columns:repeat(' + tabs.length + ',1fr)">' + tabs.map(function (t) {
       return '<button class="tab" data-act="tab" data-v="' + t[0] + '"' + (st.tab === t[0] ? ' aria-current="page"' : '') + '>' + ic(t[0]) + '<span>' + t[1] + '</span></button>';
     }).join('') + '</div></nav>';
   }
@@ -1925,7 +1935,7 @@ html, body { overflow-x: clip; }
     if (st.tab === 'menu') return menuViewHTML();
     if (st.tab === 'cards') return cardsViewHTML();
     if (st.tab === 'quiz') return quizViewHTML();
-    if (st.tab === 'shifts') return shiftsViewHTML();
+    if (st.tab === 'shifts' && store.sh) return shiftsViewHTML();
     return moreViewHTML();
   }
 
@@ -1979,6 +1989,21 @@ html, body { overflow-x: clip; }
     save();
     if (st.tab !== 'menu') { st.scrollTab[st.tab] = window.scrollY; st.tab = 'menu'; st.menu = [{ kind: 'dish', id: id }]; st.anim = 'push'; st.dp = 0; render({ scroll: 0 }); return; }
     pushMenu({ kind: 'dish', id: id });
+  }
+  var secret = 0, secretT = 0;
+  function toast(msg) {
+    var el = document.createElement('div'); el.className = 'toast'; el.setAttribute('role', 'status'); el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(function () { el.classList.add('out'); }, 1700);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 2100);
+  }
+  function toggleShifts() {
+    store.sh = !store.sh;
+    if (!store.sh && st.tab === 'shifts') { st.tab = 'menu'; st.menu = []; }
+    save(); buzz('ok');
+    if (inTG && TG.CloudStorage && TG.CloudStorage.setItem) { try { TG.CloudStorage.setItem('ttk_sh', store.sh ? '1' : '0', function () {}); } catch (e) {} }
+    render({ scroll: window.scrollY });
+    toast(store.sh ? 'Вкладка «Смены» включена' : 'Вкладка «Смены» скрыта');
   }
   function switchTab(t) {
     if (t === st.tab) {
@@ -2046,7 +2071,13 @@ html, body { overflow-x: clip; }
     switch (act) {
       case 'flt': st.flt[v] = !st.flt[v]; document.getElementById('mres').innerHTML = menuInner(); return;
       case 'fltclear': st.flt = {}; document.getElementById('mres').innerHTML = menuInner(); return;
-      case 'tab': switchTab(v); return;
+      case 'tab':
+        if (v === 'more') {
+          var tn = Date.now();
+          secret = (tn - secretT < 1500) ? secret + 1 : 1; secretT = tn;
+          if (secret >= 5) { secret = 0; toggleShifts(); return; }
+        } else secret = 0;
+        switchTab(v); return;
       case 'back': popMenu(); return;
       case 'sec': pushMenu({ kind: 'sec', sec: v, cat: 'all' }); return;
       case 'scat': topMenu().cat = v; document.getElementById('mres').innerHTML = menuInner(); return;
