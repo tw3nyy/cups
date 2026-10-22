@@ -1313,6 +1313,36 @@ color-scheme: dark;
 .rq-msg { max-width: 82%; white-space: pre-line; padding: 12px 16px; border-radius: 20px 20px 6px 20px; background: var(--accent-grad, var(--accent)); color: #fff; font-size: 17px; line-height: 1.45; font-weight: 500; font-variant-numeric: tabular-nums; }
 .pf-s { display: block; font-size: 13px; color: var(--muted); margin-top: 1px; }
 
+/* ---- Пожелания v2: one-tap options + wheel sheet ---- */
+.rq-days { margin-top: 14px; }
+.rq-day { padding: 12px 14px 14px; }
+.rq-day + .rq-day { border-top: .5px solid var(--line); }
+.rq-h { display: flex; align-items: baseline; gap: 8px; padding: 0 2px 10px; }
+.rq-h b { font-size: 17px; font-weight: 650; }
+.rq-h small { font-size: 13px; color: var(--muted); }
+.rq-r { margin-left: auto; font-size: 14.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.rq-r.on { color: var(--accent); font-weight: 650; }
+.rq-opts { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.rq-o { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-height: 52px; padding: 4px 2px; border-radius: 14px; background: var(--fill); color: var(--ink); font-size: 14px; font-weight: 600; line-height: 1.15; transition: background .15s, color .15s, transform .12s; }
+.rq-o small { font-size: 11.5px; font-weight: 500; opacity: .62; font-variant-numeric: tabular-nums; }
+.rq-o:active { transform: scale(.95); }
+.rq-o[aria-checked="true"] { background: var(--accent-grad, var(--accent)); color: #fff; box-shadow: var(--accent-glow, none); }
+.rq-o.no[aria-checked="true"] { background: var(--ink); color: var(--bg); box-shadow: none; }
+.rq-o[aria-checked="true"] small { opacity: .85; }
+.rq-sheet h2 { margin-bottom: 2px; }
+.rq-live { text-align: center; color: var(--muted); font-size: 15px; font-variant-numeric: tabular-nums; margin-bottom: 8px; }
+.wheels { position: relative; display: flex; gap: 12px; justify-content: center; margin: 6px 0 4px; }
+.wheels::before { content: ""; position: absolute; left: 0; right: 0; top: 88px; height: 44px; border-radius: 14px; background: var(--fill); z-index: 0; pointer-events: none; }
+.wh-col { position: relative; z-index: 1; flex: 1; max-width: 170px; display: flex; flex-direction: column; align-items: center; }
+.wh-col > span { position: absolute; left: 6px; top: 98px; font-size: 15px; color: var(--muted); z-index: 2; pointer-events: none; }
+.wheel { width: 100%; height: 220px; overflow-y: auto; scroll-snap-type: y mandatory; scrollbar-width: none; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 32%, #000 68%, transparent); mask-image: linear-gradient(to bottom, transparent, #000 32%, #000 68%, transparent); outline: none; }
+.wheel::-webkit-scrollbar { display: none; }
+.wh-pad { height: 88px; }
+.wh-i { height: 44px; display: flex; align-items: center; justify-content: center; scroll-snap-align: center; scroll-snap-stop: always; font-size: 21px; color: var(--muted); font-variant-numeric: tabular-nums; transition: color .12s, font-weight .12s; }
+.wh-i.on { color: var(--ink); font-weight: 650; }
+.rq-o.no[aria-checked="true"] { background: color-mix(in srgb, var(--ink) 11%, transparent); color: var(--ink-2); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ink) 22%, transparent); }
+
 </style>
 
 
@@ -1417,7 +1447,7 @@ color-scheme: dark;
   var st = {
     tab: 'menu', menu: [], q: '', sf: 'all', dp: 0, flt: {},
     cardMode: 'n2c', cards: null, quiz: null, sheet: false,
-    scrollTab: {}, rqd: -1, anim: '', resetArm: false, sd: null, sv: 'day', wi: null, pk: null, study: 'menu', pm: false, from: '', sa: false
+    scrollTab: {}, rqs: -1, rqt: null, anim: '', resetArm: false, sd: null, sv: 'day', wi: null, pk: null, study: 'menu', pm: false, from: '', sa: false
   };
   var tgUser = (inTG && TG.initDataUnsafe && TG.initDataUnsafe.user) || null;
   /* staff mode (store.sh) gets the new 4-tab navigation unless the user switched back to the classic one */
@@ -2221,12 +2251,6 @@ color-scheme: dark;
     for (var i = 0; i < 7; i++) if (d[i]) out.push(rqLine(i, d[i]));
     return out.join('\n');
   }
-  var RQP = [['off', 'Выходной'], ['420-1200', 'Фулл 7–20'], ['420-900', '7–15'], ['900-1200', '15–20'], ['840-1200', '14–20']];
-  function rqSel(i, kind, val) {
-    var lo = kind === 's' ? 360 : 420, hi = kind === 's' ? 1230 : 1260, o = '';
-    for (var m = lo; m <= hi; m += 30) o += '<option value="' + m + '"' + (m === val ? ' selected' : '') + '>' + rqT(m).replace(/^(\d+)$/, '$1:00') + '</option>';
-    return '<select class="rq-sel" data-rq="' + kind + '" data-d="' + i + '" aria-label="' + (kind === 's' ? 'Начало' : 'Конец') + '">' + o + '</select>';
-  }
   function rqRange() {
     var a = rqWeek().d, b = new Date(a.getFullYear(), a.getMonth(), a.getDate() + 6);
     return a.getMonth() === b.getMonth() ? a.getDate() + '–' + b.getDate() + ' ' + MONS[b.getMonth()] : a.getDate() + ' ' + MONS[a.getMonth()] + ' – ' + b.getDate() + ' ' + MONS[b.getMonth()];
@@ -2235,28 +2259,71 @@ color-scheme: dark;
     var n = Object.keys(rqData()).length;
     return '<div class="pf-rows rq-entry"><button class="pf-row" data-act="rqopen"><span class="pf-ic">' + ic('clock') + '</span><span class="pf-t">Пожелания<small class="pf-s">' + rqRange() + '</small></span><span class="pf-v">' + (n ? n + ' ' + (n === 1 ? 'день' : n < 5 ? 'дня' : 'дней') : 'написать') + '</span>' + ic('chevR') + '</button></div>';
   }
+  /* one tap per day: Не могу / Фулл / Утро / Вечер, or Своё → wheel sheet */
+  var RQP = [['off', 'Не могу', ''], ['420-1200', 'Фулл', '7–20'], ['420-900', 'Утро', '7–15'], ['900-1200', 'Вечер', '15–20']];
+  function rqHM(m) { return Math.floor(m / 60) + ':' + (m % 60 < 10 ? '0' : '') + (m % 60); }
+  function rqShort(r) { return rqT(r[0]) + '–' + rqT(r[1]); }
+  function rqIsPreset(r) { return RQP.some(function (p) { return r && p[0] === r[0] + '-' + r[1]; }); }
+  function rqOn() { return st.rqs >= 0 && st.tab === 'shifts' && st.sv === 'req'; }
   function reqViewHTML() {
-    var w = rqWeek(), d = rqData(), a = w.d, b = new Date(a.getFullYear(), a.getMonth(), a.getDate() + 6);
-    var rng = a.getMonth() === b.getMonth() ? a.getDate() + '–' + b.getDate() + ' ' + MONS[b.getMonth()] : a.getDate() + ' ' + MONS[a.getMonth()] + ' – ' + b.getDate() + ' ' + MONS[b.getMonth()];
-    var h = '<div class="group rq-days">';
+    var w = rqWeek(), d = rqData(), a = w.d, h = '<div class="group rq-days">';
     for (var i = 0; i < 7; i++) {
-      var dt = new Date(a.getFullYear(), a.getMonth(), a.getDate() + i), r = d[i], open = st.rqd === i;
-      h += '<button class="rq-row" data-act="rqd" data-v="' + i + '" aria-expanded="' + open + '"><span class="rq-d"><b>' + cap(DOWSHORT[i]) + '</b><small>' + dt.getDate() + ' ' + MONS[dt.getMonth()] + '</small></span><span class="rq-v' + (r ? ' on' : '') + '">' + (r ? rqT(r[0]).replace(/^(\d+)$/, '$1:00') + '–' + rqT(r[1]).replace(/^(\d+)$/, '$1:00') + (r[0] === 420 && r[1] === 1200 ? ' · фулл' : '') : 'выходной') + '</span>' + ic('chevR', open ? 'rq-open' : '') + '</button>';
-      if (open) {
-        h += '<div class="rq-ed"><div class="hscroll rq-pr" role="group" aria-label="Время">' + RQP.map(function (p) {
-          var on = p[0] === 'off' ? !r : (r && r[0] + '-' + r[1] === p[0]);
-          return '<button class="chip tag" data-act="rqp" data-v="' + i + '|' + p[0] + '" aria-pressed="' + !!on + '">' + p[1] + '</button>';
-        }).join('') + '</div>';
-        if (r) h += '<div class="rq-sels"><span>с</span>' + rqSel(i, 's', r[0]) + '<span>до</span>' + rqSel(i, 'e', r[1]) + '</div>';
-        h += '</div>';
-      }
+      var dt = new Date(a.getFullYear(), a.getMonth(), a.getDate() + i), r = d[i], custom = r && !rqIsPreset(r);
+      h += '<div class="rq-day"><div class="rq-h"><b>' + cap(DOWSHORT[i]) + '</b><small>' + dt.getDate() + ' ' + MONS[dt.getMonth()] + '</small><span class="rq-r' + (r ? ' on' : '') + '">' + (r ? rqHM(r[0]) + '–' + rqHM(r[1]) + (r[0] === 420 && r[1] === 1200 ? ' · фулл' : '') : 'не могу') + '</span></div>';
+      h += '<div class="rq-opts" role="radiogroup" aria-label="' + cap(DOWFULL[i]) + '">' + RQP.map(function (p) {
+        var on = p[0] === 'off' ? !r : (r && r[0] + '-' + r[1] === p[0]);
+        return '<button class="rq-o' + (p[0] === 'off' ? ' no' : '') + '" role="radio" data-act="rqp" data-v="' + i + '|' + p[0] + '" aria-checked="' + !!on + '"><span>' + p[1] + '</span>' + (p[2] ? '<small>' + p[2] + '</small>' : '') + '</button>';
+      }).join('') + '<button class="rq-o" role="radio" data-act="rqc" data-v="' + i + '" aria-checked="' + !!custom + '"><span>Своё</span><small>' + (custom ? rqShort(r) : '…') + '</small></button></div></div>';
     }
     h += '</div>';
     var txt = rqText();
     h += '<div class="gh"><span class="eyebrow">Сообщение в чат</span></div><div class="rq-pv">' + (txt ? '<div class="rq-msg">' + esc(txt) + '</div>' : '<p class="hint">Выбери дни выше, и тут появится сообщение.</p>') + '</div>';
     h += '<div class="btns"><button class="btn primary" data-act="rqcp"' + (txt ? '' : ' disabled') + '>' + ic('check') + 'Скопировать для чата</button>' + (txt ? '<button class="btn plain" data-act="rqclr">Сбросить</button>' : '') + '</div>';
-    return { range: rng, html: h };
+    return { range: rqRange(), html: h };
   }
+  function rqWheel(kind, lo, hi, val) {
+    var o = '';
+    for (var m = lo; m <= hi; m += 30) o += '<div class="wh-i' + (m === val ? ' on' : '') + '" data-m="' + m + '">' + rqHM(m) + '</div>';
+    return '<div class="wheel" data-w="' + kind + '" tabindex="0" aria-label="' + (kind === 's' ? 'Начало' : 'Конец') + '"><div class="wh-pad"></div>' + o + '<div class="wh-pad"></div></div>';
+  }
+  function rqLive() { var t = st.rqt; return 'с ' + rqHM(t.s) + ' до ' + rqHM(t.e) + ' · ' + fmtH((t.e - t.s) / 60); }
+  function rqSheetHTML() {
+    var t = st.rqt, a = rqWeek().d, dt = new Date(a.getFullYear(), a.getMonth(), a.getDate() + st.rqs);
+    return '<div class="scrim' + (st.sheetNew ? ' new' : '') + '" data-act="rqsx"></div><div class="sheet rq-sheet' + (st.sheetNew ? ' new' : '') + '" id="sheet" role="dialog" aria-modal="true" aria-label="Своё время"><div class="sheet-in"><div class="grab"></div>' +
+      '<h2>' + cap(DOWFULL[st.rqs]) + ', ' + dt.getDate() + ' ' + MON[dt.getMonth()] + '</h2><p class="rq-live" id="rqlive">' + rqLive() + '</p>' +
+      '<div class="wheels"><div class="wh-col"><span>с</span>' + rqWheel('s', 360, 1230, t.s) + '</div><div class="wh-col"><span>до</span>' + rqWheel('e', 420, 1260, t.e) + '</div></div>' +
+      '<div class="btns"><button class="btn primary" data-act="rqsd">Готово</button></div></div></div>';
+  }
+  function rqSheetInit() {
+    Array.prototype.forEach.call(root.querySelectorAll('.wheel'), function (w) {
+      var kind = w.getAttribute('data-w'), lo = kind === 's' ? 360 : 420;
+      w.scrollTop = ((st.rqt[kind] - lo) / 30) * 44;
+    });
+  }
+  var rqTimer = 0;
+  function rqWheelScroll(w) {
+    var kind = w.getAttribute('data-w'), lo = kind === 's' ? 360 : 420, hi = kind === 's' ? 1230 : 1260;
+    var idx = Math.max(0, Math.min(Math.round(w.scrollTop / 44), (hi - lo) / 30)), v = lo + idx * 30, t = st.rqt;
+    if (t[kind] === v) return;
+    t[kind] = v; buzz('sel');
+    Array.prototype.forEach.call(w.querySelectorAll('.wh-i'), function (e) { e.classList.toggle('on', +e.getAttribute('data-m') === v); });
+    var other = kind === 's' ? 'e' : 's', fix = false;
+    if (kind === 's' && t.e <= t.s) { t.e = Math.min(t.s + 30, 1260); fix = true; }
+    if (kind === 'e' && t.s >= t.e) { t.s = Math.max(t.e - 30, 360); fix = true; }
+    if (fix) {
+      var ow = root.querySelector('.wheel[data-w="' + other + '"]');
+      if (ow) {
+        var olo = other === 's' ? 360 : 420;
+        ow.scrollTo ? ow.scrollTo({ top: ((t[other] - olo) / 30) * 44, behavior: 'smooth' }) : (ow.scrollTop = ((t[other] - olo) / 30) * 44);
+        Array.prototype.forEach.call(ow.querySelectorAll('.wh-i'), function (e) { e.classList.toggle('on', +e.getAttribute('data-m') === t[other]); });
+      }
+    }
+    var lv = document.getElementById('rqlive'); if (lv) lv.textContent = rqLive();
+  }
+  root.addEventListener('scroll', function (ev) {
+    var w = ev.target; if (!w || !w.classList || !w.classList.contains('wheel')) return;
+    rqWheelScroll(w);
+  }, true);
   function shiftsViewHTML() {
     var info = schedInfo();
     if (st.sv === 'req') { var rq0 = reqViewHTML(); return '<h1 class="lt">Пожелания</h1><p class="lt-sub">' + rq0.range + '</p>' + rq0.html + '<p class="small">Это просто текст для чата: он никуда не отправляется, пока ты сам его не вставишь.</p>'; }
@@ -2493,11 +2560,12 @@ color-scheme: dark;
     var oldLens = root.querySelector('.lens');
     if (oldLens) { try { lensX = new DOMMatrix(getComputedStyle(oldLens).transform).m41; } catch (e) {} }  /* continue from where the glide is right now */
     var ns = navState();
-    root.innerHTML = '<div class="bgfx" aria-hidden="true"></div>' + navHTML() + '<main class="view wrap' + (ns.back || ns.close ? '' : ' flat') + (anim ? ' ' + anim : '') + '">' + bodyHTML() + '</main>' + tabbarHTML() + (saOn() ? sfbHTML() : '') + (st.sheet ? sheetHTML() : '');
+    root.innerHTML = '<div class="bgfx" aria-hidden="true"></div>' + navHTML() + '<main class="view wrap' + (ns.back || ns.close ? '' : ' flat') + (anim ? ' ' + anim : '') + '">' + bodyHTML() + '</main>' + tabbarHTML() + (saOn() ? sfbHTML() : '') + (st.sheet ? sheetHTML() : '') + (rqOn() ? rqSheetHTML() : '');
     lensSync(true);
     root.classList.toggle('sa', saOn()); if (saOn()) { sfbLast = -1; sfbStart(); }
     st.sheetNew = false;
-    document.body.style.overflow = st.sheet ? 'hidden' : '';
+    if (rqOn()) rqSheetInit();
+    document.body.style.overflow = (st.sheet || rqOn()) ? 'hidden' : '';
     var sh = document.getElementById('sheet'); if (sh) sh.scrollTop = sheetTop;
     var newMe = root.querySelector('.me-row');
     if (newMe) {
@@ -2551,6 +2619,7 @@ color-scheme: dark;
   }
   function goBack() {
     if (st.sheet) { st.sheet = false; render({ scroll: window.scrollY }); }
+    else if (rqOn()) { st.rqs = -1; render({ scroll: window.scrollY }); }
     else if (saOn()) closeSearch();
     else if (st.tab === 'shifts' && st.sv === 'req') { st.sv = st.svPrev && st.svPrev !== 'req' ? st.svPrev : 'day'; render({ scroll: 0 }); }
     else popMenu();
@@ -2684,7 +2753,7 @@ color-scheme: dark;
     if (!t || t.disabled) return;
     var act = t.getAttribute('data-act'), v = t.getAttribute('data-v');
     var c = st.cards, q = st.quiz;
-    var HK = { rqd: 'sel', rqp: 'sel', rqcp: 'light', rqclr: 'med', tab: 'sel', open: 'light', sec: 'light', scat: 'sel', sf: 'sel', flt: 'sel', setsec: 'sel', setcat: 'sel', only: 'sel', cmode: 'sel', bchip: 'sel', star: 'med', sheet: 'light', qstart: 'med', qnext: 'light', theme: 'sel', go: 'sel', gohours: 'light', pickme: 'sel', navold: 'med', navnew: 'med', sday: 'sel', sview: 'sel', swk: 'sel', spr: 'sel', sex: 'sel', scp: 'light', sme: 'sel', sclose: 'light', rclear: 'med', back: 'light', ph: 'sel', openq: 'light' };
+    var HK = { rqc: 'light', rqsd: 'med', rqsx: 'light', rqp: 'sel', rqcp: 'light', rqclr: 'med', tab: 'sel', open: 'light', sec: 'light', scat: 'sel', sf: 'sel', flt: 'sel', setsec: 'sel', setcat: 'sel', only: 'sel', cmode: 'sel', bchip: 'sel', star: 'med', sheet: 'light', qstart: 'med', qnext: 'light', theme: 'sel', go: 'sel', gohours: 'light', pickme: 'sel', navold: 'med', navnew: 'med', sday: 'sel', sview: 'sel', swk: 'sel', spr: 'sel', sex: 'sel', scp: 'light', sme: 'sel', sclose: 'light', rclear: 'med', back: 'light', ph: 'sel', openq: 'light' };
     if (HK[act]) buzz(HK[act]);
     switch (act) {
       case 'flt': st.flt[v] = !st.flt[v]; document.getElementById('mres').innerHTML = menuInner(); syncSfb(); return;
@@ -2694,7 +2763,7 @@ color-scheme: dark;
       case 'tab': tabAct(v); return;
       case 'back': goBack(); return;
       case 'rqopen':
-        st.svPrev = st.sv === 'req' ? 'day' : st.sv; st.sv = 'req'; st.rqd = -1;
+        st.svPrev = st.sv === 'req' ? 'day' : st.sv; st.sv = 'req'; 
         if (st.tab !== 'shifts') { st.scrollTab.shifts = 0; switchTab('shifts'); } else render({ scroll: 0 });
         return;
       case 'go': switchTab(v); return;
@@ -2750,14 +2819,16 @@ color-scheme: dark;
       case 'swk': { var inf = schedInfo(); st.wi = Math.min(Math.max(inf.i + (+v), 0), inf.n - 1); st.sd = null; render({ scroll: window.scrollY }); return; }
       case 'spr': st.pk = v; render({ scroll: window.scrollY, fit: true }); return;
       case 'sex': { if (store.ex[v]) delete store.ex[v]; else store.ex[v] = true; save(); render({ scroll: window.scrollY }); return; }
-      case 'rqd': st.rqd = st.rqd === +v ? -1 : +v; render({ scroll: window.scrollY }); return;
       case 'rqp': {
         var pp = v.split('|'), ri = +pp[0], rd = rqData();
         if (pp[1] === 'off') delete rd[ri]; else { var tt = pp[1].split('-'); rd[ri] = [+tt[0], +tt[1]]; }
         save(); render({ scroll: window.scrollY }); return;
       }
+      case 'rqc': { var cr = rqData()[+v]; st.rqs = +v; st.rqt = { s: cr ? cr[0] : 840, e: cr ? cr[1] : 1200 }; st.sheetNew = true; render({ scroll: window.scrollY }); return; }
+      case 'rqsx': st.rqs = -1; render({ scroll: window.scrollY }); return;
+      case 'rqsd': { var sd0 = st.rqt, ri2 = st.rqs; rqData()[ri2] = [sd0.s, sd0.e]; st.rqs = -1; save(); render({ scroll: window.scrollY }); return; }
       case 'rqcp': { var rt = rqText(); if (rt) copyText(rt); return; }
-      case 'rqclr': store.rq = { k: rqWeek().key, d: {} }; st.rqd = -1; save(); render({ scroll: window.scrollY }); return;
+      case 'rqclr': store.rq = { k: rqWeek().key, d: {} };  save(); render({ scroll: window.scrollY }); return;
       case 'scp': { var pd = payData(); if (pd) copyText(pd.text); return; }
       case 'sview': st.sv = v; render({ scroll: window.scrollY, fit: v === 'hours' }); return;
       case 'sme': {
@@ -2781,13 +2852,6 @@ color-scheme: dark;
       var m = document.getElementById('mres'); if (m) m.innerHTML = menuInner();
       var cl = root.querySelector('.sclear'); if (cl) cl.hidden = !st.q;
     }
-  });
-  root.addEventListener('change', function (ev) {
-    var t = ev.target; if (!t || !t.getAttribute || !t.getAttribute('data-rq')) return;
-    var i = +t.getAttribute('data-d'), r = rqData()[i]; if (!r) return;
-    var val = +t.value;
-    if (t.getAttribute('data-rq') === 's') { r[0] = val; if (r[1] <= val) r[1] = Math.min(val + 30, 1260); } else { r[1] = val; if (r[0] >= val) r[0] = Math.max(val - 30, 360); }
-    save(); render({ scroll: window.scrollY });
   });
   root.addEventListener('focusin', function (ev) {
     if (!ev.target || ev.target.id !== 'q') return;
@@ -2819,6 +2883,7 @@ color-scheme: dark;
   document.addEventListener('keydown', function (ev) {
     var tag = (ev.target && ev.target.tagName) || '';
     if (ev.key === 'Escape' && st.sheet) { st.sheet = false; render({ scroll: window.scrollY }); return; }
+    if (ev.key === 'Escape' && rqOn()) { st.rqs = -1; render({ scroll: window.scrollY }); return; }
     if (tag === 'INPUT' || tag === 'TEXTAREA' || st.tab !== 'cards' || !st.cards || st.sheet) return;
     var c = st.cards;
     if (c.idx >= c.deck.length) return;
