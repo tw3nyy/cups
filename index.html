@@ -1291,6 +1291,7 @@ color-scheme: dark;
 .tabbar-in.drag .lens { transition: scale .22s ease-out, box-shadow .2s ease; scale: 1.08 1.1; }
 .tab.hot { transform: none; }
 .tab { transition: color .18s ease; }
+.study-seg { margin: 16px 0 14px; }
 
 </style>
 
@@ -1800,7 +1801,8 @@ color-scheme: dark;
   }
   function studySegHTML() {
     if (!navNew()) return '';
-    return '<div class="seg study-seg" role="group" aria-label="Раздел учёбы">' + [['menu', 'Меню'], ['cards', 'Карточки'], ['quiz', 'Тесты']].map(function (t) {
+    var sub = { menu: 'Состав, граммовка и фото', cards: 'Свайп вправо: знаю. Влево: ещё раз.', quiz: 'Раунд из 10 вопросов' }[st.tab] || '';
+    return '<h1 class="lt">Учёба</h1><p class="lt-sub">' + sub + '</p><div class="seg study-seg" role="group" aria-label="Раздел учёбы">' + [['menu', 'Меню'], ['cards', 'Карточки'], ['quiz', 'Тесты']].map(function (t) {
       return '<button data-act="tab" data-v="' + t[0] + '" aria-pressed="' + (st.tab === t[0]) + '">' + t[1] + '</button>';
     }).join('') + '</div>';
   }
@@ -1835,7 +1837,7 @@ color-scheme: dark;
   function cardsViewHTML() {
     if (!st.cards) buildDeck();
     var c = st.cards, modes = [['n2c', 'По названию'], ['c2n', 'По составу'], ['p2n', 'По фото']];
-    var h = studySegHTML() + '<h1 class="lt">Карточки</h1><p class="lt-sub">Свайп вправо: знаю. Влево: ещё раз.</p>' + scopeBtn() +
+    var h = studySegHTML() + (navNew() ? '' : '<h1 class="lt">Карточки</h1><p class="lt-sub">Свайп вправо: знаю. Влево: ещё раз.</p>') + scopeBtn() +
       '<div class="seg" role="group" aria-label="Режим">' + modes.map(function (m) { return '<button data-act="cmode" data-v="' + m[0] + '" aria-pressed="' + (st.cardMode === m[0]) + '">' + m[1] + '</button>'; }).join('') + '</div>';
     if (!c.deck.length) {
       return h + '<div class="empty" style="margin-top:14px"><b>В этой колоде пусто</b>' + (store.only ? 'Всё из выбранного уже отмечено выученным.' : st.cardMode === 'p2n' ? 'Для режима с фото нужны позиции с фотографиями, в этом разделе их нет.' : 'Для этого режима нужны позиции хотя бы с двумя продуктами.') +
@@ -1949,7 +1951,7 @@ color-scheme: dark;
   function quizViewHTML() {
     var q = st.quiz;
     if (!q) {
-      var h = studySegHTML() + '<h1 class="lt">Тесты</h1><p class="lt-sub">Раунд из 10 вопросов. Ошибка снимает отметку «выучено».</p>' + scopeBtn() + '<div class="gh"><span class="eyebrow">Выбери тест</span></div><div class="group">';
+      var h = studySegHTML() + (navNew() ? '' : '<h1 class="lt">Тесты</h1><p class="lt-sub">Раунд из 10 вопросов. Ошибка снимает отметку «выучено».</p>') + scopeBtn() + '<div class="gh"><span class="eyebrow">Выбери тест</span></div><div class="group">';
       QTYPES.forEach(function (t) {
         var n = eligible(t).length;
         h += '<button class="qrow" data-act="qstart" data-v="' + t.id + '"' + (n ? '' : ' disabled') + '><span class="thumb">' + ic(t.ic) + '</span><span class="ctx"><b>' + t.title + '</b><small>' + (n ? t.desc : 'Нет подходящих позиций в выбранном') + '</small></span><span class="trail">' + (n ? '<span class="cnt">' + n + '</span>' : '') + ic('chevR') + '</span></button>';
@@ -2375,11 +2377,10 @@ color-scheme: dark;
       else if (e.kind === 'dish') {
         var d = byId[e.id]; n.back = 'Назад'; n.title = d.name;
         n.right = '<button class="nbtn star' + (store.fav[d.id] ? ' on' : '') + '" data-act="star" data-v="' + esc(d.id) + '" aria-label="' + (store.fav[d.id] ? 'Убрать из избранного' : 'В избранное') + '" aria-pressed="' + !!store.fav[d.id] + '">' + ic('star') + '</button>';
-      } else if (navNew()) { n.title = 'Учёба'; n.always = true; }
-    } else if (st.tab === 'cards') { n.title = navNew() ? 'Учёба' : 'Карточки'; if (navNew()) n.always = true; }
+      } else if (navNew()) { n.title = 'Учёба'; }
+    } else if (st.tab === 'cards') { n.title = navNew() ? 'Учёба' : 'Карточки'; }
     else if (st.tab === 'quiz') {
       n.title = st.quiz && !st.quiz.done ? st.quiz.title : (navNew() && !st.quiz ? 'Учёба' : 'Тесты');
-      if (navNew() && !st.quiz) n.always = true;
       if (st.quiz) { n.close = true; n.always = !st.quiz.done; }
     } else if (st.tab === 'shifts' && store.sh) n.title = 'Смены';
     else if (st.tab === 'home' && navNew()) n.title = 'Главная';
