@@ -1293,6 +1293,25 @@ color-scheme: dark;
 .tab { transition: color .18s ease; }
 .study-seg { margin: 16px 0 14px; }
 
+/* ---- shifts: request for next week ---- */
+.seg button { padding-left: 4px; padding-right: 4px; }
+.rq-days { margin-top: 14px; }
+.rq-row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 58px; padding: 10px 16px; text-align: left; }
+.rq-row + .rq-row, .rq-ed + .rq-row { border-top: .5px solid var(--line); }
+.rq-d b { display: block; font-size: 17px; font-weight: 650; }
+.rq-d small { display: block; font-size: 13px; color: var(--muted); }
+.rq-v { margin-left: auto; font-size: 16px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.rq-v.on { color: var(--accent); font-weight: 650; }
+.rq-row .ic { width: 18px; height: 18px; color: var(--muted); transition: transform .2s ease; }
+.rq-row .ic.rq-open { transform: rotate(90deg); }
+.rq-ed { display: grid; gap: 12px; padding: 2px 16px 14px; }
+.rq-ed .hscroll { margin-left: -16px; margin-right: -16px; padding-left: 16px; padding-right: 16px; }
+.rq-sels { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 15px; }
+.rq-sel { -webkit-appearance: none; appearance: none; border: 0; border-radius: 999px; height: 42px; padding: 0 18px; background: var(--fill); color: var(--ink); font: inherit; font-size: 17px; font-weight: 650; font-variant-numeric: tabular-nums; text-align: center; }
+.rq-pv { display: flex; justify-content: flex-end; }
+.rq-pv .hint { width: 100%; }
+.rq-msg { max-width: 82%; white-space: pre-line; padding: 12px 16px; border-radius: 20px 20px 6px 20px; background: var(--accent-grad, var(--accent)); color: #fff; font-size: 17px; line-height: 1.45; font-weight: 500; font-variant-numeric: tabular-nums; }
+
 </style>
 
 
@@ -1320,7 +1339,7 @@ color-scheme: dark;
   var inTG = !!(TG && TG.initData);
 
   /* ---------- state ---------- */
-  var store = { known: {}, fav: {}, recent: [], sec: 'all', cat: 'all', only: false, theme: 'auto', me: '', cl: false, sh: false, ex: {}, nv: '' };
+  var store = { known: {}, fav: {}, recent: [], sec: 'all', cat: 'all', only: false, theme: 'auto', me: '', cl: false, sh: false, ex: {}, nv: '', rq: null };
   try {
     var raw = localStorage.getItem(KEY);
     var old = localStorage.getItem(OLDKEY);
@@ -1329,7 +1348,7 @@ color-scheme: dark;
       store.known = s0.known || {};
       if (raw) {
         store.fav = s0.fav || {}; store.recent = Array.isArray(s0.recent) ? s0.recent : [];
-        store.sec = s0.sec || 'all'; store.cat = s0.cat || 'all'; store.only = !!s0.only; store.theme = s0.theme || 'auto'; store.t = s0.t || 0; store.me = typeof s0.me === 'string' ? s0.me : ''; store.cl = !!s0.cl; store.sh = !!s0.sh; store.ex = (s0.ex && typeof s0.ex === 'object') ? s0.ex : {}; store.nv = s0.nv === 'old' ? 'old' : '';
+        store.sec = s0.sec || 'all'; store.cat = s0.cat || 'all'; store.only = !!s0.only; store.theme = s0.theme || 'auto'; store.t = s0.t || 0; store.me = typeof s0.me === 'string' ? s0.me : ''; store.cl = !!s0.cl; store.sh = !!s0.sh; store.ex = (s0.ex && typeof s0.ex === 'object') ? s0.ex : {}; store.nv = s0.nv === 'old' ? 'old' : ''; store.rq = (s0.rq && typeof s0.rq === 'object' && s0.rq.d) ? s0.rq : null;
       }
     }
   } catch (e) {}
@@ -1397,7 +1416,7 @@ color-scheme: dark;
   var st = {
     tab: 'menu', menu: [], q: '', sf: 'all', dp: 0, flt: {},
     cardMode: 'n2c', cards: null, quiz: null, sheet: false,
-    scrollTab: {}, anim: '', resetArm: false, sd: null, sv: 'day', wi: null, pk: null, study: 'menu', pm: false, from: '', sa: false
+    scrollTab: {}, rqd: -1, anim: '', resetArm: false, sd: null, sv: 'day', wi: null, pk: null, study: 'menu', pm: false, from: '', sa: false
   };
   var tgUser = (inTG && TG.initDataUnsafe && TG.initDataUnsafe.user) || null;
   /* staff mode (store.sh) gets the new 4-tab navigation unless the user switched back to the classic one */
@@ -2187,22 +2206,68 @@ color-scheme: dark;
     try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(t).then(function () { toast('Скопировано'); }, fb); return; } } catch (e) {}
     fb();
   }
+  /* availability request for next week: pick times per day, copy as a chat message */
+  function rqWeek() {
+    var n = new Date(), d0 = new Date(n.getFullYear(), n.getMonth(), n.getDate()), dow = (d0.getDay() + 6) % 7;
+    var m = new Date(d0.getFullYear(), d0.getMonth(), d0.getDate() + 7 - dow);
+    return { d: m, key: m.getFullYear() + '-' + (m.getMonth() + 1) + '-' + m.getDate() };
+  }
+  function rqData() { var w = rqWeek(); if (!store.rq || store.rq.k !== w.key) store.rq = { k: w.key, d: {} }; return store.rq.d; }
+  function rqT(m) { var h = Math.floor(m / 60), mm = m % 60; return mm ? h + ':' + (mm < 10 ? '0' : '') + mm : String(h); }
+  function rqLine(i, r) { return DOWSHORT[i] + ' ' + rqT(r[0]) + '-' + rqT(r[1]) + (r[0] === 420 && r[1] === 1200 ? ' фулл' : ''); }
+  function rqText() {
+    var d = rqData(), out = [];
+    for (var i = 0; i < 7; i++) if (d[i]) out.push(rqLine(i, d[i]));
+    return out.join('\n');
+  }
+  var RQP = [['off', 'Выходной'], ['420-1200', 'Фулл 7–20'], ['420-900', '7–15'], ['900-1200', '15–20'], ['840-1200', '14–20']];
+  function rqSel(i, kind, val) {
+    var lo = kind === 's' ? 360 : 420, hi = kind === 's' ? 1230 : 1260, o = '';
+    for (var m = lo; m <= hi; m += 30) o += '<option value="' + m + '"' + (m === val ? ' selected' : '') + '>' + rqT(m).replace(/^(\d+)$/, '$1:00') + '</option>';
+    return '<select class="rq-sel" data-rq="' + kind + '" data-d="' + i + '" aria-label="' + (kind === 's' ? 'Начало' : 'Конец') + '">' + o + '</select>';
+  }
+  function reqViewHTML() {
+    var w = rqWeek(), d = rqData(), a = w.d, b = new Date(a.getFullYear(), a.getMonth(), a.getDate() + 6);
+    var rng = a.getMonth() === b.getMonth() ? a.getDate() + '–' + b.getDate() + ' ' + MONS[b.getMonth()] : a.getDate() + ' ' + MONS[a.getMonth()] + ' – ' + b.getDate() + ' ' + MONS[b.getMonth()];
+    var h = '<div class="group rq-days">';
+    for (var i = 0; i < 7; i++) {
+      var dt = new Date(a.getFullYear(), a.getMonth(), a.getDate() + i), r = d[i], open = st.rqd === i;
+      h += '<button class="rq-row" data-act="rqd" data-v="' + i + '" aria-expanded="' + open + '"><span class="rq-d"><b>' + cap(DOWSHORT[i]) + '</b><small>' + dt.getDate() + ' ' + MONS[dt.getMonth()] + '</small></span><span class="rq-v' + (r ? ' on' : '') + '">' + (r ? rqT(r[0]).replace(/^(\d+)$/, '$1:00') + '–' + rqT(r[1]).replace(/^(\d+)$/, '$1:00') + (r[0] === 420 && r[1] === 1200 ? ' · фулл' : '') : 'выходной') + '</span>' + ic('chevR', open ? 'rq-open' : '') + '</button>';
+      if (open) {
+        h += '<div class="rq-ed"><div class="hscroll rq-pr" role="group" aria-label="Время">' + RQP.map(function (p) {
+          var on = p[0] === 'off' ? !r : (r && r[0] + '-' + r[1] === p[0]);
+          return '<button class="chip tag" data-act="rqp" data-v="' + i + '|' + p[0] + '" aria-pressed="' + !!on + '">' + p[1] + '</button>';
+        }).join('') + '</div>';
+        if (r) h += '<div class="rq-sels"><span>с</span>' + rqSel(i, 's', r[0]) + '<span>до</span>' + rqSel(i, 'e', r[1]) + '</div>';
+        h += '</div>';
+      }
+    }
+    h += '</div>';
+    var txt = rqText();
+    h += '<div class="gh"><span class="eyebrow">Сообщение в чат</span></div><div class="rq-pv">' + (txt ? '<div class="rq-msg">' + esc(txt) + '</div>' : '<p class="hint">Выбери дни выше, и тут появится сообщение.</p>') + '</div>';
+    h += '<div class="btns"><button class="btn primary" data-act="rqcp"' + (txt ? '' : ' disabled') + '>' + ic('check') + 'Скопировать для чата</button>' + (txt ? '<button class="btn plain" data-act="rqclr">Сбросить</button>' : '') + '</div>';
+    return { range: rng, html: h };
+  }
   function shiftsViewHTML() {
     var info = schedInfo();
     var h = '<h1 class="lt">Смены</h1>';
     if (!info) return h + '<div class="empty"><b>Графика пока нет</b><span>Когда его добавят, он появится здесь.</span></div>';
     var w = info.w, today = info.today;
     var sd = st.sd != null ? Math.min(Math.max(st.sd, 0), 6) : (today >= 0 ? today : 0);
-    if (st.sv === 'hours') h += '<div class="wnav"><p class="lt-sub">Часы и зарплата по периодам</p></div>';
+    var rq = st.sv === 'req' ? reqViewHTML() : null;
+    if (rq) h += '<div class="wnav"><p class="lt-sub">Пожелания на ' + rq.range + '</p></div>';
+    else if (st.sv === 'hours') h += '<div class="wnav"><p class="lt-sub">Часы и зарплата по периодам</p></div>';
     else h += '<div class="wnav"><p class="lt-sub">Неделя ' + weekRange(w) + '</p><span class="wn-b"><button data-act="swk" data-v="-1" aria-label="Предыдущая неделя"' + (info.i === 0 ? ' disabled' : '') + '>' + ic('chevL') + '</button><button data-act="swk" data-v="1" aria-label="Следующая неделя"' + (info.i === info.n - 1 ? ' disabled' : '') + '>' + ic('chevR') + '</button></span></div>';
-    h += '<div class="seg" role="group" aria-label="Вид">' + [['day', 'День'], ['week', 'Неделя'], ['hours', 'Часы']].map(function (t) {
+    h += '<div class="seg" role="group" aria-label="Вид">' + [['day', 'День'], ['week', 'Неделя'], ['hours', 'Часы'], ['req', 'Заявка']].map(function (t) {
       return '<button data-act="sview" data-v="' + t[0] + '" aria-pressed="' + (st.sv === t[0]) + '">' + t[1] + '</button>';
     }).join('') + '</div>';
-    if (info.missing && st.sv !== 'hours') h += '<div class="note warn" style="margin-top:12px">' + ic('warn') + '<span>Графика на текущую неделю в приложении ещё нет, показана неделя ' + weekRange(w) + '.</span></div>';
-    if (!(navNew() && store.me)) h += meRowHTML(schedPeople());
-    if (st.sv === 'week') h += weekViewHTML(w, today);
+    if (info.missing && st.sv !== 'hours' && !rq) h += '<div class="note warn" style="margin-top:12px">' + ic('warn') + '<span>Графика на текущую неделю в приложении ещё нет, показана неделя ' + weekRange(w) + '.</span></div>';
+    if (!(navNew() && store.me) && !rq) h += meRowHTML(schedPeople());
+    if (rq) h += rq.html;
+    else if (st.sv === 'week') h += weekViewHTML(w, today);
     else if (st.sv === 'hours') h += payViewHTML();
     else h += dayViewHTML(w, sd, today);
+    if (rq) return h + '<p class="small">Это просто текст для чата: он никуда не отправляется, пока ты сам его не вставишь.</p>';
     h += '<p class="small">График из рабочего чата. Если что-то поменяли, ориентируйся на чат.' + (navNew() && store.me ? ' Это не ты? Имя меняется в профиле.' : '') + '</p>';
     return h;
   }
@@ -2605,7 +2670,7 @@ color-scheme: dark;
     if (!t || t.disabled) return;
     var act = t.getAttribute('data-act'), v = t.getAttribute('data-v');
     var c = st.cards, q = st.quiz;
-    var HK = { tab: 'sel', open: 'light', sec: 'light', scat: 'sel', sf: 'sel', flt: 'sel', setsec: 'sel', setcat: 'sel', only: 'sel', cmode: 'sel', bchip: 'sel', star: 'med', sheet: 'light', qstart: 'med', qnext: 'light', theme: 'sel', go: 'sel', gohours: 'light', pickme: 'sel', navold: 'med', navnew: 'med', sday: 'sel', sview: 'sel', swk: 'sel', spr: 'sel', sex: 'sel', scp: 'light', sme: 'sel', sclose: 'light', rclear: 'med', back: 'light', ph: 'sel', openq: 'light' };
+    var HK = { rqd: 'sel', rqp: 'sel', rqcp: 'light', rqclr: 'med', tab: 'sel', open: 'light', sec: 'light', scat: 'sel', sf: 'sel', flt: 'sel', setsec: 'sel', setcat: 'sel', only: 'sel', cmode: 'sel', bchip: 'sel', star: 'med', sheet: 'light', qstart: 'med', qnext: 'light', theme: 'sel', go: 'sel', gohours: 'light', pickme: 'sel', navold: 'med', navnew: 'med', sday: 'sel', sview: 'sel', swk: 'sel', spr: 'sel', sex: 'sel', scp: 'light', sme: 'sel', sclose: 'light', rclear: 'med', back: 'light', ph: 'sel', openq: 'light' };
     if (HK[act]) buzz(HK[act]);
     switch (act) {
       case 'flt': st.flt[v] = !st.flt[v]; document.getElementById('mres').innerHTML = menuInner(); syncSfb(); return;
@@ -2667,6 +2732,14 @@ color-scheme: dark;
       case 'swk': { var inf = schedInfo(); st.wi = Math.min(Math.max(inf.i + (+v), 0), inf.n - 1); st.sd = null; render({ scroll: window.scrollY }); return; }
       case 'spr': st.pk = v; render({ scroll: window.scrollY, fit: true }); return;
       case 'sex': { if (store.ex[v]) delete store.ex[v]; else store.ex[v] = true; save(); render({ scroll: window.scrollY }); return; }
+      case 'rqd': st.rqd = st.rqd === +v ? -1 : +v; render({ scroll: window.scrollY }); return;
+      case 'rqp': {
+        var pp = v.split('|'), ri = +pp[0], rd = rqData();
+        if (pp[1] === 'off') delete rd[ri]; else { var tt = pp[1].split('-'); rd[ri] = [+tt[0], +tt[1]]; }
+        save(); render({ scroll: window.scrollY }); return;
+      }
+      case 'rqcp': { var rt = rqText(); if (rt) copyText(rt); return; }
+      case 'rqclr': store.rq = { k: rqWeek().key, d: {} }; st.rqd = -1; save(); render({ scroll: window.scrollY }); return;
       case 'scp': { var pd = payData(); if (pd) copyText(pd.text); return; }
       case 'sview': st.sv = v; render({ scroll: window.scrollY, fit: v === 'hours' }); return;
       case 'sme': {
@@ -2690,6 +2763,13 @@ color-scheme: dark;
       var m = document.getElementById('mres'); if (m) m.innerHTML = menuInner();
       var cl = root.querySelector('.sclear'); if (cl) cl.hidden = !st.q;
     }
+  });
+  root.addEventListener('change', function (ev) {
+    var t = ev.target; if (!t || !t.getAttribute || !t.getAttribute('data-rq')) return;
+    var i = +t.getAttribute('data-d'), r = rqData()[i]; if (!r) return;
+    var val = +t.value;
+    if (t.getAttribute('data-rq') === 's') { r[0] = val; if (r[1] <= val) r[1] = Math.min(val + 30, 1260); } else { r[1] = val; if (r[0] >= val) r[0] = Math.max(val - 30, 360); }
+    save(); render({ scroll: window.scrollY });
   });
   root.addEventListener('focusin', function (ev) {
     if (!ev.target || ev.target.id !== 'q') return;
