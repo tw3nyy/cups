@@ -2235,7 +2235,7 @@ color-scheme: dark;
       var ex = !!store.ex[r.key];
       return '<button class="pr-row' + (ex ? ' ex' : '') + (r.done ? '' : ' fut') + '" data-act="sex" data-v="' + esc(r.key) + '" aria-pressed="' + ex + '"><span class="pr-d"><b>' + pad2(r.dt.getDate()) + '.' + pad2(r.dt.getMonth() + 1) + '</b><small>' + DOWSHORT[r.dow] + '</small></span><span class="pr-t">с ' + hhmm(r.s.s) + ' до ' + hhmm(endOf(r.s)) + '</span><span class="pr-h">' + fmtH(r.h) + '</span></button>';
     }).join('') + '</div><div class="rep-f"><span>итого' + (d.fut > 0 ? '<em>отработано ' + fmtH(d.done) + ', впереди ' + fmtH(d.fut) + '</em>' : '') + '</span><b>' + fmtH(d.total) + '</b></div><div class="rep-pay"><span>' + fmtH(d.total) + ' × ' + RATE + '\u00A0₽</span><b>' + money(d.total * RATE) + '</b></div></div>';
-    h += '<div class="btns"><button class="btn primary" data-act="scp">Скопировать текст для чата</button></div>';
+    h += '<div class="btns"><button class="btn primary" data-act="scp">' + ic('send') + 'Отправить в чат</button></div>';
     h += '<p class="hint">Закрытие считается до 21:00. Бледные строки: смены впереди, они уже учтены в итоге. Ставка ' + RATE + ' ₽/ч, без вычетов. Если в графике есть тёзка, нажми на чужую смену, и она не будет считаться.</p>';
     return h;
   }
@@ -2860,7 +2860,7 @@ color-scheme: dark;
       case 'rqsd': { if (document.querySelector('#sheet.out')) return; rqData()[st.rqs] = [st.rqt.s, st.rqt.e]; save(); closeSheets(); return; }
       case 'rqcp': { var rt = rqText(); if (rt) sendToChat(rt); return; }
       case 'rqclr': store.rq = { k: rqWeek().key, d: {} };  save(); render({ scroll: window.scrollY }); return;
-      case 'scp': { var pd = payData(); if (pd) copyText(pd.text); return; }
+      case 'scp': { var pd = payData(); if (pd) sendToChat(pd.text); return; }
       case 'sview': st.sv = v; render({ scroll: window.scrollY, fit: v === 'hours' }); return;
       case 'sme': {
         store.me = store.me === v ? '' : v; if (st.tab === 'profile') st.pm = false; save(); render({ scroll: window.scrollY, fit: st.sv === 'hours' && !!store.me });
