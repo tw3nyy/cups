@@ -1285,6 +1285,12 @@ color-scheme: dark;
 @media (prefers-reduced-motion: reduce) { .lens, .tab { transition: none !important; } }
 .tabbar-in.press .tab[aria-current="page"]:not(.hot) { color: var(--muted); }
 .tabbar-in.press .lens { scale: 1.1 1.14; }
+/* calmer motion: soft ease with a tiny overshoot, no icon bounce */
+.lens { transition: transform .36s cubic-bezier(.3, 1.08, .4, 1), scale .22s ease-out, box-shadow .2s ease, background .2s ease; }
+.tabbar-in.press .lens { scale: 1.05 1.08; }
+.tabbar-in.drag .lens { transition: scale .22s ease-out, box-shadow .2s ease; scale: 1.08 1.1; }
+.tab.hot { transform: none; }
+.tab { transition: color .18s ease; }
 
 </style>
 
@@ -2410,6 +2416,8 @@ color-scheme: dark;
     var oldMe = root.querySelector('.me-row'), meX = oldMe ? oldMe.scrollLeft : null;
     var oldWk = root.querySelector('.wk-scroll'), wkX = oldWk ? oldWk.scrollLeft : null;
     var anim = st.anim; st.anim = '';
+    var oldLens = root.querySelector('.lens');
+    if (oldLens) { try { lensX = new DOMMatrix(getComputedStyle(oldLens).transform).m41; } catch (e) {} }  /* continue from where the glide is right now */
     var ns = navState();
     root.innerHTML = '<div class="bgfx" aria-hidden="true"></div>' + navHTML() + '<main class="view wrap' + (ns.back || ns.close ? '' : ' flat') + (anim ? ' ' + anim : '') + '">' + bodyHTML() + '</main>' + tabbarHTML() + (saOn() ? sfbHTML() : '') + (st.sheet ? sheetHTML() : '');
     lensSync(true);
@@ -2534,11 +2542,10 @@ color-scheme: dark;
     if (!cur) { lens.style.opacity = '0'; return; }
     lens.style.opacity = '';
     var x = cur.offsetLeft;
-    if (anim && lensX != null && lensX !== x) {
-      lens.style.transition = 'none'; lens.style.transform = 'translateX(' + lensX + 'px)';
-      void lens.offsetWidth;
-      lens.style.transition = '';
-    }
+    /* a fresh element starts where the old one was (no transition), then glides only if the target differs */
+    lens.style.transition = 'none'; lens.style.transform = 'translateX(' + (anim && lensX != null ? lensX : x) + 'px)';
+    void lens.offsetWidth;
+    lens.style.transition = '';
     lens.style.transform = 'translateX(' + x + 'px)';
     lensX = x;
   }
