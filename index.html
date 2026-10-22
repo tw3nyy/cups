@@ -1223,6 +1223,27 @@ color-scheme: dark;
 color-scheme: dark;
 }
 
+/* ---- Telegram-style search mode (home) ---- */
+.tabbar { transition: transform .3s cubic-bezier(.2, .8, .2, 1), opacity .2s ease; }
+#root.sa .tabbar { transform: translateY(calc(100% + 40px)); opacity: 0; pointer-events: none; }
+#root.sa .tabbar-in { pointer-events: none; }
+#root.sa .nav { opacity: 0; pointer-events: none; }
+#root.sa .lt, #root.sa .lt-sub { display: none; }
+#root.sa .sbar.big { top: var(--top-inset, 0px); padding-top: 10px; }
+#root.sa .sbar.big .sfield input { height: 48px; border-radius: 16px; }
+.sx { display: none; flex: none; width: 46px; height: 46px; border-radius: 50%; place-items: center; color: var(--ink); background: var(--glass); box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-line); }
+.sx .ic { width: 20px; height: 20px; }
+#root.sa .sx { display: grid; }
+#root.sa .view { padding-bottom: calc(max(var(--kb, 0px), var(--bottom-inset)) + 96px); }
+.sfb { position: fixed; left: 0; right: 0; bottom: max(var(--kb, 0px), var(--bottom-inset)); z-index: 60; padding: 18px 0 12px; background: linear-gradient(to top, var(--fade-a) 55%, transparent); }
+.sfb .hscroll.flt { margin-top: 0; padding-bottom: 0; }
+.sa-av { gap: 14px; padding-top: 2px; padding-bottom: 6px; }
+.sa-a { flex: none; width: 66px; display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--ink); font-size: 12.5px; }
+.sa-a i { width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; background: var(--fill) center / cover no-repeat; color: var(--muted); box-shadow: inset 0 0 0 1px var(--glass-line); }
+.sa-a i .ic { width: 24px; height: 24px; }
+.sa-a span { max-width: 66px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sa-hint { padding: 18px 6px; }
+
 </style>
 
 
@@ -1327,7 +1348,7 @@ color-scheme: dark;
   var st = {
     tab: 'menu', menu: [], q: '', sf: 'all', dp: 0, flt: {},
     cardMode: 'n2c', cards: null, quiz: null, sheet: false,
-    scrollTab: {}, anim: '', resetArm: false, sd: null, sv: 'day', wi: null, pk: null, study: 'menu', pm: false, from: ''
+    scrollTab: {}, anim: '', resetArm: false, sd: null, sv: 'day', wi: null, pk: null, study: 'menu', pm: false, from: '', sa: false
   };
   var tgUser = (inTG && TG.initDataUnsafe && TG.initDataUnsafe.user) || null;
   /* staff mode (store.sh) gets the new 4-tab navigation unless the user switched back to the classic one */
@@ -1634,7 +1655,7 @@ color-scheme: dark;
   /* ---------- menu tab ---------- */
   function topMenu() { return st.menu.length ? st.menu[st.menu.length - 1] : { kind: 'home' }; }
   function searchBar(ph, cls) {
-    return '<div class="sbar' + (cls ? ' ' + cls : '') + '"><div class="sfield">' + ic('search') + '<input id="q" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="' + esc(ph || 'Блюдо, напиток или ингредиент') + '" value="' + esc(st.q) + '" aria-label="Поиск по всему меню"><button class="sclear" data-act="qclear" aria-label="Очистить"' + (st.q ? '' : ' hidden') + '>' + ic('xc') + '</button></div></div>';
+    return '<div class="sbar' + (cls ? ' ' + cls : '') + '"><div class="sfield">' + ic('search') + '<input id="q" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="' + esc(ph || 'Блюдо, напиток или ингредиент') + '" value="' + esc(st.q) + '" aria-label="Поиск по всему меню"><button class="sclear" data-act="qclear" aria-label="Очистить"' + (st.q ? '' : ' hidden') + '>' + ic('xc') + '</button></div>' + (cls === 'big' ? '<button class="sx" data-act="sclose" aria-label="Закрыть поиск">' + ic('x') + '</button>' : '') + '</div>';
   }
   function resultsHTML() {
     var sts = qStems(st.q), res = search(st.q);
@@ -1685,15 +1706,18 @@ color-scheme: dark;
     }
     return h;
   }
-  function fltRowHTML() {
-    var h = '<div class="hscroll flt" role="group" aria-label="Фильтры по составу">' + FLTDEF.map(function (f) {
+  function fltRowHTML(noChips) {
+    var h = noChips ? '' : '<div class="hscroll flt" role="group" aria-label="Фильтры по составу">' + FLTDEF.map(function (f) {
       return '<button class="chip tag" data-act="flt" data-v="' + f[0] + '" aria-pressed="' + !!st.flt[f[0]] + '">' + f[1] + '</button>';
     }).join('') + '</div>';
     if (fltActive()) h += '<div class="note warn flt-note">' + ic('warn') + '<span>Подборка автоматическая, по составу из ТТК. Позиции с неполным составом и со скрытыми соусами, кремами и заготовками не показываем. Если у гостя аллергия, уточни у шефа.</span></div>';
     return h;
   }
   function menuInner() {
-    if (st.tab === 'home') return fltRowHTML() + ((st.q.trim() || fltActive()) ? resultsHTML() : homeRestHTML());
+    if (st.tab === 'home') {
+      if (saOn()) return fltRowHTML(true) + ((st.q.trim() || fltActive()) ? resultsHTML() : saRestHTML());
+      return fltRowHTML() + ((st.q.trim() || fltActive()) ? resultsHTML() : homeRestHTML());
+    }
     var e = topMenu();
     var body;
     if (st.q.trim() || (fltActive() && e.kind !== 'sec')) body = resultsHTML();
@@ -2213,6 +2237,46 @@ color-scheme: dark;
     var k = knownIn(dishes), n = dishes.length, p = n ? Math.round(k / n * 100) : 0;
     return '<div class="gh"><span class="eyebrow">Учёба</span><span class="cnt">' + k + ' из ' + n + '</span></div><div class="hm-card learn"><div class="prog"><i style="width:' + p + '%"></i></div><span class="p-sub">Выучено ' + p + '% позиций меню</span><div class="btns two"><button class="btn" data-act="go" data-v="cards">Карточки</button><button class="btn" data-act="go" data-v="quiz">Тест</button></div></div>';
   }
+  /* Telegram-style search mode: tab bar hides, recents show, filters sit at the bottom */
+  function saOn() { return !!st.sa && navNew() && st.tab === 'home' && !st.menu.length; }
+  function saRestHTML() {
+    var fav = dishes.filter(function (d) { return store.fav[d.id]; }).sort(sortName).slice(0, 14);
+    var rec = store.recent.map(function (id) { return byId[id]; }).filter(Boolean);
+    var h = '';
+    if (fav.length) {
+      h += '<div class="gh"><span class="eyebrow">Избранное</span></div><div class="hscroll sa-av" role="group" aria-label="Избранное">' + fav.map(function (d) {
+        var ap = allPhotos(d);
+        return '<button class="sa-a ' + sc(d.sec) + '" data-act="open" data-v="' + esc(d.id) + '"><i' + (ap.length ? ' style="background-image:url(' + PH[ap[0]] + ')"' : '') + '>' + (ap.length ? '' : ic(d.sec)) + '</i><span>' + esc(shortName(d.name)) + '</span></button>';
+      }).join('') + '</div>';
+    }
+    if (rec.length) {
+      h += '<div class="gh"><span class="eyebrow">Недавние</span><button data-act="rclear">Очистить</button></div><div class="group">' + rec.map(function (d) { return cellHTML(d, { search: true }); }).join('') + '</div>';
+    }
+    if (!fav.length && !rec.length) h = '<p class="hint sa-hint">Начни вводить название блюда или ингредиент. Фильтры по составу внизу.</p>';
+    return h;
+  }
+  function sfbHTML() {
+    return '<div class="sfb" id="sfb" role="group" aria-label="Фильтры по составу"><div class="hscroll flt">' + FLTDEF.map(function (f) {
+      return '<button class="chip tag" data-act="flt" data-v="' + f[0] + '" aria-pressed="' + !!st.flt[f[0]] + '">' + f[1] + '</button>';
+    }).join('') + '</div></div>';
+  }
+  function syncSfb() {
+    var b = document.getElementById('sfb'); if (!b) return;
+    Array.prototype.forEach.call(b.querySelectorAll('[data-act="flt"]'), function (c) { c.setAttribute('aria-pressed', String(!!st.flt[c.getAttribute('data-v')])); });
+  }
+  function openSearch() {
+    if (st.sa || !navNew() || st.tab !== 'home' || st.menu.length) return;
+    st.sa = true; root.classList.add('sa');
+    if (!document.getElementById('sfb')) root.insertAdjacentHTML('beforeend', sfbHTML());
+    var m = document.getElementById('mres'); if (m) m.innerHTML = menuInner();
+    window.scrollTo(0, 0);
+    syncBack();
+  }
+  function closeSearch() {
+    st.sa = false; st.q = ''; st.sf = 'all'; st.flt = {};
+    var i = document.getElementById('q'); if (i) { i.value = ''; i.blur(); }
+    render({ scroll: 0 });
+  }
   function homeRecentHTML() {
     var rec = store.recent.map(function (id) { return byId[id]; }).filter(Boolean).slice(0, 8);
     if (!rec.length) return '';
@@ -2228,7 +2292,7 @@ color-scheme: dark;
   function homeViewHTML() {
     var n = new Date(), nm = store.me || (tgUser && tgUser.first_name) || '';
     var h = '<h1 class="lt">' + (nm ? 'Привет, ' + esc(nm) : 'Привет') + '</h1><p class="lt-sub">' + cap(DOWFULL[(n.getDay() + 6) % 7]) + ', ' + n.getDate() + ' ' + MON[n.getMonth()] + '</p>';
-    return h + searchBar('Найти блюдо или ингредиент', 'big') + '<div id="mres">' + menuInner() + '</div>';
+    return h + searchBar('Блюдо или ингредиент', 'big') + '<div id="mres">' + menuInner() + '</div>';
   }
   function profileViewHTML() {
     var name = store.me || tgName() || 'Гость', pd = store.me ? payData(true) : null, k = knownIn(dishes);
@@ -2304,7 +2368,8 @@ color-scheme: dark;
     var oldWk = root.querySelector('.wk-scroll'), wkX = oldWk ? oldWk.scrollLeft : null;
     var anim = st.anim; st.anim = '';
     var ns = navState();
-    root.innerHTML = '<div class="bgfx" aria-hidden="true"></div>' + navHTML() + '<main class="view wrap' + (ns.back || ns.close ? '' : ' flat') + (anim ? ' ' + anim : '') + '">' + bodyHTML() + '</main>' + tabbarHTML() + (st.sheet ? sheetHTML() : '');
+    root.innerHTML = '<div class="bgfx" aria-hidden="true"></div>' + navHTML() + '<main class="view wrap' + (ns.back || ns.close ? '' : ' flat') + (anim ? ' ' + anim : '') + '">' + bodyHTML() + '</main>' + tabbarHTML() + (saOn() ? sfbHTML() : '') + (st.sheet ? sheetHTML() : '');
+    root.classList.toggle('sa', saOn());
     st.sheetNew = false;
     document.body.style.overflow = st.sheet ? 'hidden' : '';
     var sh = document.getElementById('sheet'); if (sh) sh.scrollTop = sheetTop;
@@ -2333,7 +2398,7 @@ color-scheme: dark;
   window.addEventListener('resize', function () { fitRep(false); });
   function syncBack() {
     if (!inTG || !TG.BackButton) return;
-    try { if ((st.tab === 'menu' && st.menu.length) || st.sheet) TG.BackButton.show(); else TG.BackButton.hide(); } catch (e) {}
+    try { if ((st.tab === 'menu' && st.menu.length) || st.sheet || saOn()) TG.BackButton.show(); else TG.BackButton.hide(); } catch (e) {}
   }
   function onScroll() {
     var nav = root.querySelector('.nav'); if (!nav) return;
@@ -2390,7 +2455,7 @@ color-scheme: dark;
       else window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
-    st.scrollTab[st.tab] = window.scrollY; st.from = '';
+    st.scrollTab[st.tab] = window.scrollY; st.from = ''; st.sa = false;
     st.tab = t; st.anim = 'enter';
     render({ scroll: st.scrollTab[t] || 0 });
   }
@@ -2445,11 +2510,13 @@ color-scheme: dark;
     if (!t || t.disabled) return;
     var act = t.getAttribute('data-act'), v = t.getAttribute('data-v');
     var c = st.cards, q = st.quiz;
-    var HK = { tab: 'sel', open: 'light', sec: 'light', scat: 'sel', sf: 'sel', flt: 'sel', setsec: 'sel', setcat: 'sel', only: 'sel', cmode: 'sel', bchip: 'sel', star: 'med', sheet: 'light', qstart: 'med', qnext: 'light', theme: 'sel', go: 'sel', gohours: 'light', pickme: 'sel', navold: 'med', navnew: 'med', sday: 'sel', sview: 'sel', swk: 'sel', spr: 'sel', sex: 'sel', scp: 'light', sme: 'sel', back: 'light', ph: 'sel', openq: 'light' };
+    var HK = { tab: 'sel', open: 'light', sec: 'light', scat: 'sel', sf: 'sel', flt: 'sel', setsec: 'sel', setcat: 'sel', only: 'sel', cmode: 'sel', bchip: 'sel', star: 'med', sheet: 'light', qstart: 'med', qnext: 'light', theme: 'sel', go: 'sel', gohours: 'light', pickme: 'sel', navold: 'med', navnew: 'med', sday: 'sel', sview: 'sel', swk: 'sel', spr: 'sel', sex: 'sel', scp: 'light', sme: 'sel', sclose: 'light', rclear: 'med', back: 'light', ph: 'sel', openq: 'light' };
     if (HK[act]) buzz(HK[act]);
     switch (act) {
-      case 'flt': st.flt[v] = !st.flt[v]; document.getElementById('mres').innerHTML = menuInner(); return;
-      case 'fltclear': st.flt = {}; document.getElementById('mres').innerHTML = menuInner(); return;
+      case 'flt': st.flt[v] = !st.flt[v]; document.getElementById('mres').innerHTML = menuInner(); syncSfb(); return;
+      case 'fltclear': st.flt = {}; document.getElementById('mres').innerHTML = menuInner(); syncSfb(); return;
+      case 'sclose': closeSearch(); return;
+      case 'rclear': store.recent = []; save(); document.getElementById('mres').innerHTML = menuInner(); return;
       case 'tab':
         if (v === 'more' || v === 'profile') {
           var tn = Date.now();
@@ -2471,7 +2538,10 @@ color-scheme: dark;
       case 'star': if (store.fav[v]) delete store.fav[v]; else store.fav[v] = true; save(); render({ scroll: window.scrollY }); return;
       case 'learn': buzz(store.known[v] ? 'light' : 'ok'); if (store.known[v]) delete store.known[v]; else store.known[v] = true; save(); render({ scroll: window.scrollY }); return;
       case 'train': { var d = byId[v]; store.sec = d.sec; store.cat = d.cat; store.only = false; save(); resetDecks(); switchTab('cards'); return; }
-      case 'qclear': st.q = ''; st.sf = 'all'; render({ scroll: window.scrollY }); return;
+      case 'qclear':
+        st.q = ''; st.sf = 'all';
+        if (saOn()) { var qi = document.getElementById('q'); if (qi) { qi.value = ''; qi.focus(); } var qm = document.getElementById('mres'); if (qm) qm.innerHTML = menuInner(); var qc = root.querySelector('.sclear'); if (qc) qc.hidden = true; return; }
+        render({ scroll: window.scrollY }); return;
       case 'sf': st.sf = v; document.getElementById('mres').innerHTML = menuInner(); return;
       case 'sheet': st.sheet = true; st.sheetNew = true; render({ scroll: window.scrollY }); return;
       case 'sheetclose': st.sheet = false; render({ scroll: window.scrollY }); return;
@@ -2532,10 +2602,25 @@ color-scheme: dark;
       var cl = root.querySelector('.sclear'); if (cl) cl.hidden = !st.q;
     }
   });
-  root.addEventListener('focusin', function (ev) { if (ev.target && ev.target.id === 'q' && st.menu.length === 0) setFocusScroll(); });
+  root.addEventListener('focusin', function (ev) {
+    if (!ev.target || ev.target.id !== 'q') return;
+    if (st.tab === 'home' && navNew()) openSearch();
+    else if (st.menu.length === 0) setFocusScroll();
+  });
+  /* keep the filter pills under the thumb when the keyboard pushes the viewport */
+  if (window.visualViewport) {
+    var vv = window.visualViewport;
+    var kbSync = function () { document.documentElement.style.setProperty('--kb', Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)) + 'px'); };
+    vv.addEventListener('resize', kbSync); vv.addEventListener('scroll', kbSync);
+  }
+  /* tapping a bottom pill must not drop the keyboard */
+  root.addEventListener('mousedown', function (ev) { if (ev.target.closest && ev.target.closest('.sfb')) ev.preventDefault(); });
   root.addEventListener('keydown', function (ev) {
     if (ev.target && ev.target.id === 'q' && ev.key === 'Enter') { ev.target.blur(); return; }
-    if (ev.target && ev.target.id === 'q' && ev.key === 'Escape' && st.q) { st.q = ''; render({ scroll: window.scrollY }); return; }
+    if (ev.target && ev.target.id === 'q' && ev.key === 'Escape') {
+      if (saOn() && !st.q) { closeSearch(); return; }
+      if (st.q) { st.q = ''; if (saOn()) { ev.target.value = ''; var em = document.getElementById('mres'); if (em) em.innerHTML = menuInner(); var ec = root.querySelector('.sclear'); if (ec) ec.hidden = true; } else render({ scroll: window.scrollY }); return; }
+    }
   });
   document.addEventListener('keydown', function (ev) {
     var tag = (ev.target && ev.target.tagName) || '';
@@ -2609,7 +2694,7 @@ color-scheme: dark;
   if (inTG) {
     try {
       TG.ready(); TG.expand();
-      if (TG.BackButton) TG.BackButton.onClick(function () { if (st.sheet) { st.sheet = false; render({ scroll: window.scrollY }); } else popMenu(); });
+      if (TG.BackButton) TG.BackButton.onClick(function () { if (st.sheet) { st.sheet = false; render({ scroll: window.scrollY }); } else if (saOn()) closeSearch(); else popMenu(); });
       TG.onEvent('themeChanged', function () { applyTheme(); render({ scroll: window.scrollY }); });
     } catch (e) {}
     cloudLoad();
