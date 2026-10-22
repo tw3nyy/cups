@@ -2222,7 +2222,7 @@ color-scheme: dark;
     var rows = personShifts(store.me).filter(function (r) { return r.pk === pk; });
     var done = 0, fut = 0;
     rows.forEach(function (r) { if (store.ex[r.key]) return; if (r.done) done += r.h; else fut += r.h; });
-    var txt = ['часы в Cups', ''].concat(rows.filter(function (r) { return !store.ex[r.key]; }).map(copyLine)).concat(['', 'итого ' + (Math.round((done + fut) * 10) / 10) + ' ч']).join('\n');
+    var txt = [store.me || 'часы', ''].concat(rows.filter(function (r) { return !store.ex[r.key]; }).map(copyLine)).concat(['', 'итого ' + (Math.round((done + fut) * 10) / 10) + ' ч']).join('\n');
     return { ps: ps, pk: pk, rows: rows, done: done, fut: fut, total: done + fut, text: txt };
   }
   function payViewHTML() {
