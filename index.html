@@ -1243,6 +1243,7 @@ color-scheme: dark;
 .sa-a i .ic { width: 24px; height: 24px; }
 .sa-a span { max-width: 66px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sa-hint { padding: 18px 6px; }
+.wnav { min-height: 42px; }
 
 </style>
 
@@ -2143,7 +2144,7 @@ color-scheme: dark;
     if (!info) return h + '<div class="empty"><b>Графика пока нет</b><span>Когда его добавят, он появится здесь.</span></div>';
     var w = info.w, today = info.today;
     var sd = st.sd != null ? Math.min(Math.max(st.sd, 0), 6) : (today >= 0 ? today : 0);
-    if (st.sv === 'hours') h += '<p class="lt-sub">Часы и зарплата по периодам</p>';
+    if (st.sv === 'hours') h += '<div class="wnav"><p class="lt-sub">Часы и зарплата по периодам</p></div>';
     else h += '<div class="wnav"><p class="lt-sub">Неделя ' + weekRange(w) + '</p><span class="wn-b"><button data-act="swk" data-v="-1" aria-label="Предыдущая неделя"' + (info.i === 0 ? ' disabled' : '') + '>' + ic('chevL') + '</button><button data-act="swk" data-v="1" aria-label="Следующая неделя"' + (info.i === info.n - 1 ? ' disabled' : '') + '>' + ic('chevR') + '</button></span></div>';
     h += '<div class="seg" role="group" aria-label="Вид">' + [['day', 'День'], ['week', 'Неделя'], ['hours', 'Часы']].map(function (t) {
       return '<button data-act="sview" data-v="' + t[0] + '" aria-pressed="' + (st.sv === t[0]) + '">' + t[1] + '</button>';
@@ -2381,7 +2382,7 @@ color-scheme: dark;
     if (opts.scroll != null) window.scrollTo(0, opts.scroll);
     var newWk = root.querySelector('.wk-scroll');
     if (newWk) { if (wkX != null) newWk.scrollLeft = wkX; else { var ti = parseInt(newWk.getAttribute('data-today'), 10); newWk.scrollLeft = ti > 0 ? Math.max(0, (ti - 1) * 80) : 0; } }
-    fitRep(opts.fit);
+    fitRep(false);
     mountAvatar();
     onScroll();
     syncBack();
@@ -2526,7 +2527,7 @@ color-scheme: dark;
         switchTab(v); return;
       case 'back': popMenu(); return;
       case 'go': switchTab(v); return;
-      case 'gohours': st.sv = 'hours'; st.scrollTab.shifts = 0; if (st.tab !== 'shifts') switchTab('shifts'); else render({ scroll: 0 }); fitRep(true); return;
+      case 'gohours': st.sv = 'hours'; st.scrollTab.shifts = 0; if (st.tab !== 'shifts') switchTab('shifts'); else render({ scroll: 0 }); fitRep(false); return;
       case 'pickme': st.pm = !st.pm; render({ scroll: window.scrollY }); return;
       case 'navold': store.nv = 'old'; st.tab = 'more'; st.menu = []; save(); render({ scroll: 0 }); toast('Классическая навигация'); return;
       case 'navnew': store.nv = ''; st.tab = 'home'; st.menu = []; save(); render({ scroll: 0 }); toast('Новая навигация'); return;
