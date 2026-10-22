@@ -1245,6 +1245,22 @@ color-scheme: dark;
 .sa-hint { padding: 18px 6px; }
 .wnav { min-height: 42px; }
 
+/* ---- UI kit pass: one shape language for similar elements ----
+   controls (search, segmented, chips): pill, 48px
+   cards: 22px radius; compact blocks (notes, scope rows, stat tiles, buttons): 18px */
+.sfield input, .sbar.big .sfield input { height: 48px; border-radius: 999px; font-size: 17px; padding-left: 46px; padding-right: 44px; }
+.sfield .ic, .sbar.big .sfield .ic { left: 17px; width: 20px; height: 20px; }
+.sclear { right: 6px; }
+.sbar, .lt-sub + .sbar, .lt-sub + .sbar.big, .sbar.big { padding: 12px 0; }
+#root.sa .sbar.big { padding-top: 10px; }
+#root.sa .sbar.big .sfield input { height: 48px; border-radius: 999px; }
+.sx { width: 48px; height: 48px; }
+.seg { border-radius: 999px; padding: 4px; }
+.seg button { min-height: 40px; border-radius: 999px; font-size: 15px; }
+.group, .ticket, .qcard, .empty, .done, .rcard, .tile, .allergens, .rep, .hm-card, .pf-rows, .brand-card, .brand-card .bc-top { border-radius: 22px; }
+.note, .scope, details.old, .pf-stats > div, .btn { border-radius: 18px; }
+.chip { min-height: 38px; }
+
 </style>
 
 
@@ -1656,7 +1672,7 @@ color-scheme: dark;
   /* ---------- menu tab ---------- */
   function topMenu() { return st.menu.length ? st.menu[st.menu.length - 1] : { kind: 'home' }; }
   function searchBar(ph, cls) {
-    return '<div class="sbar' + (cls ? ' ' + cls : '') + '"><div class="sfield">' + ic('search') + '<input id="q" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="' + esc(ph || 'Блюдо, напиток или ингредиент') + '" value="' + esc(st.q) + '" aria-label="Поиск по всему меню"><button class="sclear" data-act="qclear" aria-label="Очистить"' + (st.q ? '' : ' hidden') + '>' + ic('xc') + '</button></div>' + (cls === 'big' ? '<button class="sx" data-act="sclose" aria-label="Закрыть поиск">' + ic('x') + '</button>' : '') + '</div>';
+    return '<div class="sbar' + (cls ? ' ' + cls : '') + '"><div class="sfield">' + ic('search') + '<input id="q" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="' + esc(ph || 'Блюдо или ингредиент') + '" value="' + esc(st.q) + '" aria-label="Поиск по всему меню"><button class="sclear" data-act="qclear" aria-label="Очистить"' + (st.q ? '' : ' hidden') + '>' + ic('xc') + '</button></div>' + (cls === 'big' ? '<button class="sx" data-act="sclose" aria-label="Закрыть поиск">' + ic('x') + '</button>' : '') + '</div>';
   }
   function resultsHTML() {
     var sts = qStems(st.q), res = search(st.q);
