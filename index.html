@@ -1079,6 +1079,37 @@ html, body { overflow-x: clip; }
 .pay + .btns, .fut-note + .btns { margin-top: 14px; }
 .wk td span.long { font-size: 8.5px; letter-spacing: -.06em; }
 
+/* pay report: screenshot-friendly, density grows with row count */
+.pay, .fut-note { display: none; }
+.pr-none { padding: 18px; color: var(--muted); font-size: 14.5px; border-top: .5px solid var(--line); }
+.rep-f { padding: 12px 18px 10px; background: var(--accent-soft); }
+.rep-pay { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 18px; background: var(--accent-grad, var(--accent)); color: #fff; }
+.rep-pay span { font-size: 13.5px; opacity: .88; font-variant-numeric: tabular-nums; }
+.rep-pay b { font-size: 24px; font-weight: 750; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.rep.dense .rep-h { padding: 12px 18px 8px; }
+.rep.dense .pr-row { min-height: 0; padding: 5px 18px; grid-template-columns: 44px 1fr auto; }
+.rep.dense .pr-d { flex-direction: row; align-items: baseline; gap: 6px; }
+.rep.dense .pr-d small { display: none; }
+.rep.dense .pr-d b, .rep.dense .pr-t, .rep.dense .pr-h { font-size: 14.5px; }
+.rep.dense .pr-d { width: 44px; }
+.rep.tight .rep-h { padding: 10px 16px 6px; }
+.rep.tight .rep-h b { font-size: 17px; }
+.rep.tight .pr-row { min-height: 0; padding: 3px 16px; grid-template-columns: 44px 1fr auto; line-height: 1.2; }
+.rep.tight .pr-d { flex-direction: row; width: 44px; }
+.rep.tight .pr-d small { display: none; }
+.rep.tight .pr-d b, .rep.tight .pr-t, .rep.tight .pr-h { font-size: 13.5px; }
+.rep.tight .rep-f { padding: 8px 16px 6px; }
+.rep.tight .rep-f b, .rep.tight .rep-pay b { font-size: 20px; }
+.rep.tight .rep-pay { padding: 9px 16px; }
+.fut { margin-top: 14px; padding: 12px 16px; border-radius: 18px; background: var(--fill); }
+.fut-h { display: flex; flex-direction: column; gap: 1px; margin-bottom: 6px; }
+.fut-h b { font-size: 14.5px; }
+.fut-h span { font-size: 12.5px; color: var(--muted); }
+.fut-r { display: grid; grid-template-columns: 44px 26px 1fr auto; align-items: baseline; gap: 6px; padding: 3px 0; font-size: 13.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.fut-r b { font-weight: 600; color: var(--ink); }
+.fut-r small { font-size: 11px; color: var(--muted); text-transform: uppercase; }
+.fut-r i { font-style: normal; color: var(--muted); }
+
 </style>
 
 
@@ -1929,12 +1960,15 @@ html, body { overflow-x: clip; }
     var d = payData();
     h += '<div class="hscroll prs" role="group" aria-label="Период">' + d.ps.slice().reverse().map(function (k) { return '<button class="chip" data-act="spr" data-v="' + k + '" aria-pressed="' + (k === d.pk) + '">' + periodName(k) + '</button>'; }).join('') + '</div>';
     if (!d.rows.length) return h + '<div class="note">' + ic('clock') + '<span><b>' + esc(store.me) + '</b>, в этом периоде смен в графике нет.</span></div>';
-    h += '<div class="rep"><div class="rep-h"><b>Часы в Cups</b><span>' + esc(store.me) + ' · ' + periodName(d.pk, true) + '</span></div><div class="rep-rows">' + d.rows.map(function (r) {
+    var dn = d.rows.filter(function (r) { return r.done; }), fu = d.rows.filter(function (r) { return !r.done; });
+    var dens = dn.length > 9 ? ' tight' : (dn.length > 5 ? ' dense' : '');
+    h += '<div class="rep' + dens + '"><div class="rep-h"><b>Часы в Cups</b><span>' + esc(store.me) + ' · ' + periodName(d.pk, true) + '</span></div><div class="rep-rows">' + (dn.length ? dn.map(function (r) {
       var ex = !!store.ex[r.key];
-      return '<button class="pr-row' + (ex ? ' ex' : '') + (r.done ? '' : ' fut') + '" data-act="sex" data-v="' + esc(r.key) + '" aria-pressed="' + ex + '"><span class="pr-d"><b>' + pad2(r.dt.getDate()) + '.' + pad2(r.dt.getMonth() + 1) + '</b><small>' + DOWSHORT[r.dow] + '</small></span><span class="pr-t">с ' + hhmm(r.s.s) + ' до ' + hhmm(endOf(r.s)) + (r.done ? '' : '<small>впереди</small>') + '</span><span class="pr-h">' + fmtH(r.h) + '</span></button>';
-    }).join('') + '</div><div class="rep-f"><span>итого</span><b>' + fmtH(d.done) + '</b></div></div>';
-    h += '<div class="pay"><div class="pay-l"><small>Зарплата за отработанное</small><b>' + money(d.done * RATE) + '</b></div><span class="pay-r">' + fmtH(d.done) + ' × ' + RATE + ' ₽</span></div>';
-    if (d.fut > 0) h += '<div class="note fut-note">' + ic('clock') + '<span><b>Впереди по графику:</b> ' + fmtH(d.fut) + ', это ещё ' + money(d.fut * RATE) + '. В отчёт выше не входит.</span></div>';
+      return '<button class="pr-row' + (ex ? ' ex' : '') + '" data-act="sex" data-v="' + esc(r.key) + '" aria-pressed="' + ex + '"><span class="pr-d"><b>' + pad2(r.dt.getDate()) + '.' + pad2(r.dt.getMonth() + 1) + '</b><small>' + DOWSHORT[r.dow] + '</small></span><span class="pr-t">с ' + hhmm(r.s.s) + ' до ' + hhmm(endOf(r.s)) + '</span><span class="pr-h">' + fmtH(r.h) + '</span></button>';
+    }).join('') : '<div class="pr-none">Пока нет отработанных смен</div>') + '</div><div class="rep-f"><span>итого</span><b>' + fmtH(d.done) + '</b></div><div class="rep-pay"><span>' + fmtH(d.done) + ' × ' + RATE + ' ₽</span><b>' + money(d.done * RATE) + '</b></div></div>';
+    if (fu.length) h += '<div class="fut"><div class="fut-h"><b>Впереди по графику</b><span>' + fmtH(d.fut) + ' · ' + money(d.fut * RATE) + ', в отчёт не входит</span></div>' + fu.map(function (r) {
+      return '<div class="fut-r"><b>' + pad2(r.dt.getDate()) + '.' + pad2(r.dt.getMonth() + 1) + '</b><small>' + DOWSHORT[r.dow] + '</small><span>' + hhmm(r.s.s) + '–' + hhmm(endOf(r.s)) + '</span><i>' + fmtH(r.h) + '</i></div>';
+    }).join('') + '</div>';
     h += '<div class="btns"><button class="btn primary" data-act="scp">Скопировать текст для чата</button></div>';
     h += '<p class="hint">Закрытие считается до 21:00. Расчёт по ставке ' + RATE + ' ₽/ч, без вычетов. Если в графике есть тёзка, нажми на чужую смену, и она не будет считаться.</p>';
     return h;
