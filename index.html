@@ -1515,7 +1515,7 @@ color-scheme: dark;
     shifts: '<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14.2h2.2M13.8 14.2H16M8 17.2h2.2"/>',
     clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/>',
     search: '<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>',
-    chevR: '<path d="M9 6l6 6-6 6"/>', chevL: '<path d="M15 5l-7 7 7 7"/>', chevD: '<path d="M6 9l6 6 6-6"/>',
+    send: '<path d="M21 3L10 14"/><path d="M21 3l-6.5 18-3.5-7.5L3.5 10 21 3z"/>', chevR: '<path d="M9 6l6 6-6 6"/>', chevL: '<path d="M15 5l-7 7 7 7"/>', chevD: '<path d="M6 9l6 6 6-6"/>',
     star: '<path d="M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.8 1-5.9L3.5 9.8l5.9-.8z"/>',
     check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
     checkC: '<circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/>',
@@ -2251,6 +2251,13 @@ color-scheme: dark;
     fb();
   }
   /* availability request for next week: pick times per day, copy as a chat message */
+  /* opens Telegram's own share sheet with the text filled in; outside Telegram the text is copied */
+  function sendToChat(t) {
+    if (inTG && TG.openTelegramLink) {
+      try { TG.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(t)); return; } catch (e) {}
+    }
+    copyText(t);
+  }
   function rqWeek() {
     var n = new Date(), d0 = new Date(n.getFullYear(), n.getMonth(), n.getDate()), dow = (d0.getDay() + 6) % 7;
     var m = new Date(d0.getFullYear(), d0.getMonth(), d0.getDate() + 7 - dow);
@@ -2291,7 +2298,7 @@ color-scheme: dark;
     h += '</div>';
     var txt = rqText();
     h += '<div class="gh"><span class="eyebrow">Сообщение в чат</span></div><div class="rq-pv">' + (txt ? '<div class="rq-msg">' + esc(txt) + '</div>' : '<p class="hint">Выбери дни выше, и тут появится сообщение.</p>') + '</div>';
-    h += '<div class="btns"><button class="btn primary" data-act="rqcp"' + (txt ? '' : ' disabled') + '>' + ic('check') + 'Скопировать для чата</button>' + (txt ? '<button class="btn plain" data-act="rqclr">Сбросить</button>' : '') + '</div>';
+    h += '<div class="btns"><button class="btn primary" data-act="rqcp"' + (txt ? '' : ' disabled') + '>' + ic('send') + 'Отправить в чат</button>' + (txt ? '<button class="btn plain" data-act="rqclr">Сбросить</button>' : '') + '</div>';
     return { range: rqRange(), html: h };
   }
   function rqWheel(kind, lo, hi, val) {
@@ -2339,7 +2346,7 @@ color-scheme: dark;
   }, true);
   function shiftsViewHTML() {
     var info = schedInfo();
-    if (st.sv === 'req') { var rq0 = reqViewHTML(); return '<h1 class="lt">Пожелания</h1><p class="lt-sub">' + rq0.range + '</p>' + rq0.html + '<p class="small">Это просто текст для чата: он никуда не отправляется, пока ты сам его не вставишь.</p>'; }
+    if (st.sv === 'req') { var rq0 = reqViewHTML(); return '<h1 class="lt">Пожелания</h1><p class="lt-sub">' + rq0.range + '</p>' + rq0.html + '<p class="small">Откроется окно Telegram с готовым текстом: выбери чат «Графики» и нажми отправить. Вне Telegram текст просто копируется.</p>'; }
     var h = '<h1 class="lt">Смены</h1>';
     if (!info) return h + '<div class="empty"><b>Графика пока нет</b><span>Когда его добавят, он появится здесь.</span></div>';
     var w = info.w, today = info.today;
@@ -2851,7 +2858,7 @@ color-scheme: dark;
       case 'rqc': { var cr = rqData()[+v]; st.rqs = +v; st.rqt = { s: cr ? cr[0] : 840, e: cr ? cr[1] : 1200 }; st.sheetNew = true; render({ scroll: window.scrollY }); return; }
       case 'rqsx': closeSheets(); return;
       case 'rqsd': { if (document.querySelector('#sheet.out')) return; rqData()[st.rqs] = [st.rqt.s, st.rqt.e]; save(); closeSheets(); return; }
-      case 'rqcp': { var rt = rqText(); if (rt) copyText(rt); return; }
+      case 'rqcp': { var rt = rqText(); if (rt) sendToChat(rt); return; }
       case 'rqclr': store.rq = { k: rqWeek().key, d: {} };  save(); render({ scroll: window.scrollY }); return;
       case 'scp': { var pd = payData(); if (pd) copyText(pd.text); return; }
       case 'sview': st.sv = v; render({ scroll: window.scrollY, fit: v === 'hours' }); return;
