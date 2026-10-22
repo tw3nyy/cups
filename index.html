@@ -1311,6 +1311,7 @@ color-scheme: dark;
 .rq-pv { display: flex; justify-content: flex-end; }
 .rq-pv .hint { width: 100%; }
 .rq-msg { max-width: 82%; white-space: pre-line; padding: 12px 16px; border-radius: 20px 20px 6px 20px; background: var(--accent-grad, var(--accent)); color: #fff; font-size: 17px; line-height: 1.45; font-weight: 500; font-variant-numeric: tabular-nums; }
+.pf-s { display: block; font-size: 13px; color: var(--muted); margin-top: 1px; }
 
 </style>
 
@@ -2226,6 +2227,14 @@ color-scheme: dark;
     for (var m = lo; m <= hi; m += 30) o += '<option value="' + m + '"' + (m === val ? ' selected' : '') + '>' + rqT(m).replace(/^(\d+)$/, '$1:00') + '</option>';
     return '<select class="rq-sel" data-rq="' + kind + '" data-d="' + i + '" aria-label="' + (kind === 's' ? 'Начало' : 'Конец') + '">' + o + '</select>';
   }
+  function rqRange() {
+    var a = rqWeek().d, b = new Date(a.getFullYear(), a.getMonth(), a.getDate() + 6);
+    return a.getMonth() === b.getMonth() ? a.getDate() + '–' + b.getDate() + ' ' + MONS[b.getMonth()] : a.getDate() + ' ' + MONS[a.getMonth()] + ' – ' + b.getDate() + ' ' + MONS[b.getMonth()];
+  }
+  function rqEntryHTML() {
+    var n = Object.keys(rqData()).length;
+    return '<div class="pf-rows rq-entry"><button class="pf-row" data-act="rqopen"><span class="pf-ic">' + ic('clock') + '</span><span class="pf-t">Пожелания<small class="pf-s">' + rqRange() + '</small></span><span class="pf-v">' + (n ? n + ' ' + (n === 1 ? 'день' : n < 5 ? 'дня' : 'дней') : 'написать') + '</span>' + ic('chevR') + '</button></div>';
+  }
   function reqViewHTML() {
     var w = rqWeek(), d = rqData(), a = w.d, b = new Date(a.getFullYear(), a.getMonth(), a.getDate() + 6);
     var rng = a.getMonth() === b.getMonth() ? a.getDate() + '–' + b.getDate() + ' ' + MONS[b.getMonth()] : a.getDate() + ' ' + MONS[a.getMonth()] + ' – ' + b.getDate() + ' ' + MONS[b.getMonth()];
@@ -2250,24 +2259,22 @@ color-scheme: dark;
   }
   function shiftsViewHTML() {
     var info = schedInfo();
+    if (st.sv === 'req') { var rq0 = reqViewHTML(); return '<h1 class="lt">Пожелания</h1><p class="lt-sub">' + rq0.range + '</p>' + rq0.html + '<p class="small">Это просто текст для чата: он никуда не отправляется, пока ты сам его не вставишь.</p>'; }
     var h = '<h1 class="lt">Смены</h1>';
     if (!info) return h + '<div class="empty"><b>Графика пока нет</b><span>Когда его добавят, он появится здесь.</span></div>';
     var w = info.w, today = info.today;
     var sd = st.sd != null ? Math.min(Math.max(st.sd, 0), 6) : (today >= 0 ? today : 0);
-    var rq = st.sv === 'req' ? reqViewHTML() : null;
-    if (rq) h += '<div class="wnav"><p class="lt-sub">Пожелания на ' + rq.range + '</p></div>';
-    else if (st.sv === 'hours') h += '<div class="wnav"><p class="lt-sub">Часы и зарплата по периодам</p></div>';
+    if (st.sv === 'hours') h += '<div class="wnav"><p class="lt-sub">Часы и зарплата по периодам</p></div>';
     else h += '<div class="wnav"><p class="lt-sub">Неделя ' + weekRange(w) + '</p><span class="wn-b"><button data-act="swk" data-v="-1" aria-label="Предыдущая неделя"' + (info.i === 0 ? ' disabled' : '') + '>' + ic('chevL') + '</button><button data-act="swk" data-v="1" aria-label="Следующая неделя"' + (info.i === info.n - 1 ? ' disabled' : '') + '>' + ic('chevR') + '</button></span></div>';
-    h += '<div class="seg" role="group" aria-label="Вид">' + [['day', 'День'], ['week', 'Неделя'], ['hours', 'Часы'], ['req', 'Заявка']].map(function (t) {
+    h += '<div class="seg" role="group" aria-label="Вид">' + [['day', 'День'], ['week', 'Неделя'], ['hours', 'Часы']].map(function (t) {
       return '<button data-act="sview" data-v="' + t[0] + '" aria-pressed="' + (st.sv === t[0]) + '">' + t[1] + '</button>';
     }).join('') + '</div>';
-    if (info.missing && st.sv !== 'hours' && !rq) h += '<div class="note warn" style="margin-top:12px">' + ic('warn') + '<span>Графика на текущую неделю в приложении ещё нет, показана неделя ' + weekRange(w) + '.</span></div>';
-    if (!(navNew() && store.me) && !rq) h += meRowHTML(schedPeople());
-    if (rq) h += rq.html;
-    else if (st.sv === 'week') h += weekViewHTML(w, today);
+    if (info.missing && st.sv !== 'hours') h += '<div class="note warn" style="margin-top:12px">' + ic('warn') + '<span>Графика на текущую неделю в приложении ещё нет, показана неделя ' + weekRange(w) + '.</span></div>';
+    if (!(navNew() && store.me)) h += meRowHTML(schedPeople());
+    if (st.sv === 'week') h += weekViewHTML(w, today);
     else if (st.sv === 'hours') h += payViewHTML();
     else h += dayViewHTML(w, sd, today);
-    if (rq) return h + '<p class="small">Это просто текст для чата: он никуда не отправляется, пока ты сам его не вставишь.</p>';
+    h += rqEntryHTML();
     h += '<p class="small">График из рабочего чата. Если что-то поменяли, ориентируйся на чат.' + (navNew() && store.me ? ' Это не ты? Имя меняется в профиле.' : '') + '</p>';
     return h;
   }
@@ -2421,7 +2428,8 @@ color-scheme: dark;
         return '<button class="chip" data-act="sme" data-v="' + esc(p) + '" aria-pressed="' + (store.me === p) + '">' + esc(p) + '</button>';
       }).join('') + '</div>' + (store.me ? '<button class="pf-clear" data-act="sme" data-v="' + esc(store.me) + '">Это не я, сбросить</button>' : '');
     }
-    h += '<button class="pf-row" data-act="gohours"><span class="pf-ic">' + ic('clock') + '</span><span class="pf-t">Мои часы и зарплата</span><span class="pf-v"></span>' + ic('chevR') + '</button></div>';
+    h += '<button class="pf-row" data-act="gohours"><span class="pf-ic">' + ic('clock') + '</span><span class="pf-t">Мои часы и зарплата</span><span class="pf-v"></span>' + ic('chevR') + '</button>';
+    h += '<button class="pf-row" data-act="rqopen"><span class="pf-ic">' + ic('shifts') + '</span><span class="pf-t">Пожелания<small class="pf-s">' + rqRange() + '</small></span><span class="pf-v"></span>' + ic('chevR') + '</button></div>';
     h += progressBlock() + themeBlock() + notesBlock();
     h += '<div class="gh"><span class="eyebrow">Приложение</span></div><div class="btns" style="margin-top:0"><button class="btn" data-act="navold">Вернуть старую навигацию</button></div>';
     h += resetBlock();
@@ -2447,7 +2455,7 @@ color-scheme: dark;
     else if (st.tab === 'quiz') {
       n.title = st.quiz && !st.quiz.done ? st.quiz.title : (navNew() && !st.quiz ? 'Учёба' : 'Тесты');
       if (st.quiz) { n.close = true; n.always = !st.quiz.done; }
-    } else if (st.tab === 'shifts' && store.sh) n.title = 'Смены';
+    } else if (st.tab === 'shifts' && store.sh) { n.title = 'Смены'; if (st.sv === 'req') { n.back = 'Смены'; n.title = 'Пожелания'; } }
     else if (st.tab === 'home' && navNew()) n.title = 'Главная';
     else if (st.tab === 'profile' && navNew()) n.title = 'Профиль';
     else n.title = 'Ещё';
@@ -2516,7 +2524,7 @@ color-scheme: dark;
   window.addEventListener('resize', function () { fitRep(false); });
   function syncBack() {
     if (!inTG || !TG.BackButton) return;
-    try { if ((st.tab === 'menu' && st.menu.length) || st.sheet || saOn()) TG.BackButton.show(); else TG.BackButton.hide(); } catch (e) {}
+    try { if ((st.tab === 'menu' && st.menu.length) || st.sheet || saOn() || (st.tab === 'shifts' && st.sv === 'req')) TG.BackButton.show(); else TG.BackButton.hide(); } catch (e) {}
   }
   function onScroll() {
     var nav = root.querySelector('.nav'); if (!nav) return;
@@ -2540,6 +2548,12 @@ color-scheme: dark;
     var e = topMenu();
     st.anim = '';
     render({ scroll: st.menu.length ? (e.sy || 0) : (st.homeSy || 0) });
+  }
+  function goBack() {
+    if (st.sheet) { st.sheet = false; render({ scroll: window.scrollY }); }
+    else if (saOn()) closeSearch();
+    else if (st.tab === 'shifts' && st.sv === 'req') { st.sv = st.svPrev && st.svPrev !== 'req' ? st.svPrev : 'day'; render({ scroll: 0 }); }
+    else popMenu();
   }
   function openDish(id) {
     store.recent = [id].concat(store.recent.filter(function (x) { return x !== id; })).slice(0, 10);
@@ -2678,7 +2692,11 @@ color-scheme: dark;
       case 'sclose': closeSearch(); return;
       case 'rclear': store.recent = []; save(); document.getElementById('mres').innerHTML = menuInner(); return;
       case 'tab': tabAct(v); return;
-      case 'back': popMenu(); return;
+      case 'back': goBack(); return;
+      case 'rqopen':
+        st.svPrev = st.sv === 'req' ? 'day' : st.sv; st.sv = 'req'; st.rqd = -1;
+        if (st.tab !== 'shifts') { st.scrollTab.shifts = 0; switchTab('shifts'); } else render({ scroll: 0 });
+        return;
       case 'go': switchTab(v); return;
       case 'gohours': st.sv = 'hours'; st.scrollTab.shifts = 0; if (st.tab !== 'shifts') switchTab('shifts'); else render({ scroll: 0 }); fitRep(false); return;
       case 'pickme': st.pm = !st.pm; render({ scroll: window.scrollY }); return;
@@ -2870,7 +2888,7 @@ color-scheme: dark;
   if (inTG) {
     try {
       TG.ready(); TG.expand();
-      if (TG.BackButton) TG.BackButton.onClick(function () { if (st.sheet) { st.sheet = false; render({ scroll: window.scrollY }); } else if (saOn()) closeSearch(); else popMenu(); });
+      if (TG.BackButton) TG.BackButton.onClick(function () { goBack(); });
       TG.onEvent('themeChanged', function () { applyTheme(); render({ scroll: window.scrollY }); });
     } catch (e) {}
     cloudLoad();
