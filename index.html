@@ -1267,6 +1267,25 @@ color-scheme: dark;
 .sfb { bottom: 0; padding: 18px 0 calc(var(--bottom-inset) + 12px); }
 .sfb.kb { padding-bottom: 10px; }
 
+/* ---- glass lens under the active tab ---- */
+.tabbar-in { position: relative; }
+.tab { position: relative; z-index: 1; }
+.tab[aria-current="page"], .tab.hot { background: none; box-shadow: none; }
+.tab.hot { transform: scale(1.1); color: var(--accent); }
+.lens { position: absolute; left: 0; top: 5px; bottom: 5px; width: 0; z-index: 0; pointer-events: none; border-radius: 29px;
+  background: linear-gradient(180deg, color-mix(in srgb, #fff 34%, transparent), color-mix(in srgb, #fff 6%, transparent) 70%), var(--accent-soft);
+  box-shadow: inset 0 0 0 1px rgba(40, 170, 120, .28), inset 0 1px 0 rgba(255, 255, 255, .55), inset 0 -6px 12px rgba(255, 255, 255, .08), 0 3px 12px rgba(20, 120, 90, .16);
+  -webkit-backdrop-filter: blur(3px) saturate(1.5); backdrop-filter: blur(3px) saturate(1.5);
+  transform: translateX(0); transform-origin: 50% 50%;
+  transition: transform .52s cubic-bezier(.22, 1.3, .36, 1), scale .34s cubic-bezier(.3, 1.6, .5, 1), box-shadow .25s ease, background .25s ease; }
+.tabbar-in.press .lens { scale: 1.12 1.14; box-shadow: inset 0 0 0 1px rgba(40, 170, 120, .35), inset 0 1px 0 rgba(255, 255, 255, .8), inset 0 -8px 16px rgba(255, 255, 255, .16), 0 10px 26px rgba(20, 120, 90, .28); }
+.tabbar-in.drag .lens { transition: scale .34s cubic-bezier(.3, 1.6, .5, 1), box-shadow .25s ease; scale: 1.18 1.16; }
+.tabbar-in.press { z-index: 2; }
+.tab { transition: color .2s ease, transform .3s cubic-bezier(.3, 1.6, .5, 1); }
+@media (prefers-reduced-motion: reduce) { .lens, .tab { transition: none !important; } }
+.tabbar-in.press .tab[aria-current="page"]:not(.hot) { color: var(--muted); }
+.tabbar-in.press .lens { scale: 1.1 1.14; }
+
 </style>
 
 
@@ -2371,7 +2390,7 @@ color-scheme: dark;
   function tabbarHTML() {
     var tabs = navNew() ? [['home', 'Главная'], ['shifts', 'Смены'], ['study', 'Учёба'], ['profile', 'Профиль']] : [['menu', 'Меню'], ['cards', 'Карточки'], ['quiz', 'Тесты']];
     if (!navNew()) { if (store.sh) tabs.push(['shifts', 'Смены']); tabs.push(['more', 'Ещё']); }
-    return '<nav class="tabbar" aria-label="Разделы"><div class="tabbar-in" style="grid-template-columns:repeat(' + tabs.length + ',1fr)">' + tabs.map(function (t) {
+    return '<nav class="tabbar" aria-label="Разделы"><div class="tabbar-in" style="grid-template-columns:repeat(' + tabs.length + ',1fr)"><i class="lens" aria-hidden="true"></i>' + tabs.map(function (t) {
       return '<button class="tab" data-act="tab" data-v="' + t[0] + '"' + (curKey() === t[0] ? ' aria-current="page"' : '') + '>' + ic(t[0]) + '<span>' + t[1] + '</span></button>';
     }).join('') + '</div></nav>';
   }
@@ -2393,6 +2412,7 @@ color-scheme: dark;
     var anim = st.anim; st.anim = '';
     var ns = navState();
     root.innerHTML = '<div class="bgfx" aria-hidden="true"></div>' + navHTML() + '<main class="view wrap' + (ns.back || ns.close ? '' : ' flat') + (anim ? ' ' + anim : '') + '">' + bodyHTML() + '</main>' + tabbarHTML() + (saOn() ? sfbHTML() : '') + (st.sheet ? sheetHTML() : '');
+    lensSync(true);
     root.classList.toggle('sa', saOn()); if (saOn()) { sfbLast = -1; sfbStart(); }
     st.sheetNew = false;
     document.body.style.overflow = st.sheet ? 'hidden' : '';
@@ -2504,13 +2524,39 @@ color-scheme: dark;
     var i = Math.floor((Math.min(Math.max(x, r0.left), r1.right - 1) - r0.left) / (r0.width || 1));
     return tabs[Math.min(Math.max(i, 0), tabs.length - 1)];
   }
+  /* glass lens that slides under the active tab, follows the finger and springs into place */
+  var lensX = null;
+  function lensSync(anim) {
+    var bar = root.querySelector('.tabbar-in'); if (!bar) return;
+    var lens = bar.querySelector('.lens'), cur = bar.querySelector('.tab[aria-current="page"]'), tabs = bar.querySelectorAll('.tab');
+    if (!lens || !tabs.length) return;
+    lens.style.width = tabs[0].offsetWidth + 'px';
+    if (!cur) { lens.style.opacity = '0'; return; }
+    lens.style.opacity = '';
+    var x = cur.offsetLeft;
+    if (anim && lensX != null && lensX !== x) {
+      lens.style.transition = 'none'; lens.style.transform = 'translateX(' + lensX + 'px)';
+      void lens.offsetWidth;
+      lens.style.transition = '';
+    }
+    lens.style.transform = 'translateX(' + x + 'px)';
+    lensX = x;
+  }
+  function lensTo(bar, x) { var l = bar.querySelector('.lens'); if (l) l.style.transform = 'translateX(' + x + 'px)'; lensX = x; }
+  window.addEventListener('resize', function () { lensSync(false); });
   root.addEventListener('pointerdown', function (ev) {
     var bar = ev.target.closest && ev.target.closest('.tabbar-in');
-    tbDrag = bar ? { bar: bar, x: ev.clientX, id: ev.pointerId, moved: false, hot: null } : null;
+    if (!bar || (ev.pointerType === 'mouse' && ev.button !== 0)) { tbDrag = null; return; }
+    var el = tbPick(bar, ev.clientX);
+    tbDrag = { bar: bar, x: ev.clientX, id: ev.pointerId, moved: false, hot: el };
+    bar.classList.add('press'); el.classList.add('hot');
+    lensTo(bar, el.offsetLeft);
   });
   root.addEventListener('pointermove', function (ev) {
     var d = tbDrag; if (!d || ev.pointerId !== d.id) return;
-    if (!d.moved) { if (Math.abs(ev.clientX - d.x) < 8) return; d.moved = true; d.bar.classList.add('sliding'); try { d.bar.setPointerCapture(d.id); } catch (e) {} }
+    if (!d.moved) { if (Math.abs(ev.clientX - d.x) < 8) return; d.moved = true; d.bar.classList.add('sliding', 'drag'); try { d.bar.setPointerCapture(d.id); } catch (e) {} }
+    var br = d.bar.getBoundingClientRect(), l = d.bar.querySelector('.lens'), w = l ? l.offsetWidth : 0;
+    lensTo(d.bar, Math.min(Math.max(ev.clientX - br.left - w / 2, 5), br.width - 5 - w));
     var el = tbPick(d.bar, ev.clientX);
     if (el !== d.hot) {
       if (d.hot) d.hot.classList.remove('hot');
@@ -2520,11 +2566,13 @@ color-scheme: dark;
   function tbEnd(ev) {
     var d = tbDrag; if (!d || ev.pointerId !== d.id) return;
     tbDrag = null;
-    if (!d.moved) return;
+    d.bar.classList.remove('press', 'drag');
+    if (!d.moved) { if (d.hot) d.hot.classList.remove('hot'); if (ev.type === 'pointercancel') lensSync(true); return; }
     tbSwallow = true; setTimeout(function () { tbSwallow = false; }, 400);
     var hot = d.hot, ok = ev.type === 'pointerup' && hot;
     d.bar.classList.remove('sliding'); if (hot) hot.classList.remove('hot');
     if (ok && hot.getAttribute('data-v') !== curKey()) switchTab(hot.getAttribute('data-v'));
+    else lensSync(true);
   }
   root.addEventListener('pointerup', tbEnd);
   root.addEventListener('pointercancel', tbEnd);
