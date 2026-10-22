@@ -2555,7 +2555,7 @@ color-scheme: dark;
     var bar = ev.target.closest && ev.target.closest('.tabbar-in');
     if (!bar || (ev.pointerType === 'mouse' && ev.button !== 0)) { tbDrag = null; return; }
     var el = tbPick(bar, ev.clientX);
-    tbDrag = { bar: bar, x: ev.clientX, id: ev.pointerId, moved: false, hot: el };
+    tbDrag = { bar: bar, x: ev.clientX, id: ev.pointerId, moved: false, hot: el, el: el };
     bar.classList.add('press'); el.classList.add('hot');
     lensTo(bar, el.offsetLeft);
   });
@@ -2570,11 +2570,26 @@ color-scheme: dark;
       d.hot = el; el.classList.add('hot'); buzz('sel');
     }
   });
+  /* tab taps are handled on pointerup, not on click: a re-render between down and up used to eat the click */
+  function tabAct(v) {
+    if (v === 'more' || v === 'profile') {
+      var tn = Date.now();
+      secret = (tn - secretT < 1500) ? secret + 1 : 1; secretT = tn;
+      if (secret >= 5) { secret = 0; toggleShifts(); return; }
+    } else secret = 0;
+    switchTab(v);
+  }
   function tbEnd(ev) {
     var d = tbDrag; if (!d || ev.pointerId !== d.id) return;
     tbDrag = null;
     d.bar.classList.remove('press', 'drag');
-    if (!d.moved) { if (d.hot) d.hot.classList.remove('hot'); if (ev.type === 'pointercancel') lensSync(true); return; }
+    if (!d.moved) {
+      if (d.hot) d.hot.classList.remove('hot');
+      if (ev.type !== 'pointerup') { lensSync(true); return; }
+      tbSwallow = true; setTimeout(function () { tbSwallow = false; }, 450);
+      buzz('sel'); tabAct(d.el.getAttribute('data-v'));
+      return;
+    }
     tbSwallow = true; setTimeout(function () { tbSwallow = false; }, 400);
     var hot = d.hot, ok = ev.type === 'pointerup' && hot;
     d.bar.classList.remove('sliding'); if (hot) hot.classList.remove('hot');
@@ -2584,7 +2599,7 @@ color-scheme: dark;
   root.addEventListener('pointerup', tbEnd);
   root.addEventListener('pointercancel', tbEnd);
   root.addEventListener('click', function (ev) {
-    if (tbSwallow) { tbSwallow = false; ev.preventDefault(); return; }
+    if (tbSwallow && ev.target.closest && ev.target.closest('.tabbar-in')) { tbSwallow = false; ev.preventDefault(); return; }
     var t = ev.target.closest('[data-act]');
     if (!t || t.disabled) return;
     var act = t.getAttribute('data-act'), v = t.getAttribute('data-v');
@@ -2596,13 +2611,7 @@ color-scheme: dark;
       case 'fltclear': st.flt = {}; document.getElementById('mres').innerHTML = menuInner(); syncSfb(); return;
       case 'sclose': closeSearch(); return;
       case 'rclear': store.recent = []; save(); document.getElementById('mres').innerHTML = menuInner(); return;
-      case 'tab':
-        if (v === 'more' || v === 'profile') {
-          var tn = Date.now();
-          secret = (tn - secretT < 1500) ? secret + 1 : 1; secretT = tn;
-          if (secret >= 5) { secret = 0; toggleShifts(); return; }
-        } else secret = 0;
-        switchTab(v); return;
+      case 'tab': tabAct(v); return;
       case 'back': popMenu(); return;
       case 'go': switchTab(v); return;
       case 'gohours': st.sv = 'hours'; st.scrollTab.shifts = 0; if (st.tab !== 'shifts') switchTab('shifts'); else render({ scroll: 0 }); fitRep(false); return;
