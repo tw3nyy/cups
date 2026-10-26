@@ -3069,7 +3069,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   function ghTok(tok, method, path, body) {
     return fetch('https://api.github.com/repos/' + REPO + path, {
       method: method, cache: 'no-store',
-      headers: { 'Authorization': 'Bearer ' + tok, 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', 'Content-Type': 'application/json' },
+      headers: { 'Authorization': 'Bearer ' + tok, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
       body: body ? JSON.stringify(body) : undefined
     }).then(function (r) {
       return r.json().then(function (j) { return j; }, function () { return {}; }).then(function (j) {
@@ -3083,7 +3083,14 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     if (e && e.status === 401) return 'GitHub не принял токен';
     if (e && (e.status === 403 || e.status === 404)) return 'У токена нет записи в ' + REPO + ' (Contents: Read and write)';
     if (e && e.status) return 'GitHub: ' + e.message;
-    return 'Нет связи с GitHub';
+    return 'Нет связи с GitHub' + (e && e.message ? ' (' + e.message + ')' : '');
+  }
+  /* one more try when the request did not reach GitHub at all (flaky mobile network) */
+  function ghR(method, path, body) {
+    return gh(method, path, body).catch(function (e) {
+      if (e && e.status) throw e;
+      return new Promise(function (r) { setTimeout(r, 900); }).then(function () { return gh(method, path, body); });
+    });
   }
   function admDraftSave() {
     try { localStorage.setItem('ttk-draft', JSON.stringify({ json: exportMenu(D.rev || 0), pend: adm.pend })); } catch (e) {}
@@ -3097,17 +3104,20 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     var chain = Promise.resolve();
     ids.forEach(function (id) {
       chain = chain.then(function () {
-        return gh('PUT', '/contents/photos/' + id + '.jpg', { message: 'Фото блюда', content: adm.pend[id].split(',')[1], branch: 'main' }).catch(function (e) { if (e.status !== 422) throw e; });
+        adm.step = 'фото';
+        return ghR('PUT', '/contents/photos/' + id + '.jpg', { message: 'Фото блюда', content: adm.pend[id].split(',')[1], branch: 'main' }).catch(function (e) { if (e.status !== 422) throw e; });
       });
     });
     function putMenu(tries) {
-      return gh('GET', '/contents/menu.json?ref=main').catch(function (e) { if (e.status === 404) return {}; throw e; }).then(function (cur) {
+      adm.step = 'меню, чтение';
+      return ghR('GET', '/contents/menu.json?ref=main').catch(function (e) { if (e.status === 404) return {}; throw e; }).then(function (cur) {
         var remote = {};
         try { remote = JSON.parse(unb64(cur.content || '')); } catch (e) {}
         var rev = Math.max(remote.rev || 0, D.rev || 0) + 1;
         var body = { message: 'Меню: правки из приложения', content: b64(exportMenu(rev)), branch: 'main' };
         if (cur.sha) body.sha = cur.sha;
-        return gh('PUT', '/contents/menu.json', body).then(function () { return rev; }, function (e) {
+        adm.step = 'меню, запись';
+        return ghR('PUT', '/contents/menu.json', body).then(function () { return rev; }, function (e) {
           if ((e.status === 409 || e.status === 422) && tries > 0) return putMenu(tries - 1);
           throw e;
         });
@@ -3119,7 +3129,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       toast('Сохранено. У остальных появится через пару минут');
       render({ scroll: window.scrollY });
     }).catch(function (e) {
-      adm.busy = false; adm.msg = ghErr(e);
+      adm.busy = false; adm.msg = ghErr(e) + (e && !e.status && adm.step ? ' [' + adm.step + ']' : '');
       render({ scroll: window.scrollY });
     });
   }
@@ -3368,7 +3378,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = 'd2e47066be';
+    var BUILD = '4291bb6e28';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
