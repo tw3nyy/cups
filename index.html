@@ -3026,7 +3026,9 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   var REPO = 'tw3nyy/cups';
   var adm = { tok: '', on: false, dirty: false, n: 0, ed: null, pend: {}, busy: false, msg: '', armDel: false, armDis: false, setup: false, chk: false };
   try { adm.tok = localStorage.getItem('ttk-adm') || ''; adm.on = !!adm.tok && localStorage.getItem('ttk-adm-on') === '1'; } catch (e) {}
-  function admUser() { return !!adm.tok || !!(tgUser && tgUser.username && /^tw3nyy$/i.test(tgUser.username)); }
+  /* outside Telegram the admin block is opened with  ...#admin  (remembered on this device) */
+  try { if (/admin/.test(location.hash)) localStorage.setItem('ttk-adm-show', '1'); adm.show = localStorage.getItem('ttk-adm-show') === '1'; } catch (e) {}
+  function admUser() { return !!adm.tok || !!adm.show || !!(tgUser && tgUser.username && /^tw3nyy$/i.test(tgUser.username)); }
   function admOn() { return !!adm.tok && adm.on; }
   function b64(s) { return btoa(unescape(encodeURIComponent(s))); }
   function unb64(s) { return decodeURIComponent(escape(atob(String(s).replace(/\s/g, '')))); }
@@ -3378,7 +3380,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = '4291bb6e28';
+    var BUILD = '17f9c1eb87';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
