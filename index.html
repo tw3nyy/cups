@@ -1531,6 +1531,11 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     scrollTab: {}, rqs: -1, rqt: null, anim: '', resetArm: false, sd: null, sv: 'day', wi: null, pk: null, study: 'menu', pm: false, from: '', sa: false
   };
   var tgUser = (inTG && TG.initDataUnsafe && TG.initDataUnsafe.user) || null;
+  /* the Telegram profile (name, @username, avatar) is remembered so the browser copy can show it too */
+  try {
+    if (tgUser) localStorage.setItem('ttk-prof', JSON.stringify({ first_name: tgUser.first_name || '', last_name: tgUser.last_name || '', username: tgUser.username || '', photo_url: tgUser.photo_url || '' }));
+    else { var pj = JSON.parse(localStorage.getItem('ttk-prof') || 'null'); if (pj && (pj.first_name || pj.username)) tgUser = pj; }
+  } catch (e) {}
   function inStudy(t) { return t === 'menu' || t === 'cards' || t === 'quiz'; }
   function curKey() { return inStudy(st.tab) ? (st.tab === 'menu' && st.from === 'home' ? 'home' : 'study') : st.tab; }
   st.tab = 'home';
@@ -3030,6 +3035,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   function syncUrl() {
     var o = { v: 1, s: { known: store.known, fav: store.fav, recent: store.recent.slice(0, 10), me: store.me, theme: store.theme, sec: store.sec, cat: store.cat, only: store.only, ex: store.ex, t: store.t } };
     try { var tk = localStorage.getItem('ttk-adm'); if (tk) o.a = tk; } catch (e) {}
+    if (tgUser) o.u = { first_name: tgUser.first_name || '', last_name: tgUser.last_name || '', username: tgUser.username || '', photo_url: tgUser.photo_url || '' };
     return location.origin + location.pathname + '#sync=' + b64u(JSON.stringify(o));
   }
   (function () {
@@ -3050,6 +3056,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
         store.t = Date.now();
         save(); applyTheme();
       }
+      if (o && o.u && typeof o.u === 'object') { tgUser = { first_name: String(o.u.first_name || ''), last_name: String(o.u.last_name || ''), username: String(o.u.username || ''), photo_url: /^https:\/\//.test(o.u.photo_url || '') ? o.u.photo_url : '' }; try { localStorage.setItem('ttk-prof', JSON.stringify(tgUser)); } catch (e) {} }
       if (o && typeof o.a === 'string' && /^[A-Za-z0-9_]{20,}$/.test(o.a)) { try { localStorage.setItem('ttk-adm', o.a); localStorage.setItem('ttk-adm-on', '1'); } catch (e) {} }
     } catch (e) {}
     try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
@@ -3413,7 +3420,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = 'e2bd07aa2b';
+    var BUILD = 'e68a0dac80';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
