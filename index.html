@@ -2947,7 +2947,8 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       case 'scp': { var pd = payData(); if (pd) sendToChat(pd.text); return; }
       case 'sview': st.sv = v; render({ scroll: window.scrollY, fit: v === 'hours' }); return;
       case 'sme': {
-        store.me = store.me === v ? '' : v; if (st.tab === 'profile') st.pm = false; save(); render({ scroll: window.scrollY, fit: st.sv === 'hours' && !!store.me });
+        store.me = store.me === v ? '' : v; if (st.tab === 'profile') st.pm = false; save();
+        if (!store.me) { try { localStorage.removeItem('ttk-ask-done'); } catch (x) {} setTimeout(showWelcome, 150); } render({ scroll: window.scrollY, fit: st.sv === 'hours' && !!store.me });
         return;
       }
       case 'instgo': if (inTG) { try { TG.addToHomeScreen(); } catch (x) {} return; } if (inst.ev) { var iv = inst.ev; inst.ev = null; try { iv.prompt(); } catch (x) {} render({ scroll: window.scrollY }); } else { inst.help = true; render({ scroll: window.scrollY }); } return;
@@ -3604,6 +3605,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   document.addEventListener('visibilitychange', function () { if (!document.hidden) fetchMenu(); });
   admLoadCloud();
 
+  try { if (/[#&]welcome\b/.test(location.hash)) { localStorage.removeItem('ttk-ask-done'); store.me = ''; save(); history.replaceState(null, '', location.pathname + location.search); } } catch (e) {}
   render({ scroll: 0 });
   showWelcome();
   if (inTG) {
@@ -3616,7 +3618,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = '4d5caca795';
+    var BUILD = '3fe5608d2c';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
