@@ -1492,7 +1492,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
 (function () {
   var D = JSON.parse(document.getElementById('data').textContent);
   var PH = JSON.parse(document.getElementById('photos').textContent);
-  function phSrc(p) { return PH[p] || ('photos/' + p + '.jpg'); }
+  function phSrc(p) { return PH[p] || (/^u/.test(String(p)) ? API + '/api/photo/' + p : 'photos/' + p + '.jpg'); }
   var BR = JSON.parse(document.getElementById('brand').textContent);
   var SCHED = JSON.parse(document.getElementById('sched').textContent);
   var dishes = D.dishes, secs = D.secs, glossary = D.glossary, rules = D.rules || [];
@@ -3315,6 +3315,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   var REPO = 'tw3nyy/cups';
   var adm = { tok: '', on: false, dirty: false, n: 0, ed: null, pend: {}, busy: false, msg: '', armDel: false, armDis: false, setup: false, chk: false };
   try { adm.tok = localStorage.getItem('ttk-adm') || ''; adm.on = !!adm.tok && localStorage.getItem('ttk-adm-on') === '1'; } catch (e) {}
+  if (/^(github_pat_|ghp_|gho_|ghs_)/.test(adm.tok)) { adm.tok = ''; adm.on = false; try { localStorage.removeItem('ttk-adm'); localStorage.removeItem('ttk-adm-on'); } catch (e) {} }
   /* outside Telegram the admin block is opened with  ...#admin  (remembered on this device) */
   try { if (/admin/.test(location.hash)) localStorage.setItem('ttk-adm-show', '1'); adm.show = localStorage.getItem('ttk-adm-show') === '1'; } catch (e) {}
   function admUser() { return !!adm.tok || !!adm.show || !!(tgUser && tgUser.username && /^tw3nyy$/i.test(tgUser.username)); }
@@ -3340,13 +3341,18 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     if (store.sec !== 'all' && SECS.indexOf(store.sec) < 0) store.sec = 'all';
     if (store.cat !== 'all' && (store.sec === 'all' || catsOf[store.sec].indexOf(store.cat) < 0)) store.cat = 'all';
   }
-  /* everyone: fetch the current menu.json and swap it in when it is newer than what the page was built with */
+  /* everyone: fetch the current menu (from the API, else from menu.json) and swap it in when it is newer than what the page was built with */
   function fetchMenu(force) {
     if (!window.fetch || !/^https?:$/.test(location.protocol)) return;
     if (adm.dirty && !force) return;
+    function okMenu(nd) { return !!(nd && nd.dishes && nd.dishes.length && nd.secs && nd.secs.length); }
+    function fromFile() { return fetch('menu.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }); }
     try {
-      fetch('menu.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (nd) {
-        if (!nd || !nd.dishes || !nd.dishes.length || !nd.secs || !nd.secs.length) { if (force) toast('Не получилось загрузить меню'); return; }
+      fetch(API + '/api/menu', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+        if (j && okMenu(j.menu)) { j.menu.rev = j.rev || 0; return j.menu; }
+        return fromFile();
+      }, function () { return fromFile(); }).then(function (nd) {
+        if (!okMenu(nd)) { if (force) toast('Не получилось загрузить меню'); return; }
         if (!force && (nd.rev || 0) <= (D.rev || 0)) return;
         if (!force && (st.tab === 'cards' || st.tab === 'quiz')) return;
         if (st.tab === 'menu' && topMenu().kind === 'edit') return;
@@ -3356,31 +3362,29 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       }).catch(function () { if (force) toast('Не получилось загрузить меню'); });
     } catch (e) {}
   }
-  /* ----- GitHub ----- */
-  function ghTok(tok, method, path, body) {
-    return fetch('https://api.github.com/repos/' + REPO + path, {
-      method: method, cache: 'no-store',
-      headers: { 'Authorization': 'Bearer ' + tok, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
-      body: body ? JSON.stringify(body) : undefined
-    }).then(function (r) {
+  /* ----- сервер (Cloudflare Worker): правки меню и фото, вход по паролю админа ----- */
+  function apiErr(e) {
+    if (e && e.status === 401) return 'Пароль админа не подошёл. Отключи админку и войди заново';
+    if (e && e.status === 429) return 'Слишком много неверных попыток, подожди 10 минут';
+    if (e && e.status === 413) return 'Слишком большой файл';
+    if (e && e.status) return 'Сервер: ' + (e.message || e.status);
+    return 'Нет связи с сервером' + (e && e.message ? ' (' + e.message + ')' : '');
+  }
+  function admReqT(tok, method, path, body) {
+    var h = { 'Content-Type': 'application/json' };
+    if (tok) h.Authorization = 'Admin ' + tok;
+    return fetch(API + path, { method: method, cache: 'no-store', headers: h, body: body == null ? undefined : (typeof body === 'string' ? body : JSON.stringify(body)) }).then(function (r) {
       return r.json().then(function (j) { return j; }, function () { return {}; }).then(function (j) {
-        if (!r.ok) { var e = new Error((j && j.message) || ('HTTP ' + r.status)); e.status = r.status; throw e; }
+        if (!r.ok) { var e = new Error((j && (j.error || j.message)) || ('HTTP ' + r.status)); e.status = r.status; e.data = j; throw e; }
         return j;
       });
     });
   }
-  function gh(method, path, body) { return ghTok(adm.tok, method, path, body); }
-  function ghErr(e) {
-    if (e && e.status === 401) return 'GitHub не принял токен';
-    if (e && (e.status === 403 || e.status === 404)) return 'У токена нет записи в ' + REPO + ' (Contents: Read and write)';
-    if (e && e.status) return 'GitHub: ' + e.message;
-    return 'Нет связи с GitHub' + (e && e.message ? ' (' + e.message + ')' : '');
-  }
-  /* one more try when the request did not reach GitHub at all (flaky mobile network) */
-  function ghR(method, path, body) {
-    return gh(method, path, body).catch(function (e) {
+  /* one more try when the request did not reach the server at all (flaky mobile network) */
+  function admReq(method, path, body) {
+    return admReqT(adm.tok, method, path, body).catch(function (e) {
       if (e && e.status) throw e;
-      return new Promise(function (r) { setTimeout(r, 900); }).then(function () { return gh(method, path, body); });
+      return new Promise(function (r) { setTimeout(r, 900); }).then(function () { return admReqT(adm.tok, method, path, body); });
     });
   }
   function admDraftSave() {
@@ -3394,22 +3398,15 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     var ids = Object.keys(adm.pend).filter(function (id) { return used[id]; });
     var chain = Promise.resolve();
     ids.forEach(function (id) {
-      chain = chain.then(function () {
-        adm.step = 'фото';
-        return ghR('PUT', '/contents/photos/' + id + '.jpg', { message: 'Фото блюда', content: adm.pend[id].split(',')[1], branch: 'main' }).catch(function (e) { if (e.status !== 422) throw e; });
-      });
+      chain = chain.then(function () { adm.step = 'фото'; return admReq('PUT', '/api/photo/' + id, { data: adm.pend[id] }); });
     });
     function putMenu(tries) {
       adm.step = 'меню, чтение';
-      return ghR('GET', '/contents/menu.json?ref=main').catch(function (e) { if (e.status === 404) return {}; throw e; }).then(function (cur) {
-        var remote = {};
-        try { remote = JSON.parse(unb64(cur.content || '')); } catch (e) {}
-        var rev = Math.max(remote.rev || 0, D.rev || 0) + 1;
-        var body = { message: 'Меню: правки из приложения', content: b64(exportMenu(rev)), branch: 'main' };
-        if (cur.sha) body.sha = cur.sha;
+      return fetch(API + '/api/menu', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (cur) {
+        var rev = Math.max(cur.rev || 0, D.rev || 0) + 1;
         adm.step = 'меню, запись';
-        return ghR('PUT', '/contents/menu.json', body).then(function () { return rev; }, function (e) {
-          if ((e.status === 409 || e.status === 422) && tries > 0) return putMenu(tries - 1);
+        return admReq('PUT', '/api/menu', '{"rev":' + rev + ',"menu":' + exportMenu(rev) + '}').then(function () { return rev; }, function (e) {
+          if (e.status === 409 && tries > 0) return putMenu(tries - 1);
           throw e;
         });
       });
@@ -3417,10 +3414,10 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     chain.then(function () { return putMenu(2); }).then(function (rev) {
       D.rev = rev; adm.dirty = false; adm.pend = {}; adm.n = 0; adm.busy = false; adm.msg = '';
       try { localStorage.removeItem('ttk-draft'); } catch (e) {}
-      toast('Сохранено. У остальных появится через пару минут');
+      toast('Сохранено. У остальных появится при открытии');
       render({ scroll: window.scrollY });
     }).catch(function (e) {
-      adm.busy = false; adm.msg = ghErr(e) + (e && !e.status && adm.step ? ' [' + adm.step + ']' : '');
+      adm.busy = false; adm.msg = apiErr(e) + (e && !e.status && adm.step ? ' [' + adm.step + ']' : '');
       render({ scroll: window.scrollY });
     });
   }
@@ -3436,34 +3433,49 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       '<button class="adm-b pri" data-act="admsave"' + (adm.busy ? ' disabled' : '') + '>' + (adm.busy ? 'Сохраняю…' : 'Сохранить') + '</button></div>';
   }
   /* ----- профиль: подключение и режим редактирования ----- */
+  function admStatus() {
+    fetch(API + '/api/admin/status', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) { adm.set = !!j.set; adm.msg = ''; render({ scroll: window.scrollY }); })
+      .catch(function () { adm.set = true; adm.msg = 'Нет связи с сервером'; render({ scroll: window.scrollY }); });
+  }
   function admBlock() {
     if (!admUser()) return '';
     var h = '<div class="gh"><span class="eyebrow">Админка</span></div>';
     if (!adm.tok) {
-      h += '<div class="group adm-box"><p class="adm-p"><b>Правка меню.</b> Нужен токен GitHub с доступом только к репозиторию ' + REPO + '. Он хранится только у тебя в Телеграме.</p>' +
-        '<ol class="adm-ol"><li>Открой <button class="adm-link" data-act="admlink">создание токена</button></li><li>Repository access: Only select repositories → ' + REPO + '</li><li>Permissions → Contents: Read and write</li><li>Generate token, скопируй и вставь ниже</li></ol>' +
-        '<input class="edin" id="adm-tok" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_…">' +
-        (adm.msg ? '<p class="adm-msg">' + esc(adm.msg) + '</p>' : '') +
-        '<button class="btn primary" data-act="admtok"' + (adm.chk ? ' disabled' : '') + '>' + (adm.chk ? 'Проверяю…' : 'Проверить и включить') + '</button></div>';
-      return h;
+      if (adm.set === undefined) { adm.set = null; admStatus(); }
+      var first = adm.set === false, ld = adm.set === null;
+      h += '<div class="group adm-box"><p class="adm-p"><b>Правка меню.</b> ' + (ld ? 'Проверяю…' : first ? 'Придумай пароль админа, минимум 8 символов. Его вводят на каждом устройстве, где ты правишь меню. Запомни его: восстановить нельзя.' : 'Введи пароль админа.') + '</p>';
+      if (!ld) {
+        h += '<input class="edin" id="adm-tok" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="' + (first ? 'Новый пароль' : 'Пароль админа') + '">';
+        if (first) h += '<input class="edin" id="adm-tok2" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Повтори пароль" style="margin-top:8px">';
+        if (adm.msg) h += '<p class="adm-msg">' + esc(adm.msg) + '</p>';
+        h += '<button class="btn primary" data-act="admtok"' + (adm.chk ? ' disabled' : '') + '>' + (adm.chk ? 'Проверяю…' : (first ? 'Создать и включить' : 'Войти')) + '</button>';
+      }
+      return h + '</div>';
     }
     h += '<div class="group"><button class="switch" data-act="admon" aria-pressed="' + adm.on + '"><span>Режим редактирования<small class="pf-s">' + (adm.on ? 'в блюде появится «Править»' : 'выключен') + '</small></span><i></i></button></div>';
     h += '<button class="pf-clear adm-out" data-act="admout">Отключить админку на этом устройстве</button>';
     return h;
   }
   function admVerify() {
-    var inp = document.getElementById('adm-tok'), tok = inp ? trim(inp.value) : '';
-    if (!/^(github_pat_|ghp_|gho_|ghs_)[A-Za-z0-9_]{20,}$/.test(tok)) { adm.msg = 'Это не похоже на токен GitHub'; render({ scroll: window.scrollY }); return; }
+    var inp = document.getElementById('adm-tok'), inp2 = document.getElementById('adm-tok2'), pw = inp ? inp.value : '';
+    function bad(m) { adm.msg = m; adm.chk = false; render({ scroll: window.scrollY }); }
+    if (adm.set === false) {
+      if (pw.length < 8) { bad('Минимум 8 символов'); return; }
+      if (!inp2 || inp2.value !== pw) { bad('Пароли не совпадают'); return; }
+    } else if (!pw) { bad('Введи пароль'); return; }
     adm.chk = true; adm.msg = ''; render({ scroll: window.scrollY });
-    ghTok(tok, 'GET', '').then(function (r) {
-      if (r.permissions && r.permissions.push === false) { var e = new Error('no push'); e.status = 403; throw e; }
-      adm.tok = tok; adm.on = true; adm.chk = false; adm.msg = '';
-      try { localStorage.setItem('ttk-adm', tok); localStorage.setItem('ttk-adm-on', '1'); } catch (e2) {}
-      try { if (inTG && TG.CloudStorage && TG.CloudStorage.setItem) TG.CloudStorage.setItem('adm', tok, function () {}); } catch (e3) {}
+    var p = adm.set === false ? admReqT('', 'POST', '/api/admin/setup', { password: pw }) : admReqT(pw, 'POST', '/api/admin/check');
+    p.then(function () {
+      adm.tok = pw; adm.on = true; adm.chk = false; adm.msg = ''; adm.set = true;
+      try { localStorage.setItem('ttk-adm', pw); localStorage.setItem('ttk-adm-on', '1'); } catch (e2) {}
       toast('Админка включена'); render({ scroll: window.scrollY });
-    }).catch(function (e) { adm.chk = false; adm.msg = ghErr(e); render({ scroll: window.scrollY }); });
+    }).catch(function (e) {
+      if (e && e.status === 409) { adm.set = true; bad('Пароль уже задан. Введи его'); return; }
+      bad(apiErr(e));
+    });
   }
   function admLoadCloud() {
+    return; /* пароль админа больше не хранится в облаке Телеграма */
     if (adm.tok || !inTG || !TG.CloudStorage || !TG.CloudStorage.getItem) return;
     try {
       TG.CloudStorage.getItem('adm', function (err, val) {
@@ -3676,7 +3688,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = '3c9f9e5d4b';
+    var BUILD = '89bdd2836d';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
