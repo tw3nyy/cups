@@ -1589,6 +1589,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     Напитки: '<path d="M4.5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z"/><path d="M15.5 10.5H17a2.5 2.5 0 0 1 0 5h-1.5"/><path d="M8 3.5c0 1 1 1.5 1 2.5M11.5 3.5c0 1 1 1.5 1 2.5"/>',
     Десерты: '<path d="M4 20h16v-6H4z"/><path d="M5 14c0-2 1.5-3 3-3s2 1 4 1 2.5-1 4-1 3 1 3 3"/><path d="M12 11V7.5"/><path d="M12 4.6c.7.8.7 1.5 0 2.2-.7-.7-.7-1.4 0-2.2z"/>',
     Выпечка: '<path d="M4 11a4 4 0 0 1 3-6.4h10A4 4 0 0 1 20 11v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M9 11.5v3M12 11.5v3M15 11.5v3"/>',
+    ext: '<path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
     edit: '<path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z"/><path d="M14.5 7.5l3 3"/>',
     camera: '<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.4"/>',
     list: '<path d="M9 7h11M9 12h11M9 17h11"/><path d="M4.5 7h.01M4.5 12h.01M4.5 17h.01"/>',
@@ -2577,6 +2578,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       }).join('') + '</div>' + (store.me ? '<button class="pf-clear" data-act="sme" data-v="' + esc(store.me) + '">Это не я, сбросить</button>' : '');
     }
     h += '<button class="pf-row" data-act="gohours"><span class="pf-ic">' + ic('clock') + '</span><span class="pf-t">Мои часы и зарплата</span><span class="pf-v"></span>' + ic('chevR') + '</button>';
+    if (inTG) h += '<button class="pf-row" data-act="tobrowser"><span class="pf-ic">' + ic('ext') + '</span><span class="pf-t">Открыть в браузере<small class="pf-s">с твоим именем и прогрессом</small></span><span class="pf-v"></span>' + ic('chevR') + '</button>';
     h += '<button class="pf-row" data-act="rqopen"><span class="pf-ic">' + ic('shifts') + '</span><span class="pf-t">Пожелания<small class="pf-s">' + rqRange() + '</small></span><span class="pf-v"></span>' + ic('chevR') + '</button></div>';
     h += progressBlock() + themeBlock() + notesBlock();
     h += admBlock();
@@ -2830,7 +2832,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     var c = st.cards, q = st.quiz;
     var HK = { rqc: 'light', rqsd: 'med', rqsx: 'light', rqp: 'sel', rqcp: 'light', rqclr: 'med', tab: 'sel', open: 'light', sec: 'light', scat: 'sel', sf: 'sel', flt: 'sel', setsec: 'sel', setcat: 'sel', only: 'sel', cmode: 'sel', bchip: 'sel', star: 'med', sheet: 'light', qstart: 'med', qnext: 'light', theme: 'sel', go: 'sel', gohours: 'light', pickme: 'sel', sday: 'sel', sview: 'sel', swk: 'sel', spr: 'sel', sex: 'sel', scp: 'light', sme: 'sel', sclose: 'light', rclear: 'med', back: 'light', ph: 'sel', openq: 'light' };
     if (HK[act]) buzz(HK[act]);
-    if (act === 'aed' || act.slice(0, 2) === 'ed' || act.slice(0, 3) === 'adm') { admAct(act, v); return; }
+    if (act === 'aed' || act === 'tobrowser' || act.slice(0, 2) === 'ed' || act.slice(0, 3) === 'adm') { admAct(act, v); return; }
     switch (act) {
       case 'flt': st.flt[v] = !st.flt[v]; document.getElementById('mres').innerHTML = menuInner(); syncSfb(); return;
       case 'fltclear': st.flt = {}; document.getElementById('mres').innerHTML = menuInner(); syncSfb(); return;
@@ -3022,6 +3024,36 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   });
   document.addEventListener('pointercancel', function () { edge = null; });
 
+  /* ---------- перенос в браузер: ссылка с #sync=... несёт имя, прогресс и токен админки ---------- */
+  function b64u(s) { return b64(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+  function unb64u(s) { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return unb64(s); }
+  function syncUrl() {
+    var o = { v: 1, s: { known: store.known, fav: store.fav, recent: store.recent.slice(0, 10), me: store.me, theme: store.theme, sec: store.sec, cat: store.cat, only: store.only, ex: store.ex, t: store.t } };
+    try { var tk = localStorage.getItem('ttk-adm'); if (tk) o.a = tk; } catch (e) {}
+    return location.origin + location.pathname + '#sync=' + b64u(JSON.stringify(o));
+  }
+  (function () {
+    var m = /[#&]sync=([A-Za-z0-9_-]+)/.exec(location.hash);
+    if (!m) return;
+    try {
+      var o = JSON.parse(unb64u(m[1])), n = o && o.s;
+      if (n && typeof n === 'object') {
+        if (n.known && typeof n.known === 'object') store.known = n.known;
+        if (n.fav && typeof n.fav === 'object') store.fav = n.fav;
+        if (Array.isArray(n.recent)) store.recent = n.recent;
+        if (typeof n.me === 'string') store.me = n.me;
+        if (n.theme) store.theme = n.theme;
+        if (n.sec) store.sec = n.sec;
+        if (n.cat) store.cat = n.cat;
+        store.only = !!n.only;
+        if (n.ex && typeof n.ex === 'object') store.ex = n.ex;
+        store.t = Date.now();
+        save(); applyTheme();
+      }
+      if (o && typeof o.a === 'string' && /^[A-Za-z0-9_]{20,}$/.test(o.a)) { try { localStorage.setItem('ttk-adm', o.a); localStorage.setItem('ttk-adm-on', '1'); } catch (e) {} }
+    } catch (e) {}
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+  })();
   /* ---------- admin: правка меню и сохранение в GitHub ---------- */
   var REPO = 'tw3nyy/cups';
   var adm = { tok: '', on: false, dirty: false, n: 0, ed: null, pend: {}, busy: false, msg: '', armDel: false, armDis: false, setup: false, chk: false };
@@ -3311,6 +3343,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   function admAct(act, v) {
     var e = adm.ed;
     switch (act) {
+      case 'tobrowser': { var u = syncUrl(); try { if (TG.openLink) { TG.openLink(u); return; } } catch (x) {} window.open(u, '_blank'); return; }
       case 'aed': edOpen(v); return;
       case 'ednew': edOpen(null, v); return;
       case 'edok': edOk(); return;
@@ -3380,7 +3413,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = '17f9c1eb87';
+    var BUILD = 'e2bd07aa2b';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
