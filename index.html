@@ -1426,6 +1426,17 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
 .inst-x { flex: none; width: 34px; height: 34px; display: grid; place-items: center; color: var(--muted); }
 .inst-x .ic { width: 16px; height: 16px; }
 
+#welcome { position: fixed; inset: 0; z-index: 900; overflow-y: auto; -webkit-overflow-scrolling: touch; background: var(--bg); padding: calc(env(safe-area-inset-top, 0px) + 34px) max(20px, env(safe-area-inset-left, 0px)) calc(env(safe-area-inset-bottom, 0px) + 28px) max(20px, env(safe-area-inset-right, 0px)); animation: wlin .28s ease both; }
+#welcome.out { opacity: 0; transition: opacity .25s; pointer-events: none; }
+@keyframes wlin { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.wl-in { max-width: 460px; margin: 0 auto; }
+.wl-h { font-size: 32px; line-height: 1.1; font-weight: 700; letter-spacing: -.02em; margin: 6px 0 10px; text-wrap: balance; }
+.wl-p { color: var(--ink-2); font-size: 15.5px; line-height: 1.45; margin: 0 0 22px; }
+.wl-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.wl-b { min-height: 52px; padding: 10px 14px; border-radius: 16px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line-2); font-size: 16.5px; font-weight: 600; text-align: center; overflow-wrap: anywhere; }
+.wl-b:active { background: var(--accent-soft); box-shadow: inset 0 0 0 2px var(--accent); }
+.wl-skip { display: block; width: 100%; margin-top: 22px; padding: 14px; color: var(--muted); font-size: 15px; text-align: center; }
+
 </style>
 
 
@@ -2605,7 +2616,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     }
     h += '<button class="pf-row" data-act="gohours"><span class="pf-ic">' + ic('clock') + '</span><span class="pf-t">Мои часы и зарплата</span><span class="pf-v"></span>' + ic('chevR') + '</button>';
     if (inTG) h += '<button class="pf-row" data-act="tobrowser"><span class="pf-ic">' + ic('ext') + '</span><span class="pf-t">Открыть в браузере<small class="pf-s">с твоим именем и прогрессом</small></span><span class="pf-v"></span>' + ic('chevR') + '</button>';
-    if (!inTG) h += cl.tok ? '<button class="pf-row" data-act="devout"><span class="pf-ic">' + ic('ext') + '</span><span class="pf-t">Выйти из аккаунта<small class="pf-s">' + (tgUser && tgUser.username ? '@' + esc(tgUser.username) + ', ' : '') + 'прогресс общий с Телеграмом</small></span><span class="pf-v"></span>' + ic('chevR') + '</button>' : '<div class="pf-row cl-login"><span class="pf-t">Войти через Телеграм<small class="pf-s">В боте: Профиль, Код для входа. Вставь его сюда</small><span class="cl-in"><input class="edin" id="cl-code" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="КОД"><button class="btn primary" data-act="clcode">Войти</button></span></span></div>';
+    if (!inTG) h += cl.tok ? '<button class="pf-row" data-act="devout"><span class="pf-ic">' + ic('ext') + '</span><span class="pf-t">Выйти из аккаунта<small class="pf-s">' + (tgUser && tgUser.username ? '@' + esc(tgUser.username) + ', ' : '') + 'прогресс общий с Телеграмом</small></span><span class="pf-v"></span>' + ic('chevR') + '</button>' : '';
     if (inTG) h += '<button class="pf-row" data-act="getcode"><span class="pf-ic">' + ic('ext') + '</span><span class="pf-t">' + (cl.code ? 'Код: <b style="letter-spacing:.14em;font-variant-numeric:tabular-nums">' + esc(cl.code) + '</b><small class="pf-s">Нажми, чтобы скопировать. Действует 10 минут</small>' : 'Код для входа<small class="pf-s">Для браузера или ярлыка на телефоне, где нет Телеграма</small>') + '</span><span class="pf-v"></span>' + ic('chevR') + '</button>';
     h += '<button class="pf-row" data-act="rqopen"><span class="pf-ic">' + ic('shifts') + '</span><span class="pf-t">Пожелания<small class="pf-s">' + rqRange() + '</small></span><span class="pf-v"></span>' + ic('chevR') + '</button></div>';
     h += progressBlock() + themeBlock() + notesBlock();
@@ -3086,6 +3097,24 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     } catch (e) {}
     try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
   })();
+  /* ---------- первый вход: выбери своё имя из графика ---------- */
+  function welcomeDone() { try { return localStorage.getItem('ttk-ask-done') === '1'; } catch (e) { return false; } }
+  function closeWelcome() { var e = document.getElementById('welcome'); if (e && e.parentNode) { e.classList.add('out'); setTimeout(function () { if (e.parentNode) e.parentNode.removeChild(e); }, 260); } }
+  function showWelcome() {
+    if (store.me || welcomeDone() || document.getElementById('welcome')) return;
+    var ppl = schedPeople(); if (!ppl.length) return;
+    var el = document.createElement('div'); el.id = 'welcome'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Выбери своё имя');
+    el.innerHTML = '<div class="wl-in"><div class="eyebrow">CUPS</div><h1 class="wl-h">Кто ты в графике?</h1><p class="wl-p">Выбери своё имя из списка. Тогда в приложении появятся твои смены, часы и зарплата. Имя запомнится, потом его можно поменять в профиле.</p><div class="wl-grid">' +
+      ppl.map(function (p) { return '<button class="wl-b" data-act="wme" data-v="' + esc(p) + '">' + esc(p) + '</button>'; }).join('') +
+      '</div><button class="wl-skip" data-act="wskip">Пропустить, просто посмотреть меню</button></div>';
+    el.addEventListener('click', function (ev) {
+      var b = ev.target.closest ? ev.target.closest('[data-act]') : null; if (!b) return;
+      try { localStorage.setItem('ttk-ask-done', '1'); } catch (x) {}
+      if (b.getAttribute('data-act') === 'wme') { store.me = b.getAttribute('data-v'); save(); closeWelcome(); render({ scroll: 0 }); toast('Привет, ' + store.me); }
+      else closeWelcome();
+    });
+    document.body.appendChild(el);
+  }
   /* ---------- установка на главный экран (только вне Телеграма) ---------- */
   var inst = { ev: null, help: false, no: false, ios: /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream };
   try { inst.no = localStorage.getItem('ttk-inst-no') === '1'; } catch (e) {}
@@ -3136,6 +3165,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     if (s.ex && typeof s.ex === 'object') store.ex = s.ex;
     store.rq = (s.rq && typeof s.rq === 'object' && s.rq.d) ? s.rq : null;
     store.cl = !!s.cl;
+    if (store.me) closeWelcome();
     store.ct = t || Date.now(); store.cd = false;
     clLast = JSON.stringify(clSnap());
     store.t = Date.now(); lastSig = sigOf(); cloudSave();
@@ -3575,6 +3605,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   admLoadCloud();
 
   render({ scroll: 0 });
+  showWelcome();
   if (inTG) {
     try {
       TG.ready(); TG.expand();
@@ -3585,7 +3616,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = '753a5ad40e';
+    var BUILD = '4d5caca795';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
