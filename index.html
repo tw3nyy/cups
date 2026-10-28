@@ -1486,6 +1486,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   function save() {
     var sg = sigOf();
     if (sg !== lastSig) { lastSig = sg; store.t = Date.now(); cloudSave(); }
+    try { clChanged(); } catch (e) {}
     try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {}
   }
   function tgChrome() {
@@ -2584,6 +2585,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     }
     h += '<button class="pf-row" data-act="gohours"><span class="pf-ic">' + ic('clock') + '</span><span class="pf-t">Мои часы и зарплата</span><span class="pf-v"></span>' + ic('chevR') + '</button>';
     if (inTG) h += '<button class="pf-row" data-act="tobrowser"><span class="pf-ic">' + ic('ext') + '</span><span class="pf-t">Открыть в браузере<small class="pf-s">с твоим именем и прогрессом</small></span><span class="pf-v"></span>' + ic('chevR') + '</button>';
+    if (!inTG) h += cl.tok ? '<button class="pf-row" data-act="devout"><span class="pf-ic">' + ic('ext') + '</span><span class="pf-t">Выйти из аккаунта<small class="pf-s">' + (tgUser && tgUser.username ? '@' + esc(tgUser.username) + ', ' : '') + 'прогресс общий с Телеграмом</small></span><span class="pf-v"></span>' + ic('chevR') + '</button>' : '<div class="pf-row" style="cursor:default"><span class="pf-ic">' + ic('ext') + '</span><span class="pf-t">Войти через Телеграм<small class="pf-s">В боте: Профиль, Открыть в браузере</small></span><span class="pf-v"></span></div>';
     h += '<button class="pf-row" data-act="rqopen"><span class="pf-ic">' + ic('shifts') + '</span><span class="pf-t">Пожелания<small class="pf-s">' + rqRange() + '</small></span><span class="pf-v"></span>' + ic('chevR') + '</button></div>';
     h += progressBlock() + themeBlock() + notesBlock();
     h += admBlock();
@@ -2837,7 +2839,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     var c = st.cards, q = st.quiz;
     var HK = { rqc: 'light', rqsd: 'med', rqsx: 'light', rqp: 'sel', rqcp: 'light', rqclr: 'med', tab: 'sel', open: 'light', sec: 'light', scat: 'sel', sf: 'sel', flt: 'sel', setsec: 'sel', setcat: 'sel', only: 'sel', cmode: 'sel', bchip: 'sel', star: 'med', sheet: 'light', qstart: 'med', qnext: 'light', theme: 'sel', go: 'sel', gohours: 'light', pickme: 'sel', sday: 'sel', sview: 'sel', swk: 'sel', spr: 'sel', sex: 'sel', scp: 'light', sme: 'sel', sclose: 'light', rclear: 'med', back: 'light', ph: 'sel', openq: 'light' };
     if (HK[act]) buzz(HK[act]);
-    if (act === 'aed' || act === 'tobrowser' || act.slice(0, 2) === 'ed' || act.slice(0, 3) === 'adm') { admAct(act, v); return; }
+    if (act === 'aed' || act === 'tobrowser' || act === 'devout' || act.slice(0, 2) === 'ed' || act.slice(0, 3) === 'adm') { admAct(act, v); return; }
     switch (act) {
       case 'flt': st.flt[v] = !st.flt[v]; document.getElementById('mres').innerHTML = menuInner(); syncSfb(); return;
       case 'fltclear': st.flt = {}; document.getElementById('mres').innerHTML = menuInner(); syncSfb(); return;
@@ -3061,6 +3063,120 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     } catch (e) {}
     try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
   })();
+  /* ---------- облако: общий профиль и прогресс для Телеграма и браузера (Cloudflare Worker + D1) ---------- */
+  var API = 'https://cups-api.grittyyy6.workers.dev';
+  var cl = { tok: '', timer: 0, busy: false, pulled: 0, err: '' };
+  try { cl.tok = localStorage.getItem('ttk-dev') || ''; } catch (e) {}
+  function clAuth() { return inTG ? 'tma ' + TG.initData : (cl.tok ? 'Bearer ' + cl.tok : ''); }
+  function clSnap() { return { known: store.known, fav: store.fav, recent: store.recent.slice(0, 10), me: store.me, theme: store.theme, ex: store.ex, rq: store.rq, cl: store.cl }; }
+  var clLast = JSON.stringify(clSnap());
+  function clReq(method, path, body, auth) {
+    var h = {};
+    if (auth) h.Authorization = auth;
+    if (body) h['Content-Type'] = 'application/json';
+    return fetch(API + path, { method: method, headers: h, body: body ? JSON.stringify(body) : undefined }).then(function (r) {
+      return r.json().then(function (j) { j = j || {}; j._s = r.status; return j; }, function () { return { _s: r.status, error: 'json' }; });
+    });
+  }
+  function clUser(u) {
+    if (!u || typeof u !== 'object' || !(u.first_name || u.username)) return;
+    tgUser = { first_name: String(u.first_name || ''), last_name: String(u.last_name || ''), username: String(u.username || ''), photo_url: /^https:\/\//.test(u.photo_url || '') ? u.photo_url : '' };
+    try { localStorage.setItem('ttk-prof', JSON.stringify(tgUser)); } catch (e) {}
+  }
+  function clBusyUI() { return !!(st.quiz || st.cards || adm.ed || adm.dirty || st.tab === 'cards' || st.tab === 'quiz'); }
+  function clApply(s, t) {
+    if (s.known && typeof s.known === 'object') store.known = s.known;
+    if (s.fav && typeof s.fav === 'object') store.fav = s.fav;
+    if (Array.isArray(s.recent)) store.recent = s.recent.filter(function (k) { return byId[k]; });
+    if (typeof s.me === 'string') store.me = s.me;
+    if (s.theme) store.theme = s.theme;
+    if (s.ex && typeof s.ex === 'object') store.ex = s.ex;
+    store.rq = (s.rq && typeof s.rq === 'object' && s.rq.d) ? s.rq : null;
+    store.cl = !!s.cl;
+    store.ct = t || Date.now(); store.cd = false;
+    clLast = JSON.stringify(clSnap());
+    store.t = Date.now(); lastSig = sigOf(); cloudSave();
+    try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {}
+    applyTheme();
+    if (!clBusyUI()) render({ scroll: window.scrollY });
+  }
+  /* сверка с сервером: у кого время новее, тот и прав */
+  function clMerge(j) {
+    clUser(j.user);
+    var rt = j.t || 0;
+    if (j.state && rt > (store.ct || 0)) clApply(j.state, rt);
+    else if (!j.state || (store.ct || 0) > rt || store.cd) clPush();
+    else if (tgUser) { var a = document.getElementById('av'); if (a && !a.classList.contains('ph')) mountAvatar(); }
+  }
+  function clPull() {
+    var a = clAuth();
+    if (!a || !window.fetch) return;
+    cl.pulled = Date.now();
+    (inTG ? clReq('POST', '/api/auth', null, a) : clReq('GET', '/api/state', null, a)).then(function (j) {
+      if (j._s === 401 && !inTG) { cl.tok = ''; try { localStorage.removeItem('ttk-dev'); } catch (e) {} render({ scroll: window.scrollY }); return; }
+      if (j._s === 200) clMerge(j);
+    }).catch(function () {});
+  }
+  function clPush() {
+    var a = clAuth();
+    if (!a || !window.fetch) return;
+    clearTimeout(cl.timer);
+    cl.timer = setTimeout(function () {
+      if (cl.busy) { clPush(); return; }
+      cl.busy = true;
+      var t = store.ct || Date.now();
+      clReq('PUT', '/api/state', { state: clSnap(), t: t }, a).then(function (j) {
+        cl.busy = false;
+        if (j._s === 200) { if ((store.ct || 0) === t) { store.cd = false; try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} } }
+        else if (j._s === 409 && j.state) clApply(j.state, j.t);
+        else if (j._s === 401 && !inTG) { cl.tok = ''; try { localStorage.removeItem('ttk-dev'); } catch (e) {} }
+      }).catch(function () { cl.busy = false; });
+    }, 1200);
+  }
+  /* вызывается из save(): если то, что синхронизируется, поменялось — отправляем */
+  function clChanged() {
+    var s = JSON.stringify(clSnap());
+    if (s === clLast) return;
+    clLast = s; store.ct = Date.now(); store.cd = true;
+    clPush();
+  }
+  /* вход в браузере по одноразовому коду из ссылки  #c=КОД  */
+  (function () {
+    var m = /[#&]c=([A-Za-z0-9]{6,16})/.exec(location.hash), ma = /[#&]a=([A-Za-z0-9_]{20,})/.exec(location.hash);
+    if (ma) { try { localStorage.setItem('ttk-adm', ma[1]); localStorage.setItem('ttk-adm-on', '1'); } catch (e) {} }
+    if (!m) return;
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+    if (inTG || !window.fetch) return;
+    clReq('POST', '/api/claim', { code: m[1] }).then(function (j) {
+      if (j._s === 200 && j.token) {
+        cl.tok = j.token; try { localStorage.setItem('ttk-dev', j.token); } catch (e) {}
+        clMerge(j); toast('Вошёл как ' + (tgUser && tgUser.first_name ? tgUser.first_name : 'сотрудник')); render({ scroll: window.scrollY });
+      } else toast('Ссылка устарела. Открой заново из Телеграма');
+    }).catch(function () { toast('Нет связи. Попробуй ещё раз'); });
+  })();
+  function clLink() {
+    clReq('POST', '/api/link', null, clAuth()).then(function (j) {
+      var u;
+      if (j._s === 200 && j.code) {
+        u = location.origin + location.pathname + '#c=' + j.code;
+        try { var tk = localStorage.getItem('ttk-adm'); if (tk) u += '&a=' + tk; } catch (e) {}
+      } else u = syncUrl();
+      try { if (TG.openLink) { TG.openLink(u); return; } } catch (x) {}
+      window.open(u, '_blank');
+    }).catch(function () {
+      var u = syncUrl();
+      try { if (TG.openLink) { TG.openLink(u); return; } } catch (x) {}
+      window.open(u, '_blank');
+    });
+  }
+  function clOut() {
+    var a = clAuth();
+    try { if (a) clReq('POST', '/api/logout', null, a).catch(function () {}); } catch (e) {}
+    cl.tok = ''; try { localStorage.removeItem('ttk-dev'); localStorage.removeItem('ttk-prof'); } catch (e) {}
+    tgUser = null; toast('Вышел из аккаунта'); render({ scroll: window.scrollY });
+  }
+  clPull();
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && Date.now() - cl.pulled > 60000) clPull(); });
   /* ---------- admin: правка меню и сохранение в GitHub ---------- */
   var REPO = 'tw3nyy/cups';
   var adm = { tok: '', on: false, dirty: false, n: 0, ed: null, pend: {}, busy: false, msg: '', armDel: false, armDis: false, setup: false, chk: false };
@@ -3350,7 +3466,8 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   function admAct(act, v) {
     var e = adm.ed;
     switch (act) {
-      case 'tobrowser': { var u = syncUrl(); try { if (TG.openLink) { TG.openLink(u); return; } } catch (x) {} window.open(u, '_blank'); return; }
+      case 'tobrowser': clLink(); return;
+      case 'devout': clOut(); return;
       case 'aed': edOpen(v); return;
       case 'ednew': edOpen(null, v); return;
       case 'edok': edOk(); return;
@@ -3420,7 +3537,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = 'e68a0dac80';
+    var BUILD = 'a0cddb8248';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
