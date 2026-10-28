@@ -1406,6 +1406,12 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
 .adm-b.pri { background: var(--accent); color: var(--accent-ink); }
 .adm-b:disabled { opacity: .55; }
 
+.cl-login { align-items: flex-start; padding-top: 12px; padding-bottom: 14px; }
+.cl-login .pf-t { flex: 1; min-width: 0; display: block; }
+.cl-in { display: flex; gap: 8px; margin-top: 10px; width: 100%; }
+.cl-in .edin { flex: 1 1 0; width: 0; min-width: 0; text-transform: uppercase; letter-spacing: .12em; }
+.cl-in .btn { flex: 0 0 auto; width: auto; min-width: 96px; padding: 0 18px; min-height: 44px; margin: 0; }
+
 </style>
 
 
@@ -2585,7 +2591,8 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     }
     h += '<button class="pf-row" data-act="gohours"><span class="pf-ic">' + ic('clock') + '</span><span class="pf-t">Мои часы и зарплата</span><span class="pf-v"></span>' + ic('chevR') + '</button>';
     if (inTG) h += '<button class="pf-row" data-act="tobrowser"><span class="pf-ic">' + ic('ext') + '</span><span class="pf-t">Открыть в браузере<small class="pf-s">с твоим именем и прогрессом</small></span><span class="pf-v"></span>' + ic('chevR') + '</button>';
-    if (!inTG) h += cl.tok ? '<button class="pf-row" data-act="devout"><span class="pf-ic">' + ic('ext') + '</span><span class="pf-t">Выйти из аккаунта<small class="pf-s">' + (tgUser && tgUser.username ? '@' + esc(tgUser.username) + ', ' : '') + 'прогресс общий с Телеграмом</small></span><span class="pf-v"></span>' + ic('chevR') + '</button>' : '<div class="pf-row" style="cursor:default"><span class="pf-ic">' + ic('ext') + '</span><span class="pf-t">Войти через Телеграм<small class="pf-s">В боте: Профиль, Открыть в браузере</small></span><span class="pf-v"></span></div>';
+    if (!inTG) h += cl.tok ? '<button class="pf-row" data-act="devout"><span class="pf-ic">' + ic('ext') + '</span><span class="pf-t">Выйти из аккаунта<small class="pf-s">' + (tgUser && tgUser.username ? '@' + esc(tgUser.username) + ', ' : '') + 'прогресс общий с Телеграмом</small></span><span class="pf-v"></span>' + ic('chevR') + '</button>' : '<div class="pf-row cl-login"><span class="pf-t">Войти через Телеграм<small class="pf-s">В боте: Профиль, Код для входа. Вставь его сюда</small><span class="cl-in"><input class="edin" id="cl-code" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="КОД"><button class="btn primary" data-act="clcode">Войти</button></span></span></div>';
+    if (inTG) h += '<button class="pf-row" data-act="getcode"><span class="pf-ic">' + ic('ext') + '</span><span class="pf-t">' + (cl.code ? 'Код: <b style="letter-spacing:.14em;font-variant-numeric:tabular-nums">' + esc(cl.code) + '</b><small class="pf-s">Нажми, чтобы скопировать. Действует 10 минут</small>' : 'Код для входа<small class="pf-s">Для браузера или ярлыка на телефоне, где нет Телеграма</small>') + '</span><span class="pf-v"></span>' + ic('chevR') + '</button>';
     h += '<button class="pf-row" data-act="rqopen"><span class="pf-ic">' + ic('shifts') + '</span><span class="pf-t">Пожелания<small class="pf-s">' + rqRange() + '</small></span><span class="pf-v"></span>' + ic('chevR') + '</button></div>';
     h += progressBlock() + themeBlock() + notesBlock();
     h += admBlock();
@@ -2839,7 +2846,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     var c = st.cards, q = st.quiz;
     var HK = { rqc: 'light', rqsd: 'med', rqsx: 'light', rqp: 'sel', rqcp: 'light', rqclr: 'med', tab: 'sel', open: 'light', sec: 'light', scat: 'sel', sf: 'sel', flt: 'sel', setsec: 'sel', setcat: 'sel', only: 'sel', cmode: 'sel', bchip: 'sel', star: 'med', sheet: 'light', qstart: 'med', qnext: 'light', theme: 'sel', go: 'sel', gohours: 'light', pickme: 'sel', sday: 'sel', sview: 'sel', swk: 'sel', spr: 'sel', sex: 'sel', scp: 'light', sme: 'sel', sclose: 'light', rclear: 'med', back: 'light', ph: 'sel', openq: 'light' };
     if (HK[act]) buzz(HK[act]);
-    if (act === 'aed' || act === 'tobrowser' || act === 'devout' || act.slice(0, 2) === 'ed' || act.slice(0, 3) === 'adm') { admAct(act, v); return; }
+    if (act === 'aed' || act === 'tobrowser' || act === 'getcode' || act === 'clcode' || act === 'devout' || act.slice(0, 2) === 'ed' || act.slice(0, 3) === 'adm') { admAct(act, v); return; }
     switch (act) {
       case 'flt': st.flt[v] = !st.flt[v]; document.getElementById('mres').innerHTML = menuInner(); syncSfb(); return;
       case 'fltclear': st.flt = {}; document.getElementById('mres').innerHTML = menuInner(); syncSfb(); return;
@@ -3065,7 +3072,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   })();
   /* ---------- облако: общий профиль и прогресс для Телеграма и браузера (Cloudflare Worker + D1) ---------- */
   var API = 'https://cups-api.grittyyy6.workers.dev';
-  var cl = { tok: '', timer: 0, busy: false, pulled: 0, err: '' };
+  var cl = { tok: '', code: '', timer: 0, busy: false, pulled: 0, err: '' };
   try { cl.tok = localStorage.getItem('ttk-dev') || ''; } catch (e) {}
   function clAuth() { return inTG ? 'tma ' + TG.initData : (cl.tok ? 'Bearer ' + cl.tok : ''); }
   function clSnap() { return { known: store.known, fav: store.fav, recent: store.recent.slice(0, 10), me: store.me, theme: store.theme, ex: store.ex, rq: store.rq, cl: store.cl }; }
@@ -3140,19 +3147,22 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     clLast = s; store.ct = Date.now(); store.cd = true;
     clPush();
   }
-  /* вход в браузере по одноразовому коду из ссылки  #c=КОД  */
+  /* вход в браузере по одноразовому коду: из ссылки  #c=КОД  или вручную */
+  function clClaim(code) {
+    clReq('POST', '/api/claim', { code: code }).then(function (j) {
+      if (j._s === 200 && j.token) {
+        cl.tok = j.token; try { localStorage.setItem('ttk-dev', j.token); } catch (e) {}
+        clMerge(j); toast('Вошёл как ' + (tgUser && tgUser.first_name ? tgUser.first_name : 'сотрудник')); render({ scroll: window.scrollY });
+      } else toast('Код не подошёл или устарел. Возьми новый в Телеграме');
+    }).catch(function () { toast('Нет связи. Попробуй ещё раз'); });
+  }
   (function () {
     var m = /[#&]c=([A-Za-z0-9]{6,16})/.exec(location.hash), ma = /[#&]a=([A-Za-z0-9_]{20,})/.exec(location.hash);
     if (ma) { try { localStorage.setItem('ttk-adm', ma[1]); localStorage.setItem('ttk-adm-on', '1'); } catch (e) {} }
     if (!m) return;
     try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
     if (inTG || !window.fetch) return;
-    clReq('POST', '/api/claim', { code: m[1] }).then(function (j) {
-      if (j._s === 200 && j.token) {
-        cl.tok = j.token; try { localStorage.setItem('ttk-dev', j.token); } catch (e) {}
-        clMerge(j); toast('Вошёл как ' + (tgUser && tgUser.first_name ? tgUser.first_name : 'сотрудник')); render({ scroll: window.scrollY });
-      } else toast('Ссылка устарела. Открой заново из Телеграма');
-    }).catch(function () { toast('Нет связи. Попробуй ещё раз'); });
+    clClaim(m[1]);
   })();
   function clLink() {
     clReq('POST', '/api/link', null, clAuth()).then(function (j) {
@@ -3467,6 +3477,8 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     var e = adm.ed;
     switch (act) {
       case 'tobrowser': clLink(); return;
+      case 'getcode': if (cl.code) { copyText(cl.code); return; } clReq('POST', '/api/link', null, clAuth()).then(function (j) { if (j._s === 200 && j.code) { cl.code = j.code; setTimeout(function () { cl.code = ''; if (st.tab === 'profile') render({ scroll: window.scrollY }); }, 600000); render({ scroll: window.scrollY }); } else toast('Не получилось. Попробуй ещё раз'); }).catch(function () { toast('Нет связи'); }); return;
+      case 'clcode': { var ci = document.getElementById('cl-code'), cv = ci ? ci.value.toUpperCase().replace(/[^A-Z0-9]/g, '') : ''; if (cv.length < 6) { toast('Введи код из Телеграма'); return; } clClaim(cv); return; }
       case 'devout': clOut(); return;
       case 'aed': edOpen(v); return;
       case 'ednew': edOpen(null, v); return;
@@ -3537,7 +3549,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = 'a0cddb8248';
+    var BUILD = '2a0a706167';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
