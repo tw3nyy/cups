@@ -2909,8 +2909,24 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     }
   });
   /* tab taps are handled on pointerup, not on click: a re-render between down and up used to eat the click */
+  /* 5 быстрых нажатий на «Профиль» открывают вход в админку */
+  var pfTaps = [];
+  function pfSecret() {
+    var now = Date.now(); pfTaps = pfTaps.filter(function (t) { return now - t < 2500; }); pfTaps.push(now);
+    if (pfTaps.length < 5) return;
+    pfTaps = [];
+    adm.show = true; try { localStorage.setItem('ttk-adm-show', '1'); } catch (e) {}
+    if (adm.tok) { adm.on = !adm.on; try { localStorage.setItem('ttk-adm-on', adm.on ? '1' : '0'); } catch (e2) {} toast(adm.on ? 'Режим редактирования включён' : 'Режим редактирования выключен'); render({ scroll: window.scrollY }); return; }
+    render({ scroll: window.scrollY });
+    setTimeout(function () {
+      var i = document.getElementById('adm-tok'), b = document.querySelector('.adm-box');
+      if (b && b.scrollIntoView) b.scrollIntoView({ block: 'center' });
+      if (i) { try { i.focus({ preventScroll: true }); } catch (e3) { i.focus(); } }
+    }, 350);
+  }
   function tabAct(v) {
     switchTab(v);
+    if (v === 'profile') pfSecret();
   }
   function tbEnd(ev) {
     var d = tbDrag; if (!d || ev.pointerId !== d.id) return;
@@ -3774,7 +3790,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = '99bca5d202';
+    var BUILD = '1d8274ece5';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
