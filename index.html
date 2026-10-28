@@ -2939,7 +2939,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
         store.me = store.me === v ? '' : v; if (st.tab === 'profile') st.pm = false; save(); render({ scroll: window.scrollY, fit: st.sv === 'hours' && !!store.me });
         return;
       }
-      case 'instgo': if (inst.ev) { var iv = inst.ev; inst.ev = null; try { iv.prompt(); } catch (x) {} render({ scroll: window.scrollY }); } else { inst.help = true; render({ scroll: window.scrollY }); } return;
+      case 'instgo': if (inTG) { try { TG.addToHomeScreen(); } catch (x) {} return; } if (inst.ev) { var iv = inst.ev; inst.ev = null; try { iv.prompt(); } catch (x) {} render({ scroll: window.scrollY }); } else { inst.help = true; render({ scroll: window.scrollY }); } return;
       case 'instno': inst.no = true; try { localStorage.setItem('ttk-inst-no', '1'); } catch (x) {} render({ scroll: window.scrollY }); return;
       case 'theme': store.theme = v; save(); applyTheme(); render({ scroll: window.scrollY }); return;
       case 'reset':
@@ -3090,10 +3090,18 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   var inst = { ev: null, help: false, no: false, ios: /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream };
   try { inst.no = localStorage.getItem('ttk-inst-no') === '1'; } catch (e) {}
   function isStandalone() { try { return !!((window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone); } catch (e) { return false; } }
-  function instCan() { return !inTG && !isStandalone() && /^https?:$/.test(location.protocol) && (!!inst.ev || inst.ios); }
+  function instCan() { if (inTG) return inst.tg === 'missed' || inst.tg === 'unknown'; return !isStandalone() && /^https?:$/.test(location.protocol) && (!!inst.ev || inst.ios); }
+  /* в Телеграме есть свой способ: ярлык мини-аппа на главный экран одной кнопкой (Bot API 8.0+) */
+  inst.tg = '';
+  try {
+    if (inTG && TG.isVersionAtLeast && TG.isVersionAtLeast('8.0') && TG.checkHomeScreenStatus && TG.addToHomeScreen) {
+      TG.checkHomeScreenStatus(function (stt) { inst.tg = stt || ''; if (st.tab === 'home' && !clBusyUI()) render({ scroll: window.scrollY }); });
+      TG.onEvent('homeScreenAdded', function () { inst.tg = 'added'; render({ scroll: window.scrollY }); });
+    }
+  } catch (e) {}
   function instBanner() {
     if (!instCan() || inst.no) return '';
-    return '<div class="inst"><span class="inst-t"><b>Поставь на экран телефона</b>' + (inst.help ? '<small>Нажми «Поделиться» в Safari, потом «На экран Домой»</small>' : '<small>Откроется как обычное приложение, без браузера</small>') + '</span>' + (inst.ev ? '<button class="btn primary" data-act="instgo">Установить</button>' : (inst.help ? '' : '<button class="btn primary" data-act="instgo">Как</button>')) + '<button class="inst-x" data-act="instno" aria-label="Скрыть">' + ic('x') + '</button></div>';
+    return '<div class="inst"><span class="inst-t"><b>Поставь на экран телефона</b>' + (inst.help && !inTG ? '<small>Нажми «Поделиться» в Safari, потом «На экран Домой»</small>' : '<small>Откроется как обычное приложение, без браузера</small>') + '</span>' + ((inst.ev || inTG) ? '<button class="btn primary" data-act="instgo">Установить</button>' : (inst.help ? '' : '<button class="btn primary" data-act="instgo">Как</button>')) + '<button class="inst-x" data-act="instno" aria-label="Скрыть">' + ic('x') + '</button></div>';
   }
   window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); inst.ev = e; if (st.tab === 'home' && !clBusyUI()) render({ scroll: window.scrollY }); });
   window.addEventListener('appinstalled', function () { inst.ev = null; render({ scroll: window.scrollY }); toast('Установлено'); });
@@ -3577,7 +3585,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = 'cb9c9af242';
+    var BUILD = '753a5ad40e';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
