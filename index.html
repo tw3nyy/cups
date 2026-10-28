@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#2A211B">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Cups">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>:root{padding-top:var(--top-inset);padding-bottom:var(--bottom-inset)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 <title>ТТК Cups</title>
@@ -1412,6 +1418,14 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
 .cl-in .edin { flex: 1 1 0; width: 0; min-width: 0; text-transform: uppercase; letter-spacing: .12em; }
 .cl-in .btn { flex: 0 0 auto; width: auto; min-width: 96px; padding: 0 18px; min-height: 44px; margin: 0; }
 
+.inst { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; padding: 12px 8px 12px 14px; border-radius: 18px; background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--line); }
+.inst-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.inst-t b { font-size: 15px; font-weight: 600; }
+.inst-t small { font-size: 12.5px; color: var(--ink-2); line-height: 1.3; }
+.inst .btn { flex: none; width: auto; min-height: 38px; padding: 0 14px; margin: 0; }
+.inst-x { flex: none; width: 34px; height: 34px; display: grid; place-items: center; color: var(--muted); }
+.inst-x .ic { width: 16px; height: 16px; }
+
 </style>
 
 
@@ -2569,7 +2583,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     }).join('') + '</div>';
   }
   function homeRestHTML() {
-    var h = homeRecentHTML() + '<div class="hm">';
+    var h = instBanner() + homeRecentHTML() + '<div class="hm">';
     if (!store.me) h += whoHTML(); else h += homeHeroHTML() + homePayHTML();
     return h + homeTeamHTML() + homeLearnHTML() + '</div>';
   }
@@ -2925,6 +2939,8 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
         store.me = store.me === v ? '' : v; if (st.tab === 'profile') st.pm = false; save(); render({ scroll: window.scrollY, fit: st.sv === 'hours' && !!store.me });
         return;
       }
+      case 'instgo': if (inst.ev) { var iv = inst.ev; inst.ev = null; try { iv.prompt(); } catch (x) {} render({ scroll: window.scrollY }); } else { inst.help = true; render({ scroll: window.scrollY }); } return;
+      case 'instno': inst.no = true; try { localStorage.setItem('ttk-inst-no', '1'); } catch (x) {} render({ scroll: window.scrollY }); return;
       case 'theme': store.theme = v; save(); applyTheme(); render({ scroll: window.scrollY }); return;
       case 'reset':
         if (!st.resetArm) { st.resetArm = true; render({ scroll: window.scrollY }); setTimeout(function () { if (st.resetArm) { st.resetArm = false; if (st.tab === 'profile') render({ scroll: window.scrollY }); } }, 4000); return; }
@@ -3070,6 +3086,18 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     } catch (e) {}
     try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
   })();
+  /* ---------- установка на главный экран (только вне Телеграма) ---------- */
+  var inst = { ev: null, help: false, no: false, ios: /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream };
+  try { inst.no = localStorage.getItem('ttk-inst-no') === '1'; } catch (e) {}
+  function isStandalone() { try { return !!((window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone); } catch (e) { return false; } }
+  function instCan() { return !inTG && !isStandalone() && /^https?:$/.test(location.protocol) && (!!inst.ev || inst.ios); }
+  function instBanner() {
+    if (!instCan() || inst.no) return '';
+    return '<div class="inst"><span class="inst-t"><b>Поставь на экран телефона</b>' + (inst.help ? '<small>Нажми «Поделиться» в Safari, потом «На экран Домой»</small>' : '<small>Откроется как обычное приложение, без браузера</small>') + '</span>' + (inst.ev ? '<button class="btn primary" data-act="instgo">Установить</button>' : (inst.help ? '' : '<button class="btn primary" data-act="instgo">Как</button>')) + '<button class="inst-x" data-act="instno" aria-label="Скрыть">' + ic('x') + '</button></div>';
+  }
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); inst.ev = e; if (st.tab === 'home' && !clBusyUI()) render({ scroll: window.scrollY }); });
+  window.addEventListener('appinstalled', function () { inst.ev = null; render({ scroll: window.scrollY }); toast('Установлено'); });
+  try { if (!inTG && 'serviceWorker' in navigator && /^https:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(function () {}); } catch (e) {}
   /* ---------- облако: общий профиль и прогресс для Телеграма и браузера (Cloudflare Worker + D1) ---------- */
   var API = 'https://cups-api.grittyyy6.workers.dev';
   var cl = { tok: '', code: '', timer: 0, busy: false, pulled: 0, err: '' };
@@ -3549,7 +3577,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = '2a0a706167';
+    var BUILD = 'cb9c9af242';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
