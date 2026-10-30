@@ -9,6 +9,7 @@
 <meta name="theme-color" content="#2A211B">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Cups">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>:root{padding-top:var(--top-inset);padding-bottom:var(--bottom-inset)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
@@ -1475,6 +1476,14 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
 .arc-b.del { color: var(--cherry); }
 
 .arc-row:first-child { border-top: 0; }
+
+/* ярлык на экране iPhone: приложение уходит под строку состояния (текст там всегда белый), в светлой теме под ней тёмная полоса */
+@media (display-mode: standalone) {
+  :root:not([data-theme="dark"]) body::before { background: #2A211B; }
+}
+@media (display-mode: standalone) and (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) body::before { background: var(--navbg); }
+}
 
 </style>
 
@@ -3864,7 +3873,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = '18be32a234';
+    var BUILD = '2b2b40a81a';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
