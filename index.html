@@ -1474,6 +1474,8 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
 .arc-b { padding: 7px 12px; border-radius: 10px; border: 0; background: var(--surface-2); color: var(--ink); font-size: 13.5px; font-weight: 600; cursor: pointer; }
 .arc-b.del { color: var(--cherry); }
 
+.arc-row:first-child { border-top: 0; }
+
 </style>
 
 
@@ -2682,6 +2684,8 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     return h + searchBar('Блюдо или ингредиент', 'big') + '<div id="mres">' + menuInner() + '</div>';
   }
   function profileViewHTML() {
+    if (st.pv === 'arch' && admOn()) return archViewHTML();
+    st.pv = '';
     var name = store.me || tgName() || 'Гость', pd = store.me ? payData(true) : null, k = knownIn(dishes);
     var h = '<div class="pf-head"><div class="av" id="av">' + esc(name.trim().charAt(0).toUpperCase()) + '</div><h1 class="pf-name">' + esc(name) + '</h1><p class="pf-sub">' + (store.me ? 'Сотрудник Cups' : 'Имя в графике не выбрано') + (tgUser && tgUser.username ? ' · @' + esc(tgUser.username) : '') + '</p></div>';
     h += '<div class="pf-stats">' + (pd ? '<div><b>' + fmtH(pd.total) + '</b><small>часов, ' + periodName(pd.pk) + '</small></div><div><b>' + money(pd.total * RATE) + '</b><small>за период</small></div>' : '') + '<div><b>' + k + '/' + dishes.length + '</b><small>выучено</small></div></div>';
@@ -2725,6 +2729,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       if (st.quiz) { n.close = true; n.always = !st.quiz.done; }
     } else if (st.tab === 'shifts') { n.title = 'Смены'; if (st.sv === 'req') { n.back = 'Смены'; n.title = 'Пожелания'; } }
     else if (st.tab === 'home') n.title = 'Главная';
+    else if (st.pv === 'arch') { n.back = 'Профиль'; n.title = 'Архив блюд'; }
     else n.title = 'Профиль';
     return n;
   }
@@ -2790,7 +2795,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   window.addEventListener('resize', function () { fitRep(false); });
   function syncBack() {
     if (!inTG || !TG.BackButton) return;
-    try { if ((st.tab === 'menu' && st.menu.length) || st.sheet || saOn() || (st.tab === 'shifts' && st.sv === 'req')) TG.BackButton.show(); else TG.BackButton.hide(); } catch (e) {}
+    try { if ((st.tab === 'menu' && st.menu.length) || st.sheet || saOn() || (st.tab === 'shifts' && st.sv === 'req') || (st.tab === 'profile' && st.pv)) TG.BackButton.show(); else TG.BackButton.hide(); } catch (e) {}
   }
   function onScroll() {
     var nav = root.querySelector('.nav'); if (!nav) return;
@@ -2832,6 +2837,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     if (st.sheet || rqOn()) closeSheets();
     else if (saOn()) closeSearch();
     else if (st.tab === 'shifts' && st.sv === 'req') { st.sv = st.svPrev && st.svPrev !== 'req' ? st.svPrev : 'day'; render({ scroll: 0 }); }
+    else if (st.tab === 'profile' && st.pv) { st.pv = ''; render({ scroll: 0 }); }
     else popMenu();
   }
   function openDish(id) {
@@ -2849,7 +2855,9 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   function switchTab(t) {
     if (t === 'study') t = inStudy(st.tab) ? st.tab : (st.study || 'menu');
     if (inStudy(t)) st.study = t;
+    if (t !== 'profile') st.pv = '';
     if (t === st.tab) {
+      if (t === 'profile' && st.pv) { st.pv = ''; render({ scroll: 0 }); return; }
       st.from = '';
       if (t === 'menu' && st.menu.length) { st.menu = []; st.anim = ''; render({ scroll: 0 }); }
       else window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3513,6 +3521,25 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     toast('Добавлено в черновик. Нажми «Сохранить»');
     render({ scroll: window.scrollY });
   }
+  function archViewHTML() {
+    var og = origGone(), h = '<h1 class="pf-name" style="margin:4px 0 14px">Архив блюд</h1>';
+    if (!archive.length && !og.length) return h + '<div class="empty"><p>Архив пуст. Блюда, убранные свайпом влево или кнопкой «Убрать в архив», попадают сюда.</p></div>';
+    if (archive.length) {
+      h += '<div class="gh"><span class="eyebrow">В архиве</span><span>' + archive.length + '</span></div><div class="group">';
+      archive.forEach(function (d) {
+        h += '<div class="arc-row"><span class="arc-t"><b>' + esc(d.name) + '</b><small>' + esc(d.sec) + ' · ' + esc(d.cat) + '</small></span><button class="arc-b" data-act="archback" data-v="' + esc(d.id) + '">Вернуть</button><button class="arc-b del" data-act="archdel" data-v="' + esc(d.id) + '">' + (adm.armArch === d.id ? 'Точно?' : 'Удалить') + '</button></div>';
+      });
+      h += '</div>';
+    }
+    if (og.length) {
+      h += '<div class="gh" style="margin-top:18px"><span class="eyebrow">Удалены раньше, до архива</span><span>' + og.length + '</span></div><div class="group">';
+      og.forEach(function (d) {
+        h += '<div class="arc-row"><span class="arc-t"><b>' + esc(d.name) + '</b><small>' + esc(d.sec) + ' · ' + esc(d.cat) + '</small></span><button class="arc-b" data-act="archorig" data-v="' + esc(d.id) + '">Вернуть</button></div>';
+      });
+      h += '</div>';
+    }
+    return h;
+  }
   function admBlock() {
     if (!admUser()) return '';
     var h = '<div class="gh"><span class="eyebrow">Админка</span></div>';
@@ -3529,25 +3556,8 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       return h + '</div>';
     }
     h += '<div class="group"><button class="switch" data-act="admon" aria-pressed="' + adm.on + '"><span>Режим редактирования<small class="pf-s">' + (adm.on ? 'в блюде появится «Править»' : 'выключен') + '</small></span><i></i></button></div>';
-    if (archive.length || adm.arch || origGone().length) {
-      h += '<div class="group adm-arch"><button class="switch" data-act="admarch" aria-pressed="' + !!adm.arch + '"><span>Архив блюд<small class="pf-s">' + archive.length + ' шт.' + (origGone().length ? ' · ещё ' + origGone().length + ' удалены раньше' : '') + '</small></span><i></i></button>';
-      if (adm.arch) {
-        if (!archive.length) h += '<p class="adm-p" style="padding:0 16px 14px">Архив пуст</p>';
-        archive.forEach(function (d) {
-          h += '<div class="arc-row"><span class="arc-t"><b>' + esc(d.name) + '</b><small>' + esc(d.sec) + ' · ' + esc(d.cat) + '</small></span><button class="arc-b" data-act="archback" data-v="' + esc(d.id) + '">Вернуть</button><button class="arc-b del" data-act="archdel" data-v="' + esc(d.id) + '">' + (adm.armArch === d.id ? 'Точно?' : 'Удалить') + '</button></div>';
-        });
-      }
-      if (adm.arch) {
-        var og = origGone();
-        if (og.length) {
-          h += '<p class="adm-p" style="padding:12px 16px 4px"><b>Удалены раньше, до архива (' + og.length + ')</b></p>';
-          og.forEach(function (d) {
-            h += '<div class="arc-row"><span class="arc-t"><b>' + esc(d.name) + '</b><small>' + esc(d.sec) + ' · ' + esc(d.cat) + '</small></span><button class="arc-b" data-act="archorig" data-v="' + esc(d.id) + '">Вернуть</button></div>';
-          });
-        }
-      }
-      h += '</div>';
-    }
+    var na = archive.length + origGone().length;
+    h += '<div class="pf-rows"><button class="pf-row" data-act="admarch"><span class="pf-ic">' + ic('x') + '</span><span class="pf-t">Архив блюд<small class="pf-s">убранные из меню, можно вернуть</small></span><span class="pf-v">' + na + '</span>' + ic('chevR') + '</button></div>';
     offerPending().forEach(function (o) {
       var k = OFFER.indexOf(o);
       h += '<div class="group adm-box"><p class="adm-p"><b>Готово к добавлению: ' + esc(o.label) + '.</b> ' + offTodo(o).map(function (x) { return esc(x.dish.name); }).join(', ') + '</p><button class="btn primary" data-act="admoffer" data-v="' + k + '">Добавить в черновик</button></div>';
@@ -3799,7 +3809,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       case 'eddel': { if (!e) return; var q = v.split(':'); (q[0] === 'nt' ? e.notes : e.items).splice(+q[1], 1); edRefresh(); return; }
       case 'edphdel': if (e) { e.photos.splice(+v, 1); edRefresh(); } return;
       case 'admoffer': offerAdd(v); return;
-      case 'admarch': adm.arch = !adm.arch; render({ scroll: window.scrollY }); return;
+      case 'admarch': st.pv = 'arch'; render({ scroll: 0 }); return;
       case 'archback': archRestore(v); render({ scroll: window.scrollY }); return;
       case 'archdel': archDelete(v); return;
       case 'archorig': archOrig(v); render({ scroll: window.scrollY }); return;
@@ -3854,7 +3864,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = '5f97f856f9';
+    var BUILD = '18be32a234';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
