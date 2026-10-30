@@ -1496,7 +1496,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
 .hg-t[aria-pressed="true"] .ic { background: rgba(255, 255, 255, .16); color: var(--bg); }
 .hg-t[aria-pressed="true"] small { color: var(--bg); opacity: .7; }
 
-.hg-cats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0 0 4px; }
+.hg-cats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0 0 18px; }
 .hg-cats .chip { width: 100%; min-height: 46px; padding: 8px 12px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px; white-space: normal; text-align: left; font-size: 14px; line-height: 1.2; font-weight: 600; }
 .hg-cats .chip small { flex: none; margin: 0; font-size: 12px; opacity: .55; }
 .hg-cats .chip { min-height: 42px; padding: 6px 12px; }
@@ -3897,7 +3897,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = 'd0c84c7309';
+    var BUILD = '513a6b8a18';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
