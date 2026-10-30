@@ -2751,9 +2751,12 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   function nowMs() { return Date.now() + (stp.off || 0); }
   function dayStart() { var n = new Date(nowMs()), s = new Date(n.getFullYear(), n.getMonth(), n.getDate(), 4, 0, 0); if (n < s) s = new Date(s.getTime() - 864e5); return s.getTime(); }
   function stpAct() { var ds = dayStart(); return stp.items.filter(function (x) { return (x.t || 0) >= ds; }).sort(function (a, b) { return (b.t || 0) - (a.t || 0); }); }
+  /* пока стоп-лист виден только админу (Александру) */
+  function stpOn() { return admUser(); }
   function stpInfo() {
     var ds = dayStart();
     if (stpC && stpC.ds === ds) return stpC;
+    if (!stpOn()) return (stpC = { ds: ds, A: [], why: {}, dish: {}, n: 0 });
     var ix = ingIdx(), A = stpAct(), why = {}, dish = {}, all = {};
     A.forEach(function (x) {
       if (x.g === 'd') { if (byId[x.k]) { dish[x.k] = true; all[x.k] = true; } return; }
@@ -2765,7 +2768,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   function stpWhy(d) { var i = stpInfo(); return (i.why[d.id] || i.dish[d.id]) ? { ing: i.why[d.id] || [], dish: !!i.dish[d.id] } : null; }
   function stpSet(items) { stp.items = items; stpC = null; try { localStorage.setItem('ttk-stop', JSON.stringify({ items: items })); } catch (e) {} }
   function stpRedraw() {
-    if (clBusyUI()) return;
+    if (clBusyUI() || !stpOn()) return;
     if (st.tab === 'home' && st.hs) { if (st.hs === 'add') { var sr = document.getElementById('sres'); if (sr) sr.innerHTML = stopResHTML(); } else render({ scroll: window.scrollY }); return; }
     var m = document.getElementById('mres'), a = document.activeElement;
     if (saOn() && m) m.innerHTML = menuInner();
@@ -2822,6 +2825,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   function cntDishes(n) { return n + ' ' + plural(n, ['блюдо', 'блюда', 'блюд']); }
   function stopRowHTML() {
+    if (!stpOn()) return '';
     var i = stpInfo(), na = i.A.length;
     var sub = !na ? 'Сегодня всё в наличии' : i.A.slice(0, 3).map(function (x) { return x.g === 'd' ? x.l : (ingIdx().g[x.k] ? ingIdx().g[x.k].label : x.l); }).join(', ') + (na > 3 ? ' и ещё ' + (na - 3) : '') + ' · ' + (i.n ? cntDishes(i.n) + ' недоступно' : 'в меню нет');
     return '<button class="hm-card stprow' + (na ? ' on' : '') + '" data-act="stopopen"><span class="stp-ic">' + ic('stop') + '</span><span class="stp-tx"><b>Стоп-лист</b><small>' + esc(sub) + '</small></span>' + (na ? '<span class="stp-n">' + na + '</span>' : '') + ic('chevR') + '</button>';
@@ -4137,7 +4141,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = 'fa122d495b';
+    var BUILD = '99b89c28f9';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
