@@ -1587,7 +1587,13 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     if (t === 'auto' && inTG) t = TG.colorScheme === 'dark' ? 'dark' : 'light';
     if (t === 'light' || t === 'dark') el.setAttribute('data-theme', t); else el.removeAttribute('data-theme');
     tgChrome();
+    /* Android/Chrome: строка состояния берёт цвет страницы */
+    try {
+      var bg = getComputedStyle(el).getPropertyValue('--bg').trim(), m = document.querySelector('meta[name="theme-color"]');
+      if (bg && m) m.setAttribute('content', bg);
+    } catch (e) {}
   }
+  try { var mq = window.matchMedia('(prefers-color-scheme: dark)'); (mq.addEventListener ? mq.addEventListener('change', function () { applyTheme(); }) : mq.addListener && mq.addListener(function () { applyTheme(); })); } catch (e) {}
   function cloudLoad() {
     if (!inTG || !TG.CloudStorage || !TG.CloudStorage.getItem) return;
     try {
@@ -3874,7 +3880,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = '71c05ff2f9';
+    var BUILD = '96adf6bb2c';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
