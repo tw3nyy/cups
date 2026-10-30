@@ -1503,6 +1503,10 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
 .hg-cats .chip[aria-pressed="true"] { background: var(--accent-soft); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--accent); }
 .hg-cats .chip[aria-pressed="true"] small { color: var(--accent); opacity: 1; }
 
+.hg-cats .chip { white-space: nowrap; }
+.hg-cats .chip .hl { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.hg-cats .chip { min-height: 40px; }
+
 </style>
 
 
@@ -2017,6 +2021,9 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   function hgAll(g) { return dishes.filter(function (d) { return g.secs.indexOf(d.sec) >= 0; }); }
   /* на главной близкие подгруппы показываем одной (в самом меню и базе категории остаются как есть) */
   var HG_MERGE = { 'Круассаны и слойки': 'Круассаны, слойки и сдоба', 'Булочки и сдоба': 'Круассаны, слойки и сдоба' };
+  /* короткие названия подгрупп для плиток на главной */
+  var HG_LABEL = { 'Вафли и панкейки': 'Вафли', 'Каши и сырники': 'Каши', 'Сэндвичи, тосты, роти': 'Сэндвичи', 'Кофе: классика': 'Классика', 'Кофе: авторский': 'Авторские', 'Лимонады и бабл-ти': 'Лимонады', 'Торты и десерты': 'Торты', 'Тарты, эклеры, моти, макаронс': 'Тарты, эклеры', 'Корпусные десерты': 'Корпусные', 'Конфеты и печенье': 'Конфеты', 'Круассаны, слойки и сдоба': 'Слойки и сдоба' };
+  function hgLbl(c) { return HG_LABEL[c] || c; }
   function hgCat(d) { return HG_MERGE[d.cat] || d.cat; }
   function hgCats(g) { var out = []; g.secs.forEach(function (s) { (catsOf[s] || []).forEach(function (c) { c = HG_MERGE[c] || c; if (out.indexOf(c) < 0) out.push(c); }); }); return out; }
   function hgTilesHTML() {
@@ -2028,15 +2035,15 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     var g = hgOf(st.hg); if (!g) return ['', ''];
     var list = hgAll(g).filter(passFlt), cats = hgCats(g);
     if (st.hc !== 'all' && cats.indexOf(st.hc) < 0) st.hc = 'all';
-    var h = '<div class="hg-cats" role="group" aria-label="Подгруппа">' + [['all', 'Все', list.length]].concat(cats.map(function (c) { return [c, c, list.filter(function (d) { return hgCat(d) === c; }).length]; })).filter(function (c) { return c[0] === 'all' || c[2]; }).map(function (c) {
-      return '<button class="chip" data-act="hc" data-v="' + esc(c[0]) + '" aria-pressed="' + (st.hc === c[0]) + '">' + esc(c[1]) + '<small>' + c[2] + '</small></button>';
+    var h = '<div class="hg-cats" role="group" aria-label="Подгруппа">' + [['all', 'Все', list.length]].concat(cats.map(function (c) { return [c, hgLbl(c), list.filter(function (d) { return hgCat(d) === c; }).length]; })).filter(function (c) { return c[0] === 'all' || c[2]; }).map(function (c) {
+      return '<button class="chip" data-act="hc" data-v="' + esc(c[0]) + '" aria-pressed="' + (st.hc === c[0]) + '"><span class="hl">' + esc(c[1]) + '</span><small>' + c[2] + '</small></button>';
     }).join('') + '</div>';
     var chips = h; h = '';
     if (!list.length) return [chips, h + '<div class="empty" style="margin-top:12px"><b>Ничего не подошло</b>В этой группе нет позиций под выбранные фильтры.</div>'];
     if (st.hc === 'all') {
       cats.forEach(function (c) {
         var l = list.filter(function (d) { return hgCat(d) === c; }).sort(sortName);
-        if (l.length) h += '<div class="gh"><span class="eyebrow">' + esc(c) + '</span><span class="cnt">' + l.length + '</span></div>' + groupHTML(l, { guest: true });
+        if (l.length) h += '<div class="gh"><span class="eyebrow">' + esc(hgLbl(c)) + '</span><span class="cnt">' + l.length + '</span></div>' + groupHTML(l, { guest: true });
       });
     } else h += '<div style="height:8px"></div>' + groupHTML(list.filter(function (d) { return hgCat(d) === st.hc; }).sort(sortName), { guest: true });
     return [chips, h];
@@ -3900,7 +3907,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = 'd7e93751b1';
+    var BUILD = '1d628c09b4';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
