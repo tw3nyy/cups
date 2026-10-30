@@ -1464,7 +1464,15 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
 .swact { position: absolute; top: 0; right: 0; bottom: 0; width: 160px; display: flex; z-index: 0; }
 .swb { flex: 1; border: 0; color: #fff; font: 600 14px/1 inherit; font-family: inherit; cursor: pointer; }
 .swb.ed { background: #5b7fd6; }
-.swb.del { background: #d9473f; }
+.swb.arc { background: #d98a3f; }
+
+.adm-arch { padding-bottom: 4px; }
+.arc-row { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-top: .5px solid var(--line); }
+.arc-t { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.arc-t b { font-size: 14.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.arc-t small { font-size: 12px; color: var(--ink-2); }
+.arc-b { padding: 7px 12px; border-radius: 10px; border: 0; background: var(--surface-2); color: var(--ink); font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.arc-b.del { color: var(--cherry); }
 
 </style>
 
@@ -1506,6 +1514,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   function phSrc(p) { return PH[p] || (/^u/.test(String(p)) ? API + '/api/photo/' + p : 'photos/' + p + '.jpg'); }
   var BR = JSON.parse(document.getElementById('brand').textContent);
   var SCHED = JSON.parse(document.getElementById('sched').textContent);
+  var archive = D.archive || [];
   var dishes = D.dishes, secs = D.secs, glossary = D.glossary, rules = D.rules || [];
   var SECS = secs.map(function (s) { return s.id; });
   var byId = {};
@@ -1815,7 +1824,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       '<span class="ctx"><b>' + title + '</b>' + sub + '</span><span class="trail">' +
       (store.fav[d.id] ? ic('star', 'fill favmark') : '') + (store.known[d.id] ? ic('checkC', 'learned') : '') + ic('chevR') + '</span></button>';
     if (!admOn()) return cell;
-    return '<div class="sw"><div class="swact"><button class="swb ed" data-act="swed" data-v="' + esc(d.id) + '">Править</button><button class="swb del" data-act="swdel" data-v="' + esc(d.id) + '">Удалить</button></div>' + cell + '</div>';
+    return '<div class="sw"><div class="swact"><button class="swb ed" data-act="swed" data-v="' + esc(d.id) + '">Править</button><button class="swb arc" data-act="swdel" data-v="' + esc(d.id) + '">В архив</button></div>' + cell + '</div>';
   }
   function groupHTML(list, o) { return '<div class="group">' + list.map(function (d) { return cellHTML(d, o); }).join('') + '</div>'; }
 
@@ -2961,10 +2970,10 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
         swOpen = null; dishRemove(v);
         var done = function () { var m = document.getElementById('mres'); if (saOn() && m) m.innerHTML = menuInner(); else render({ scroll: window.scrollY }); };
         if (w) { w.style.transition = 'opacity .18s, max-height .22s'; w.style.maxHeight = w.offsetHeight + 'px'; w.style.overflow = 'hidden'; void w.offsetHeight; w.style.opacity = '0'; w.style.maxHeight = '0'; setTimeout(done, 230); } else done();
-        toast('Удалено: ' + nm + '. Не забудь сохранить');
+        toast('В архиве: ' + nm + '. Не забудь сохранить');
         return;
     }
-    if (act === 'aed' || act === 'tobrowser' || act === 'getcode' || act === 'clcode' || act === 'devout' || act.slice(0, 2) === 'ed' || act.slice(0, 3) === 'adm') { admAct(act, v); return; }
+    if (act === 'aed' || act === 'tobrowser' || act === 'getcode' || act === 'clcode' || act === 'devout' || act.slice(0, 2) === 'ed' || act.slice(0, 3) === 'adm' || act.slice(0, 4) === 'arch') { admAct(act, v); return; }
     switch (act) {
       case 'flt': st.flt[v] = !st.flt[v]; document.getElementById('mres').innerHTML = menuInner(); syncSfb(); return;
       case 'fltclear': st.flt = {}; document.getElementById('mres').innerHTML = menuInner(); syncSfb(); return;
@@ -3362,12 +3371,12 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   function swapArr(a, b) { a.length = 0; for (var i = 0; i < b.length; i++) a.push(b[i]); }
   function trim(s) { return String(s == null ? '' : s).replace(/^\s+|\s+$/g, ''); }
   function exportMenu(rev) {
-    return JSON.stringify({ rev: rev, dishes: dishes, secs: secs, glossary: glossary, rules: rules }, function (k, v) { return k.charAt(0) === '_' ? undefined : v; }, 1);
+    return JSON.stringify({ rev: rev, dishes: dishes, archive: archive, secs: secs, glossary: glossary, rules: rules }, function (k, v) { return k.charAt(0) === '_' ? undefined : v; }, 1);
   }
   /* put a whole menu (from menu.json or a saved draft) in place of the current one */
   function setData(nd) {
     D.rev = nd.rev || 0;
-    swapArr(dishes, nd.dishes); swapArr(secs, nd.secs); swapArr(glossary, nd.glossary || []); swapArr(rules, nd.rules || []);
+    swapArr(dishes, nd.dishes); swapArr(archive, nd.archive || []); swapArr(secs, nd.secs); swapArr(glossary, nd.glossary || []); swapArr(rules, nd.rules || []);
     SECS.length = 0; secs.forEach(function (s) { SECS.push(s.id); });
     Object.keys(byId).forEach(function (k) { delete byId[k]; });
     dishes.forEach(function (d) { byId[d.id] = d; });
@@ -3519,6 +3528,16 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       return h + '</div>';
     }
     h += '<div class="group"><button class="switch" data-act="admon" aria-pressed="' + adm.on + '"><span>Режим редактирования<small class="pf-s">' + (adm.on ? 'в блюде появится «Править»' : 'выключен') + '</small></span><i></i></button></div>';
+    if (archive.length || adm.arch) {
+      h += '<div class="group adm-arch"><button class="switch" data-act="admarch" aria-pressed="' + !!adm.arch + '"><span>Архив блюд<small class="pf-s">' + archive.length + ' шт. · убранные из меню</small></span><i></i></button>';
+      if (adm.arch) {
+        if (!archive.length) h += '<p class="adm-p" style="padding:0 16px 14px">Архив пуст</p>';
+        archive.forEach(function (d) {
+          h += '<div class="arc-row"><span class="arc-t"><b>' + esc(d.name) + '</b><small>' + esc(d.sec) + ' · ' + esc(d.cat) + '</small></span><button class="arc-b" data-act="archback" data-v="' + esc(d.id) + '">Вернуть</button><button class="arc-b del" data-act="archdel" data-v="' + esc(d.id) + '">' + (adm.armArch === d.id ? 'Точно?' : 'Удалить') + '</button></div>';
+        });
+      }
+      h += '</div>';
+    }
     offerPending().forEach(function (o) {
       var k = OFFER.indexOf(o);
       h += '<div class="group adm-box"><p class="adm-p"><b>Готово к добавлению: ' + esc(o.label) + '.</b> ' + offTodo(o).map(function (x) { return esc(x.dish.name); }).join(', ') + '</p><button class="btn primary" data-act="admoffer" data-v="' + k + '">Добавить в черновик</button></div>';
@@ -3599,7 +3618,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   function editViewHTML() {
     var e = adm.ed; if (!e) return '';
     var h = '<h1 class="lt">' + (e.id ? 'Правка блюда' : 'Новое блюдо') + '</h1><p class="lt-sub">Изменения сохранятся для всех после кнопки «Сохранить»</p><div id="edform">' + edFormHTML() + '</div>';
-    h += '<div class="btns"><button class="btn primary" data-act="edok">Готово</button>' + (e.id ? '<button class="btn warn" id="eddelbtn" data-act="eddelete">' + (adm.armDel ? 'Точно удалить? Нажми ещё раз' : 'Удалить блюдо') + '</button>' : '') + '</div>';
+    h += '<div class="btns"><button class="btn primary" data-act="edok">Готово</button>' + (e.id ? '<button class="btn warn" id="eddelbtn" data-act="eddelete">' + 'Убрать в архив' + '</button>' : '') + '</div>';
     return h;
   }
   function edRefresh(focus) {
@@ -3649,23 +3668,36 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   function edDelete() {
     var e = adm.ed; if (!e || !e.id) return;
-    if (!adm.armDel) {
-      adm.armDel = true; var b = document.getElementById('eddelbtn'); if (b) b.textContent = 'Точно удалить? Нажми ещё раз';
-      setTimeout(function () { if (adm.armDel) { adm.armDel = false; var b2 = document.getElementById('eddelbtn'); if (b2) b2.textContent = 'Удалить блюдо'; } }, 4000);
-      return;
-    }
-    var id = e.id;
+    var id = e.id, nm = e.name;
     dishRemove(id);
     adm.ed = null; adm.armDel = false;
     st.menu = st.menu.filter(function (x) { return x.kind !== 'edit' && !(x.kind === 'dish' && x.id === id); });
     st.anim = ''; render({ scroll: 0 });
-    toast('Блюдо удалено, не забудь сохранить');
+    toast('В архиве: ' + nm + '. Не забудь сохранить');
   }
   function dishRemove(id) {
+    var d = byId[id];
     for (var i = dishes.length - 1; i >= 0; i--) if (dishes[i].id === id) dishes.splice(i, 1);
+    if (d) archive.unshift(JSON.parse(JSON.stringify(d, function (k, v) { return k.charAt(0) === '_' ? undefined : v; })));
     delete byId[id]; delete store.known[id]; delete store.fav[id];
     store.recent = store.recent.filter(function (k) { return k !== id; }); save();
     adm.n++; admDirty(); resetDecks();
+  }
+  function archRestore(id) {
+    for (var i = 0; i < archive.length; i++) if (archive[i].id === id) {
+      var d = archive.splice(i, 1)[0];
+      if (byId[d.id]) return;
+      if (!catsOf[d.sec]) { toast('Раздел «' + d.sec + '» уже удалён'); archive.splice(i, 0, d); return; }
+      if (catsOf[d.sec].indexOf(d.cat) < 0) catsOf[d.sec].push(d.cat);
+      dishes.push(d); byId[d.id] = d; prep(d); adm.n++; admDirty(); resetDecks();
+      toast('Вернул: ' + d.name + '. Нажми «Сохранить»'); return;
+    }
+  }
+  function archDelete(id) {
+    if (adm.armArch !== id) { adm.armArch = id; render({ scroll: window.scrollY }); setTimeout(function () { if (adm.armArch === id) { adm.armArch = ''; render({ scroll: window.scrollY }); } }, 3500); return; }
+    adm.armArch = '';
+    for (var i = 0; i < archive.length; i++) if (archive[i].id === id) { archive.splice(i, 1); adm.n++; admDirty(); break; }
+    render({ scroll: window.scrollY });
   }
   /* свайп влево по блюду в режиме админа: Править / Удалить */
   var SW_W = 160, swOpen = null, swDrag = null, swMoved = 0;
@@ -3748,6 +3780,9 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       case 'eddel': { if (!e) return; var q = v.split(':'); (q[0] === 'nt' ? e.notes : e.items).splice(+q[1], 1); edRefresh(); return; }
       case 'edphdel': if (e) { e.photos.splice(+v, 1); edRefresh(); } return;
       case 'admoffer': offerAdd(v); return;
+      case 'admarch': adm.arch = !adm.arch; render({ scroll: window.scrollY }); return;
+      case 'archback': archRestore(v); render({ scroll: window.scrollY }); return;
+      case 'archdel': archDelete(v); return;
       case 'admtok': admVerify(); return;
       case 'admon': adm.on = !adm.on; try { localStorage.setItem('ttk-adm-on', adm.on ? '1' : '0'); } catch (x) {} render({ scroll: window.scrollY }); return;
       case 'admout':
@@ -3799,7 +3834,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = '352d75d2e5';
+    var BUILD = 'efe99300c5';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
