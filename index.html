@@ -2717,7 +2717,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     }).join('') + '</div>';
   }
   function homeRestHTML() {
-    var h = instBanner() + homeRecentHTML() + '<div class="hm">';
+    var h = instBanner() + '<div class="hm">';
     if (!store.me) h += whoHTML(); else h += homeHeroHTML() + homePayHTML();
     return h + homeTeamHTML() + homeLearnHTML() + '</div>';
   }
@@ -3907,7 +3907,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = '1d628c09b4';
+    var BUILD = '57ff06b2b5';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
