@@ -1507,6 +1507,43 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
 .hg-cats .chip .hl { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .hg-cats .chip { min-height: 40px; }
 
+/* ---- стоп-лист ---- */
+.stopb { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--cherry); background: var(--cherry-soft); border-radius: 7px; padding: 3px 7px; line-height: 1; flex: none; }
+.cell.stopped .ctx b { color: var(--ink-2); }
+.cell.stopped .thumb { opacity: .45; }
+.stprow { flex-direction: row; align-items: center; gap: 12px; padding: 13px 16px; }
+.stprow .ic { width: 18px; height: 18px; color: var(--muted); flex: none; }
+.stp-ic { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: var(--fill); color: var(--ink-2); flex: none; }
+.stp-ic .ic { width: 22px; height: 22px; color: inherit; }
+.stp-tx { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.stp-tx b { font-size: 16.5px; font-weight: 650; }
+.stp-tx small { font-size: 13.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stprow.on .stp-ic { background: var(--cherry-soft); color: var(--cherry); }
+.stprow.on .stp-tx small { color: var(--cherry); }
+.stp-n { min-width: 24px; height: 24px; padding: 0 7px; border-radius: 12px; background: var(--cherry); color: #fff; font-size: 13px; font-weight: 700; display: grid; place-items: center; flex: none; }
+.stp { display: flex; flex-direction: column; gap: 0; min-height: calc(100vh - var(--nav-h) - var(--tab-h) - var(--bottom-inset) - 70px); }
+.stp-g { margin-top: 18px; }
+.stp-h { display: flex; align-items: center; gap: 10px; padding: 0 2px 8px 6px; }
+.stp-t { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; text-align: left; }
+.stp-t b { font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
+.stp-t small { font-size: 13px; color: var(--muted); }
+.stp-x { width: 36px; height: 36px; border-radius: 50%; background: var(--fill); display: grid; place-items: center; color: var(--ink-2); flex: none; }
+.stp-x .ic { width: 18px; height: 18px; }
+.stp-x:active { background: var(--cherry-soft); color: var(--cherry); }
+.stp-g .hint { padding: 0 6px; }
+.stp-bot { margin-top: auto; padding-top: 14px; position: sticky; bottom: calc(var(--tab-h) + var(--bottom-inset) + 8px); }
+.stp-clr { font-size: 14px; color: var(--muted); padding: 14px 8px 4px; align-self: center; }
+.stp-more { justify-content: center; color: var(--accent); font-weight: 600; font-size: 15px; min-height: 48px; }
+.stp-add { box-shadow: 0 8px 24px rgba(0, 0, 0, .18); }
+.stp-d .ctx b { font-weight: 560; }
+.stp-r.on { opacity: .7; }
+.stp-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 2px 0 6px; }
+.stp-chips .chip.on { background: var(--cherry-soft); color: var(--cherry); box-shadow: none; }
+.stop-note { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; padding: 12px 14px; border-radius: 16px; background: var(--cherry-soft); color: var(--ink); font-size: 14.5px; }
+.stop-note .ic { width: 22px; height: 22px; color: var(--cherry); flex: none; margin-top: 1px; }
+.stop-note span { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.stop-note b { color: var(--cherry); font-weight: 700; }
+
 </style>
 
 
@@ -1639,7 +1676,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   var st = {
     tab: 'home', menu: [], q: '', sf: 'all', dp: 0, flt: {},
     cardMode: 'n2c', cards: null, quiz: null, sheet: false,
-    scrollTab: {}, hg: '', hc: 'all', rqs: -1, rqt: null, anim: '', resetArm: false, sd: null, sv: 'day', wi: null, pk: null, study: 'menu', pm: false, from: '', sa: false
+    scrollTab: {}, hg: '', hc: 'all', rqs: -1, rqt: null, anim: '', resetArm: false, sd: null, sv: 'day', wi: null, pk: null, study: 'menu', pm: false, from: '', sa: false, hs: '', sq: ''
   };
   var tgUser = (inTG && TG.initDataUnsafe && TG.initDataUnsafe.user) || null;
   /* the Telegram profile (name, @username, avatar) is remembered so the browser copy can show it too */
@@ -1711,7 +1748,8 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     list: '<path d="M9 7h11M9 12h11M9 17h11"/><path d="M4.5 7h.01M4.5 12h.01M4.5 17h.01"/>',
     plus: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/>',
     scale: '<path d="M12 4v16M7 20h10M5 7h14"/><path d="M5 7l-2.5 6a3 3 0 0 0 5 0z"/><path d="M19 7l-2.5 6a3 3 0 0 0 5 0z"/>',
-    dish: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/>'
+    dish: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/>',
+    stop: '<path d="M8.6 3.5h6.8l5.1 5.1v6.8l-5.1 5.1H8.6l-5.1-5.1V8.6z"/><path d="M8 12h8"/>'
   };
   function ic(n, cls) { return '<svg class="ic' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" aria-hidden="true">' + (ICONS[n] || '') + '</svg>'; }
   var SEC = {
@@ -1860,8 +1898,9 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     } else {
       sub = '<small>' + esc(d.meta ? d.meta + (preview(d) ? ' · ' : '') : '') + esc(preview(d)) + '</small>';
     }
-    var cell = '<button class="cell ' + sc(d.sec) + '" data-act="open" data-v="' + esc(d.id) + '">' + thumbHTML(d) +
-      '<span class="ctx"><b>' + title + '</b>' + sub + '</span><span class="trail">' +
+    var sw = stpWhy(d);
+    var cell = '<button class="cell ' + sc(d.sec) + (sw ? ' stopped' : '') + '" data-act="open" data-v="' + esc(d.id) + '">' + thumbHTML(d) +
+      '<span class="ctx"><b>' + title + '</b>' + sub + '</span><span class="trail">' + (sw ? '<span class="stopb">Стоп</span>' : '') +
       (store.fav[d.id] ? ic('star', 'fill favmark') : '') + (store.known[d.id] ? ic('checkC', 'learned') : '') + ic('chevR') + '</span></button>';
     if (!admOn()) return cell;
     return '<div class="sw"><div class="swact"><button class="swb ed" data-act="swed" data-v="' + esc(d.id) + '">Править</button><button class="swb arc" data-act="swdel" data-v="' + esc(d.id) + '">В архив</button></div>' + cell + '</div>';
@@ -2081,6 +2120,8 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       h += '<div class="dbadge">' + ic(d.sec) + '</div>';
     }
     h += '<h1 class="dtitle">' + esc(d.name) + '</h1><div class="pills"><span class="pill">' + esc(d.sec) + '</span><span class="pill n">' + esc(d.cat) + '</span>' + (d.meta ? '<span class="pill n">' + esc(d.meta) + '</span>' : '') + (store.known[d.id] ? '<span class="pill n">' + ic('check') + 'выучено</span>' : '') + '</div>';
+    var sw = stpWhy(d);
+    if (sw) h += '<div class="stop-note">' + ic('stop') + '<span><b>Сейчас в стопе</b>' + (sw.ing.length ? 'Нет: ' + esc(sw.ing.join(', ')) : 'Блюдо снято с продажи') + '</span></div>';
     if (admOn()) h += '<div class="adm-tools"><button class="btn" data-act="aed" data-v="' + esc(d.id) + '">' + ic('edit') + 'Править блюдо</button></div>';
     if (d.guest) h += '<section class="guestbox"><span class="eyebrow">Что сказать гостю</span><p>' + esc(d.guest) + '</p></section>';
     h += tagsHTML(d) + ticketHTML(d) + notesHTML(d);
@@ -2668,8 +2709,184 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     var k = knownIn(dishes), n = dishes.length, p = n ? Math.round(k / n * 100) : 0;
     return '<div class="gh"><span class="eyebrow">Учёба</span><span class="cnt">' + k + ' из ' + n + '</span></div><div class="hm-card learn"><div class="prog"><i style="width:' + p + '%"></i></div><span class="p-sub">Выучено ' + p + '% позиций меню</span><div class="btns two"><button class="btn" data-act="go" data-v="cards">Карточки</button><button class="btn" data-act="go" data-v="quiz">Тест</button></div></div>';
   }
+
+  /* ---------- стоп-лист: общий для всех, сбрасывается каждую ночь ---------- */
+  var stp = { items: [], off: 0, arm: false, open: {} };
+  try { var sj = JSON.parse(localStorage.getItem('ttk-stop') || 'null'); if (sj && Array.isArray(sj.items)) stp.items = sj.items.filter(function (x) { return x && typeof x.k === 'string' && typeof x.l === 'string'; }); } catch (e) {}
+  var ING_SUF = 'ыми ими ого его ому ему ами ями ий ый ой ая яя ое ее ые ие ых их ом ем ах ях ов ев ей ам ям ую юю ою ею а я у ю ы и е о ь й'.split(' ').sort(function (a, b) { return b.length - a.length; });
+  var ING_STOP = { 'и': 1, 'с': 1, 'со': 1, 'из': 1, 'на': 1, 'для': 1, 'в': 1, 'во': 1, 'по': 1, 'без': 1, 'или': 1, 'п': 1, 'ф': 1, 'пф': 1, 'украшение': 1, 'шт': 1, 'г': 1, 'мл': 1, 'гр': 1, 'кг': 1, 'л': 1, 'ст': 1, 'ч': 1 };
+  var ING_HIDE = /^(вод|лед|кипяток|сол|сахар|перец|кипяч)/;
+  function ingStem(t) { for (var i = 0; i < ING_SUF.length; i++) { var x = ING_SUF[i]; if (t.length - x.length >= 3 && t.slice(-x.length) === x) return t.slice(0, -x.length); } return t; }
+  /* ингредиент = набор основ слов без порядка и скобок: «Молоко кокосовое» и «Кокосовое молоко» одно и то же, а «Молоко» отдельно */
+  function ingKey(n) {
+    var ws = norm(String(n).replace(/\([^)]*\)/g, '')).split(/[^а-яa-z]+/), out = [];
+    ws.forEach(function (w) { if (w.length < 2 || ING_STOP[w]) return; var x = ingStem(w); if (out.indexOf(x) < 0) out.push(x); });
+    return out.sort().join(' ');
+  }
+  function ingLabel(n) {
+    var l = shortName(String(n)).replace(/\s+(п\/ф|пф|с\/м|с\/с)$/i, '').replace(/\s*\d[\d.,]*\s*%/g, '').replace(/\s+/g, ' ').trim();
+    return l ? l.charAt(0).toUpperCase() + l.slice(1) : '';
+  }
+  var ingC = null, stpC = null;
+  function ingIdx() {
+    if (ingC) return ingC;
+    var g = {};
+    dishes.forEach(function (d) {
+      realItems(d).forEach(function (x) {
+        var k = ingKey(x.n || ''); if (!k) return;
+        var e = g[k] || (g[k] = { k: k, c: {}, set: {} });
+        var l = ingLabel(x.n); if (l) e.c[l] = (e.c[l] || 0) + 1;
+        e.set[d.id] = true;
+      });
+    });
+    dishes.forEach(function (d) { var k = ingKey(d.name); if (k && g[k]) g[k].set[d.id] = true; });
+    var list = Object.keys(g).map(function (k) {
+      var e = g[k], best = '', bn = 0;
+      Object.keys(e.c).forEach(function (l) { if (e.c[l] > bn || (e.c[l] === bn && l.length < best.length)) { best = l; bn = e.c[l]; } });
+      e.label = best || k; e.ids = Object.keys(e.set); delete e.c; delete e.set; return e;
+    });
+    list.sort(function (a, b) { return b.ids.length - a.ids.length || a.label.localeCompare(b.label, 'ru'); });
+    return (ingC = { g: g, list: list });
+  }
+  function nowMs() { return Date.now() + (stp.off || 0); }
+  function dayStart() { var n = new Date(nowMs()), s = new Date(n.getFullYear(), n.getMonth(), n.getDate(), 4, 0, 0); if (n < s) s = new Date(s.getTime() - 864e5); return s.getTime(); }
+  function stpAct() { var ds = dayStart(); return stp.items.filter(function (x) { return (x.t || 0) >= ds; }).sort(function (a, b) { return (b.t || 0) - (a.t || 0); }); }
+  function stpInfo() {
+    var ds = dayStart();
+    if (stpC && stpC.ds === ds) return stpC;
+    var ix = ingIdx(), A = stpAct(), why = {}, dish = {}, all = {};
+    A.forEach(function (x) {
+      if (x.g === 'd') { if (byId[x.k]) { dish[x.k] = true; all[x.k] = true; } return; }
+      var e = ix.g[x.k], l = e ? e.label : x.l;
+      (e ? e.ids : []).forEach(function (id) { if (!byId[id]) return; (why[id] = why[id] || []).push(l); all[id] = true; });
+    });
+    return (stpC = { ds: ds, A: A, why: why, dish: dish, n: Object.keys(all).length });
+  }
+  function stpWhy(d) { var i = stpInfo(); return (i.why[d.id] || i.dish[d.id]) ? { ing: i.why[d.id] || [], dish: !!i.dish[d.id] } : null; }
+  function stpSet(items) { stp.items = items; stpC = null; try { localStorage.setItem('ttk-stop', JSON.stringify({ items: items })); } catch (e) {} }
+  function stpRedraw() {
+    if (clBusyUI()) return;
+    if (st.tab === 'home' && st.hs) { if (st.hs === 'add') { var sr = document.getElementById('sres'); if (sr) sr.innerHTML = stopResHTML(); } else render({ scroll: window.scrollY }); return; }
+    var m = document.getElementById('mres'), a = document.activeElement;
+    if (saOn() && m) m.innerHTML = menuInner();
+    else if (st.tab === 'home' || st.tab === 'menu') { if (a && a.tagName === 'INPUT') { if (m) m.innerHTML = menuInner(); } else render({ scroll: window.scrollY }); }
+  }
+  function stpFetch() {
+    if (!window.fetch || !/^https?:$/.test(location.protocol)) return;
+    try {
+      fetch(API + '/api/stop', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+        if (!j || !Array.isArray(j.items)) return;
+        if (j.now) stp.off = j.now - Date.now();
+        if (JSON.stringify(j.items) === JSON.stringify(stp.items)) return;
+        stpSet(j.items); stpRedraw();
+      }).catch(function () {});
+    } catch (e) {}
+  }
+  function stpPost(body, prev) {
+    var a = adm.tok ? 'Admin ' + adm.tok : clAuth();
+    if (!a) { toast('Чтобы менять стоп-лист, войди в профиль'); return false; }
+    function fail(m) { stpSet(prev); stpRedraw(); toast(m); }
+    try {
+      fetch(API + '/api/stop', { method: 'POST', cache: 'no-store', headers: { 'Content-Type': 'application/json', Authorization: a }, body: JSON.stringify(body) }).then(function (r) {
+        return r.json().then(function (j) { return j || {}; }, function () { return {}; }).then(function (j) {
+          if (r.ok && Array.isArray(j.items)) { if (j.now) stp.off = j.now - Date.now(); stpSet(j.items); stpRedraw(); }
+          else fail(r.status === 401 ? 'Не вышло: войди в профиль заново' : r.status === 413 ? 'Стоп-лист переполнен' : 'Сервер не принял, попробуй ещё раз');
+        });
+      }, function () { fail('Нет связи с сервером, стоп не сохранился'); });
+    } catch (e) { fail('Нет связи с сервером'); return false; }
+    return true;
+  }
+  function stpAdd(g, k) {
+    var ix = ingIdx(), e = g === 'd' ? null : ix.g[k], d = g === 'd' ? byId[k] : null, l = e ? e.label : (d ? d.name : '');
+    if (!l) return;
+    if (stpAct().some(function (x) { return x.k === k && x.g === g; })) { toast('Уже в стопе'); return; }
+    var prev = stp.items.slice();
+    if (!stpPost({ op: 'add', k: k, l: l, g: g }, prev)) return;
+    stpSet(stp.items.filter(function (x) { return x.k !== k; }).concat([{ k: k, l: l, g: g, t: nowMs() }]));
+    st.hs = 'stop'; st.sq = ''; st.anim = '';
+    toast('В стопе: ' + l + (e ? ' · ' + cntDishes(e.ids.length) : ''));
+    render({ scroll: 0 });
+  }
+  function stpDel(k) {
+    var prev = stp.items.slice();
+    if (!stpPost({ op: 'del', k: k }, prev)) return;
+    stpSet(stp.items.filter(function (x) { return x.k !== k; }));
+    render({ scroll: window.scrollY });
+  }
+  function stpClear() {
+    if (!stp.arm) { stp.arm = true; render({ scroll: window.scrollY }); setTimeout(function () { if (stp.arm) { stp.arm = false; if (st.hs === 'stop') render({ scroll: window.scrollY }); } }, 3500); return; }
+    stp.arm = false;
+    var prev = stp.items.slice();
+    if (!stpPost({ op: 'clear' }, prev)) return;
+    stpSet([]); render({ scroll: 0 });
+  }
+  function cntDishes(n) { return n + ' ' + plural(n, ['блюдо', 'блюда', 'блюд']); }
+  function stopRowHTML() {
+    var i = stpInfo(), na = i.A.length;
+    var sub = !na ? 'Сегодня всё в наличии' : i.A.slice(0, 3).map(function (x) { return x.g === 'd' ? x.l : (ingIdx().g[x.k] ? ingIdx().g[x.k].label : x.l); }).join(', ') + (na > 3 ? ' и ещё ' + (na - 3) : '') + ' · ' + (i.n ? cntDishes(i.n) + ' недоступно' : 'в меню нет');
+    return '<button class="hm-card stprow' + (na ? ' on' : '') + '" data-act="stopopen"><span class="stp-ic">' + ic('stop') + '</span><span class="stp-tx"><b>Стоп-лист</b><small>' + esc(sub) + '</small></span>' + (na ? '<span class="stp-n">' + na + '</span>' : '') + ic('chevR') + '</button>';
+  }
+  function stopViewHTML() {
+    if (st.hs === 'add') return stopAddHTML();
+    var i = stpInfo(), ix = ingIdx();
+    var h = '<div class="stp"><h1 class="lt">Стоп-лист</h1><p class="lt-sub">' + (i.A.length ? (i.n ? cntDishes(i.n) + ' недоступно' : 'В меню таких блюд нет') : 'Сегодня всё в наличии') + '</p>';
+    if (!i.A.length) h += '<div class="empty" style="margin-top:14px"><b>Стоп-лист пуст</b>Нажми «Добавить», когда закончится ингредиент или блюдо. Все сотрудники увидят это сразу.</div>';
+    i.A.forEach(function (x) {
+      if (x.g === 'd') {
+        var d = byId[x.k];
+        h += '<section class="stp-g"><div class="stp-h"><button class="stp-t" data-act="open" data-v="' + esc(x.k) + '"><b>' + esc(d ? d.name : x.l) + '</b><small>блюдо целиком</small></button><button class="stp-x" data-act="stpdel" data-v="' + esc(x.k) + '" aria-label="Убрать из стопа">' + ic('x') + '</button></div></section>';
+        return;
+      }
+      var e = ix.g[x.k], ds = (e ? e.ids : []).map(function (id) { return byId[id]; }).filter(Boolean).sort(sortName);
+      h += '<section class="stp-g"><div class="stp-h"><span class="stp-t"><b>' + esc(e ? e.label : x.l) + '</b><small>ингредиент · ' + cntDishes(ds.length) + '</small></span><button class="stp-x" data-act="stpdel" data-v="' + esc(x.k) + '" aria-label="Убрать из стопа">' + ic('x') + '</button></div>';
+      var more = ds.length > 6 && !stp.open[x.k], shown = more ? ds.slice(0, 5) : ds;
+      if (ds.length) h += '<div class="group stp-l">' + shown.map(function (d) {
+        return '<button class="cell plain stp-d" data-act="open" data-v="' + esc(d.id) + '"><span class="ctx"><b>' + esc(d.name) + '</b><small>' + esc(d.sec) + ' · ' + esc(d.cat) + '</small></span><span class="trail">' + ic('chevR') + '</span></button>';
+      }).join('') + (more ? '<button class="cell plain stp-more" data-act="stpmore" data-v="' + esc(x.k) + '">Показать все ' + ds.length + '</button>' : '') + '</div>';
+      else h += '<p class="hint">В меню нет блюд с этим ингредиентом.</p>';
+      h += '</section>';
+    });
+    h += (i.A.length > 1 ? '<button class="stp-clr" data-act="stpclr">' + (stp.arm ? 'Точно очистить всё?' : 'Очистить весь список') + '</button>' : '') + '<div class="stp-bot"><button class="btn primary stp-add" data-act="stopadd">' + ic('plus') + 'Добавить</button></div></div>';
+    return h;
+  }
+  function stpFind(q) {
+    var qs = norm(q).split(/[^а-яa-z]+/).filter(function (w) { return w.length > 1; }).map(ingStem);
+    if (!qs.length) return { ing: [], dish: [] };
+    var ing = ingIdx().list.filter(function (e) {
+      var tk = e.k.split(' ');
+      return qs.every(function (x) { return tk.some(function (t) { return t.indexOf(x) === 0; }); });
+    });
+    ing.sort(function (a, b) { return a.k.split(' ').length - b.k.split(' ').length || b.ids.length - a.ids.length; });
+    var ds = qStems(q), dsh = dishes.filter(function (d) { var w = wordsStr(d.name); return ds.length && ds.every(function (x) { return w.indexOf(' ' + x) >= 0; }); }).sort(sortName);
+    return { ing: ing.slice(0, 30), dish: dsh.slice(0, 10) };
+  }
+  function stopResHTML() {
+    var act = {}; stpAct().forEach(function (x) { act[x.g + ':' + x.k] = true; });
+    var q = (st.sq || '').trim(), h = '';
+    function ingRow(e) {
+      var on = act['i:' + e.k];
+      return '<button class="cell plain stp-r' + (on ? ' on' : '') + '" data-act="stpadd" data-g="i" data-v="' + esc(e.k) + '"><span class="ctx"><b>' + esc(e.label) + '</b><small>' + cntDishes(e.ids.length) + '</small></span><span class="trail">' + (on ? '<span class="stopb">в стопе</span>' : ic('plus')) + '</span></button>';
+    }
+    if (!q) {
+      var top = ingIdx().list.filter(function (e) { return !ING_HIDE.test(e.k) && e.ids.length > 1; }).slice(0, 16);
+      return '<div class="gh"><span class="eyebrow">Частые ингредиенты</span></div><div class="stp-chips">' + top.map(function (e) {
+        return '<button class="chip' + (act['i:' + e.k] ? ' on' : '') + '" data-act="stpadd" data-g="i" data-v="' + esc(e.k) + '">' + esc(e.label) + '<small>' + e.ids.length + '</small></button>';
+      }).join('') + '</div><p class="hint">Или начни вводить название выше. Стоп на ингредиент сразу отметит все блюда, где он есть.</p>';
+    }
+    var r = stpFind(q);
+    if (r.ing.length) h += '<div class="gh"><span class="eyebrow">Ингредиенты</span></div><div class="group">' + r.ing.map(ingRow).join('') + '</div>';
+    if (r.dish.length) h += '<div class="gh"><span class="eyebrow">Блюдо целиком</span></div><div class="group">' + r.dish.map(function (d) {
+      var on = act['d:' + d.id];
+      return '<button class="cell plain stp-r' + (on ? ' on' : '') + '" data-act="stpadd" data-g="d" data-v="' + esc(d.id) + '"><span class="ctx"><b>' + esc(d.name) + '</b><small>' + esc(d.sec) + ' · ' + esc(d.cat) + '</small></span><span class="trail">' + (on ? '<span class="stopb">в стопе</span>' : ic('plus')) + '</span></button>';
+    }).join('') + '</div>';
+    if (!h) h = '<div class="empty" style="margin-top:12px"><b>Ничего не нашли</b>Попробуй короче или по-другому.</div>';
+    return h;
+  }
+  function stopAddHTML() {
+    return '<div class="stp"><h1 class="lt">В стоп</h1><div class="sbar nobg"><div class="sfield">' + ic('search') + '<input id="sq" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Ингредиент или блюдо" value="' + esc(st.sq) + '" aria-label="Что поставить в стоп"></div></div><div id="sres">' + stopResHTML() + '</div></div>';
+  }
   /* Telegram-style search mode: tab bar hides, recents show, filters sit at the bottom */
-  function saOk() { return !st.menu.length && (st.tab === 'home' || st.tab === 'menu'); }
+  function saOk() { return !st.menu.length && !st.hs && (st.tab === 'home' || st.tab === 'menu'); }
   function saOn() { return !!st.sa && saOk(); }
   function saRestHTML() {
     var fav = dishes.filter(function (d) { return store.fav[d.id]; }).sort(sortName).slice(0, 14);
@@ -2717,7 +2934,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     }).join('') + '</div>';
   }
   function homeRestHTML() {
-    var h = instBanner() + '<div class="hm">';
+    var h = instBanner() + '<div class="hm">' + stopRowHTML();
     if (!store.me) h += whoHTML(); else h += homeHeroHTML() + homePayHTML();
     return h + homeTeamHTML() + homeLearnHTML() + '</div>';
   }
@@ -2771,6 +2988,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       n.title = st.quiz && !st.quiz.done ? st.quiz.title : (!st.quiz ? 'Учёба' : 'Тесты');
       if (st.quiz) { n.close = true; n.always = !st.quiz.done; }
     } else if (st.tab === 'shifts') { n.title = 'Смены'; if (st.sv === 'req') { n.back = 'Смены'; n.title = 'Пожелания'; } }
+    else if (st.tab === 'home' && st.hs) { n.back = st.hs === 'add' ? 'Назад' : 'Главная'; n.title = st.hs === 'add' ? 'Добавить в стоп' : 'Стоп-лист'; }
     else if (st.tab === 'home') n.title = 'Главная';
     else if (st.pv === 'arch') { n.back = 'Профиль'; n.title = 'Архив блюд'; }
     else n.title = 'Профиль';
@@ -2793,12 +3011,13 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     if (st.tab === 'cards') return cardsViewHTML();
     if (st.tab === 'quiz') return quizViewHTML();
     if (st.tab === 'shifts') return shiftsViewHTML();
-    if (st.tab === 'home') return homeViewHTML();
+    if (st.tab === 'home') return st.hs ? stopViewHTML() : homeViewHTML();
     return profileViewHTML();
   }
 
   function render(opts) {
     opts = opts || {};
+    ingC = null; stpC = null;
     var oldSheet = document.getElementById('sheet'), sheetTop = oldSheet ? oldSheet.scrollTop : 0;
     var oldMe = root.querySelector('.me-row'), meX = oldMe ? oldMe.scrollLeft : null;
     var oldWk = root.querySelector('.wk-scroll'), wkX = oldWk ? oldWk.scrollLeft : null;
@@ -2838,7 +3057,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   window.addEventListener('resize', function () { fitRep(false); });
   function syncBack() {
     if (!inTG || !TG.BackButton) return;
-    try { if ((st.tab === 'menu' && st.menu.length) || st.sheet || saOn() || (st.tab === 'shifts' && st.sv === 'req') || (st.tab === 'profile' && st.pv)) TG.BackButton.show(); else TG.BackButton.hide(); } catch (e) {}
+    try { if ((st.tab === 'menu' && st.menu.length) || st.sheet || saOn() || (st.tab === 'shifts' && st.sv === 'req') || (st.tab === 'profile' && st.pv) || (st.tab === 'home' && st.hs)) TG.BackButton.show(); else TG.BackButton.hide(); } catch (e) {}
   }
   function onScroll() {
     var nav = root.querySelector('.nav'); if (!nav) return;
@@ -2881,6 +3100,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     else if (saOn()) closeSearch();
     else if (st.tab === 'shifts' && st.sv === 'req') { st.sv = st.svPrev && st.svPrev !== 'req' ? st.svPrev : 'day'; render({ scroll: 0 }); }
     else if (st.tab === 'profile' && st.pv) { st.pv = ''; render({ scroll: 0 }); }
+    else if (st.tab === 'home' && st.hs) { st.hs = st.hs === 'add' ? 'stop' : ''; st.sq = ''; st.anim = ''; render({ scroll: 0 }); }
     else popMenu();
   }
   function openDish(id) {
@@ -2899,7 +3119,9 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     if (t === 'study') t = inStudy(st.tab) ? st.tab : (st.study || 'menu');
     if (inStudy(t)) st.study = t;
     if (t !== 'profile') st.pv = '';
+    if (t !== st.tab) st.hs = '';
     if (t === st.tab) {
+      if (t === 'home' && st.hs) { st.hs = ''; st.sq = ''; render({ scroll: 0 }); return; }
       if (t === 'profile' && st.pv) { st.pv = ''; render({ scroll: 0 }); return; }
       st.from = '';
       if (t === 'menu' && st.menu.length) { st.menu = []; st.anim = ''; render({ scroll: 0 }); }
@@ -3014,7 +3236,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     if (!t || t.disabled) return;
     var act = t.getAttribute('data-act'), v = t.getAttribute('data-v');
     var c = st.cards, q = st.quiz;
-    var HK = { rqc: 'light', rqsd: 'med', rqsx: 'light', rqp: 'sel', rqcp: 'light', rqclr: 'med', tab: 'sel', open: 'light', sec: 'light', scat: 'sel', sf: 'sel', flt: 'sel', setsec: 'sel', setcat: 'sel', only: 'sel', cmode: 'sel', bchip: 'sel', star: 'med', sheet: 'light', qstart: 'med', qnext: 'light', theme: 'sel', hg: 'sel', hc: 'sel', go: 'sel', gohours: 'light', pickme: 'sel', sday: 'sel', sview: 'sel', swk: 'sel', spr: 'sel', sex: 'sel', scp: 'light', sme: 'sel', sclose: 'light', rclear: 'med', back: 'light', ph: 'sel', openq: 'light' };
+    var HK = { rqc: 'light', rqsd: 'med', rqsx: 'light', rqp: 'sel', rqcp: 'light', rqclr: 'med', tab: 'sel', open: 'light', sec: 'light', scat: 'sel', sf: 'sel', flt: 'sel', setsec: 'sel', setcat: 'sel', only: 'sel', cmode: 'sel', bchip: 'sel', star: 'med', sheet: 'light', qstart: 'med', qnext: 'light', theme: 'sel', hg: 'sel', hc: 'sel', go: 'sel', gohours: 'light', pickme: 'sel', sday: 'sel', sview: 'sel', swk: 'sel', spr: 'sel', sex: 'sel', scp: 'light', sme: 'sel', sclose: 'light', rclear: 'med', back: 'light', ph: 'sel', openq: 'light', stopopen: 'light', stopadd: 'light', stpadd: 'med', stpdel: 'light', stpclr: 'med' };
     if (HK[act]) buzz(HK[act]);
     if (act === 'swed') { swOpen = null; edOpen(v); return; }
     if (act === 'swdel') {
@@ -3032,6 +3254,12 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       case 'sclose': closeSearch(); return;
       case 'rclear': store.recent = []; save(); document.getElementById('mres').innerHTML = menuInner(); return;
       case 'tab': tabAct(v); return;
+      case 'stopopen': st.hs = 'stop'; st.sa = false; st.q = ''; st.flt = {}; st.homeSy = window.scrollY; st.anim = 'push'; render({ scroll: 0 }); stpFetch(); return;
+      case 'stopadd': st.hs = 'add'; st.sq = ''; st.anim = 'push'; render({ scroll: 0 }); (function () { var i = document.getElementById('sq'); if (i) i.focus(); })(); return;
+      case 'stpadd': stpAdd(t.getAttribute('data-g') === 'd' ? 'd' : 'i', v); return;
+      case 'stpdel': stpDel(v); return;
+      case 'stpclr': stpClear(); return;
+      case 'stpmore': stp.open[v] = true; render({ scroll: window.scrollY }); return;
       case 'back': goBack(); return;
       case 'rqopen':
         st.svPrev = st.sv === 'req' ? 'day' : st.sv; st.sv = 'req'; 
@@ -3120,6 +3348,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     if (f && f.scrollIntoView) { try { f.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) { f.scrollIntoView(); } }
   }
   root.addEventListener('input', function (ev) {
+    if (ev.target && ev.target.id === 'sq') { st.sq = ev.target.value; var sr = document.getElementById('sres'); if (sr) sr.innerHTML = stopResHTML(); return; }
     if (ev.target && ev.target.id === 'q') {
       st.q = ev.target.value;
       if (!st.q.trim()) st.sf = 'all';
@@ -3434,7 +3663,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     dishes.forEach(function (d) { byId[d.id] = d; });
     Object.keys(catsOf).forEach(function (k) { delete catsOf[k]; });
     secs.forEach(function (s) { catsOf[s.id] = s.cats; });
-    dishes.forEach(prep);
+    dishes.forEach(prep); ingC = null; stpC = null;
     st.menu = st.menu.filter(function (e) { return e.kind !== 'dish' || byId[e.id]; });
     if (store.sec !== 'all' && SECS.indexOf(store.sec) < 0) store.sec = 'all';
     if (store.cat !== 'all' && (store.sec === 'all' || catsOf[store.sec].indexOf(store.cat) < 0)) store.cat = 'all';
@@ -3890,8 +4119,9 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       Object.keys(adm.pend).forEach(function (id) { PH[id] = adm.pend[id]; });
     } catch (e) {}
   })();
-  fetchMenu();
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) fetchMenu(); });
+  fetchMenu(); stpFetch();
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) { fetchMenu(); stpFetch(); } });
+  setInterval(function () { if (!document.hidden) stpFetch(); }, 60000);
   admLoadCloud();
 
   try { if (/[#&]welcome\b/.test(location.hash)) { localStorage.removeItem('ttk-ask-done'); store.me = ''; save(); history.replaceState(null, '', location.pathname + location.search); } } catch (e) {}
@@ -3907,7 +4137,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = '57ff06b2b5';
+    var BUILD = 'fa122d495b';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
