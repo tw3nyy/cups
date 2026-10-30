@@ -1515,6 +1515,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   var BR = JSON.parse(document.getElementById('brand').textContent);
   var SCHED = JSON.parse(document.getElementById('sched').textContent);
   var archive = D.archive || [];
+  var ORIG = JSON.parse(JSON.stringify(D.dishes)); /* меню как оно было при сборке страницы: из него можно вернуть удалённое до появления архива */
   var dishes = D.dishes, secs = D.secs, glossary = D.glossary, rules = D.rules || [];
   var SECS = secs.map(function (s) { return s.id; });
   var byId = {};
@@ -3528,13 +3529,22 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       return h + '</div>';
     }
     h += '<div class="group"><button class="switch" data-act="admon" aria-pressed="' + adm.on + '"><span>Режим редактирования<small class="pf-s">' + (adm.on ? 'в блюде появится «Править»' : 'выключен') + '</small></span><i></i></button></div>';
-    if (archive.length || adm.arch) {
-      h += '<div class="group adm-arch"><button class="switch" data-act="admarch" aria-pressed="' + !!adm.arch + '"><span>Архив блюд<small class="pf-s">' + archive.length + ' шт. · убранные из меню</small></span><i></i></button>';
+    if (archive.length || adm.arch || origGone().length) {
+      h += '<div class="group adm-arch"><button class="switch" data-act="admarch" aria-pressed="' + !!adm.arch + '"><span>Архив блюд<small class="pf-s">' + archive.length + ' шт.' + (origGone().length ? ' · ещё ' + origGone().length + ' удалены раньше' : '') + '</small></span><i></i></button>';
       if (adm.arch) {
         if (!archive.length) h += '<p class="adm-p" style="padding:0 16px 14px">Архив пуст</p>';
         archive.forEach(function (d) {
           h += '<div class="arc-row"><span class="arc-t"><b>' + esc(d.name) + '</b><small>' + esc(d.sec) + ' · ' + esc(d.cat) + '</small></span><button class="arc-b" data-act="archback" data-v="' + esc(d.id) + '">Вернуть</button><button class="arc-b del" data-act="archdel" data-v="' + esc(d.id) + '">' + (adm.armArch === d.id ? 'Точно?' : 'Удалить') + '</button></div>';
         });
+      }
+      if (adm.arch) {
+        var og = origGone();
+        if (og.length) {
+          h += '<p class="adm-p" style="padding:12px 16px 4px"><b>Удалены раньше, до архива (' + og.length + ')</b></p>';
+          og.forEach(function (d) {
+            h += '<div class="arc-row"><span class="arc-t"><b>' + esc(d.name) + '</b><small>' + esc(d.sec) + ' · ' + esc(d.cat) + '</small></span><button class="arc-b" data-act="archorig" data-v="' + esc(d.id) + '">Вернуть</button></div>';
+          });
+        }
       }
       h += '</div>';
     }
@@ -3693,6 +3703,15 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       toast('Вернул: ' + d.name + '. Нажми «Сохранить»'); return;
     }
   }
+  function origGone() { return ORIG.filter(function (d) { return !byId[d.id] && !archive.some(function (a) { return a.id === d.id; }); }); }
+  function archOrig(id) {
+    var d = null; ORIG.forEach(function (x) { if (x.id === id) d = JSON.parse(JSON.stringify(x)); });
+    if (!d || byId[d.id]) return;
+    if (!catsOf[d.sec]) { toast('Раздел «' + d.sec + '» уже удалён'); return; }
+    if (catsOf[d.sec].indexOf(d.cat) < 0) catsOf[d.sec].push(d.cat);
+    dishes.push(d); byId[d.id] = d; prep(d); adm.n++; admDirty(); resetDecks();
+    toast('Вернул: ' + d.name + '. Нажми «Сохранить»');
+  }
   function archDelete(id) {
     if (adm.armArch !== id) { adm.armArch = id; render({ scroll: window.scrollY }); setTimeout(function () { if (adm.armArch === id) { adm.armArch = ''; render({ scroll: window.scrollY }); } }, 3500); return; }
     adm.armArch = '';
@@ -3783,6 +3802,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       case 'admarch': adm.arch = !adm.arch; render({ scroll: window.scrollY }); return;
       case 'archback': archRestore(v); render({ scroll: window.scrollY }); return;
       case 'archdel': archDelete(v); return;
+      case 'archorig': archOrig(v); render({ scroll: window.scrollY }); return;
       case 'admtok': admVerify(); return;
       case 'admon': adm.on = !adm.on; try { localStorage.setItem('ttk-adm-on', adm.on ? '1' : '0'); } catch (x) {} render({ scroll: window.scrollY }); return;
       case 'admout':
@@ -3834,7 +3854,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = 'efe99300c5';
+    var BUILD = '5f97f856f9';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
