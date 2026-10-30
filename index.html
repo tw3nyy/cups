@@ -1521,28 +1521,63 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
 .stprow.on .stp-ic { background: var(--cherry-soft); color: var(--cherry); }
 .stprow.on .stp-tx small { color: var(--cherry); }
 .stp-n { min-width: 24px; height: 24px; padding: 0 7px; border-radius: 12px; background: var(--cherry); color: #fff; font-size: 13px; font-weight: 700; display: grid; place-items: center; flex: none; }
-.stp { display: flex; flex-direction: column; gap: 0; min-height: calc(100vh - var(--nav-h) - var(--tab-h) - var(--bottom-inset) - 70px); }
-.stp-g { margin-top: 18px; }
-.stp-h { display: flex; align-items: center; gap: 10px; padding: 0 2px 8px 6px; }
-.stp-t { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; text-align: left; }
-.stp-t b { font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
-.stp-t small { font-size: 13px; color: var(--muted); }
-.stp-x { width: 36px; height: 36px; border-radius: 50%; background: var(--fill); display: grid; place-items: center; color: var(--ink-2); flex: none; }
-.stp-x .ic { width: 18px; height: 18px; }
-.stp-x:active { background: var(--cherry-soft); color: var(--cherry); }
-.stp-g .hint { padding: 0 6px; }
-.stp-bot { margin-top: auto; padding-top: 14px; position: sticky; bottom: calc(var(--tab-h) + var(--bottom-inset) + 8px); }
-.stp-clr { font-size: 14px; color: var(--muted); padding: 14px 8px 4px; align-self: center; }
-.stp-more { justify-content: center; color: var(--accent); font-weight: 600; font-size: 15px; min-height: 48px; }
-.stp-add { box-shadow: 0 8px 24px rgba(0, 0, 0, .18); }
-.stp-d .ctx b { font-weight: 560; }
-.stp-r.on { opacity: .7; }
-.stp-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 2px 0 6px; }
-.stp-chips .chip.on { background: var(--cherry-soft); color: var(--cherry); box-shadow: none; }
 .stop-note { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; padding: 12px 14px; border-radius: 16px; background: var(--cherry-soft); color: var(--ink); font-size: 14.5px; }
 .stop-note .ic { width: 22px; height: 22px; color: var(--cherry); flex: none; margin-top: 1px; }
 .stop-note span { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .stop-note b { color: var(--cherry); font-weight: 700; }
+
+/* экран стоп-листа */
+.stp { display: flex; flex-direction: column; gap: 14px; padding-top: 6px; min-height: calc(100vh - var(--nav-h) - var(--tab-h) - var(--bottom-inset) - 60px); }
+.stp-hero { display: flex; align-items: center; gap: 16px; padding: 20px 22px; border-radius: 26px; color: #fff; background: linear-gradient(135deg, #F0575C 0%, #C7313B 100%); box-shadow: 0 10px 28px rgba(220, 60, 70, .28); }
+.stp-hero.ok { background: var(--accent-grad, var(--accent)); box-shadow: var(--accent-glow, 0 10px 28px rgba(30, 143, 99, .25)); }
+.stp-big { font-size: 56px; line-height: .9; font-weight: 750; letter-spacing: -.04em; font-variant-numeric: tabular-nums; flex: none; }
+.stp-hi { width: 52px; height: 52px; border-radius: 50%; background: rgba(255, 255, 255, .22); display: grid; place-items: center; flex: none; }
+.stp-hi .ic { width: 28px; height: 28px; stroke-width: 2.4; }
+.stp-ht { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.stp-ht b { font-size: 19px; font-weight: 700; line-height: 1.2; letter-spacing: -.01em; }
+.stp-ht small { font-size: 13.5px; opacity: .88; line-height: 1.35; }
+.stp-card { border-radius: 22px; background: var(--glass-strong); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-line), var(--glass-shadow); overflow: hidden; }
+.stp-h { display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 14px; }
+.stp-hd { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; text-align: left; }
+.stp-b { width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center; background: var(--cherry-soft); color: var(--cherry); flex: none; }
+.stp-b .ic { width: 22px; height: 22px; }
+.stp-b.sm { width: 36px; height: 36px; border-radius: 11px; }
+.stp-b.sm .ic { width: 20px; height: 20px; }
+.stp-t { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; text-align: left; }
+.stp-t b { font-size: 18px; font-weight: 700; letter-spacing: -.01em; line-height: 1.2; }
+.stp-t small { font-size: 13px; color: var(--cherry); font-weight: 500; }
+.stp-x { width: 34px; height: 34px; border-radius: 50%; background: var(--fill); display: grid; place-items: center; color: var(--ink-2); flex: none; }
+.stp-x .ic { width: 16px; height: 16px; }
+.stp-x:active { background: var(--cherry-soft); color: var(--cherry); }
+.stp-l { border-top: .5px solid var(--line-2); }
+.stp-d { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 8px 14px 8px 14px; min-height: 58px; position: relative; }
+.stp-d + .stp-d::before { content: ""; position: absolute; top: 0; left: 70px; right: 0; border-top: .5px solid var(--line); }
+.stp-d:active { background: var(--fill); }
+.stp-d .thumb, .stp-hd .thumb, .stp-r .thumb { width: 40px; height: 40px; border-radius: 11px; }
+.stp-d .thumb .ic, .stp-hd .thumb .ic, .stp-r .thumb .ic { width: 20px; height: 20px; }
+.stp-d .ctx b { font-size: 14.5px; font-weight: 560; }
+.stp-d > .ic { width: 16px; height: 16px; color: var(--muted); flex: none; }
+.stp-more { display: block; width: 100%; padding: 13px; text-align: center; color: var(--accent); font-weight: 600; font-size: 15px; border-top: .5px solid var(--line); }
+.stp-bot { margin-top: auto; padding-top: 22px; z-index: 5; position: sticky; bottom: calc(var(--tab-h) + var(--bottom-inset) + 6px); display: flex; flex-direction: column; gap: 4px; }
+.stp-bot::before { content: ""; position: absolute; left: -16px; right: -16px; top: 0; bottom: -12px; z-index: -1; background: linear-gradient(to bottom, transparent, var(--bg) 32%); pointer-events: none; }
+.stp-clr { font-size: 14px; color: var(--muted); padding: 6px 8px; align-self: center; }
+.stp-add { min-height: 54px; border-radius: 18px; box-shadow: 0 10px 26px rgba(0, 0, 0, .2); }
+.stp-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stp-tile { display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 13px 14px; border-radius: 18px; background: var(--glass-strong); box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-line); min-width: 0; }
+.stp-tile b { font-size: 15.5px; font-weight: 650; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.stp-tile small { font-size: 12.5px; color: var(--muted); }
+.stp-tile:active { background: var(--cherry-soft); }
+.stp-tile.on { background: var(--cherry-soft); box-shadow: none; }
+.stp-tile.on small { color: var(--cherry); font-weight: 600; }
+.stp-rows { display: flex; flex-direction: column; border-radius: 22px; overflow: hidden; background: var(--glass-strong); box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-line); }
+.stp-r { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 9px 12px 9px 14px; min-height: 60px; position: relative; }
+.stp-r + .stp-r::before { content: ""; position: absolute; top: 0; left: 64px; right: 0; border-top: .5px solid var(--line); }
+.stp-r:active { background: var(--fill); }
+.stp-r .ctx b { font-size: 15px; font-weight: 600; }
+.stp-go { flex: none; font-size: 13px; font-weight: 650; padding: 7px 12px; border-radius: 999px; color: var(--cherry); background: var(--cherry-soft); }
+.stp-go.on { color: var(--muted); background: var(--fill); }
+.stp-r.on .ctx { opacity: .6; }
+.stp .hint { padding: 4px 6px; }
 
 </style>
 
@@ -2826,27 +2861,29 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     var sub = !na ? 'Сегодня всё в наличии' : i.A.slice(0, 3).map(function (x) { return x.g === 'd' ? x.l : (ingIdx().g[x.k] ? ingIdx().g[x.k].label : x.l); }).join(', ') + (na > 3 ? ' и ещё ' + (na - 3) : '') + ' · ' + (i.n ? cntDishes(i.n) + ' недоступно' : 'в меню нет');
     return '<button class="hm-card stprow' + (na ? ' on' : '') + '" data-act="stopopen"><span class="stp-ic">' + ic('stop') + '</span><span class="stp-tx"><b>Стоп-лист</b><small>' + esc(sub) + '</small></span>' + (na ? '<span class="stp-n">' + na + '</span>' : '') + ic('chevR') + '</button>';
   }
+  function stopRowD(d) {
+    return '<button class="stp-d" data-act="open" data-v="' + esc(d.id) + '">' + thumbHTML(d) + '<span class="ctx"><b>' + esc(d.name) + '</b><small>' + esc(d.sec) + ' · ' + esc(d.cat) + '</small></span>' + ic('chevR') + '</button>';
+  }
   function stopViewHTML() {
     if (st.hs === 'add') return stopAddHTML();
-    var i = stpInfo(), ix = ingIdx();
-    var h = '<div class="stp"><h1 class="lt">Стоп-лист</h1><p class="lt-sub">' + (i.A.length ? (i.n ? cntDishes(i.n) + ' недоступно' : 'В меню таких блюд нет') : 'Сегодня всё в наличии') + '</p>';
-    if (!i.A.length) h += '<div class="empty" style="margin-top:14px"><b>Стоп-лист пуст</b>Нажми «Добавить», когда закончится ингредиент или блюдо. Все сотрудники увидят это сразу.</div>';
+    var i = stpInfo(), ix = ingIdx(), na = i.A.length;
+    var h = '<div class="stp">';
+    if (!na) h += '<div class="stp-hero ok"><span class="stp-hi">' + ic('check') + '</span><span class="stp-ht"><b>Всё в наличии</b><small>Когда что-то закончится, добавь это сюда. Коллеги увидят сразу.</small></span></div>';
+    else h += '<div class="stp-hero"><span class="stp-big">' + i.n + '</span><span class="stp-ht"><b>' + plural(i.n, ['блюдо недоступно', 'блюда недоступно', 'блюд недоступно']) + '</b><small>В стопе: ' + na + ' · сброс в 4:00</small></span></div>';
     i.A.forEach(function (x) {
+      var xb = '<button class="stp-x" data-act="stpdel" data-v="' + esc(x.k) + '" aria-label="Убрать из стопа">' + ic('x') + '</button>';
       if (x.g === 'd') {
         var d = byId[x.k];
-        h += '<section class="stp-g"><div class="stp-h"><button class="stp-t" data-act="open" data-v="' + esc(x.k) + '"><b>' + esc(d ? d.name : x.l) + '</b><small>блюдо целиком</small></button><button class="stp-x" data-act="stpdel" data-v="' + esc(x.k) + '" aria-label="Убрать из стопа">' + ic('x') + '</button></div></section>';
+        h += '<section class="stp-card"><div class="stp-h">' + (d ? '<button class="stp-hd" data-act="open" data-v="' + esc(x.k) + '">' + thumbHTML(d) : '<span class="stp-hd">') + '<span class="stp-t"><b>' + esc(d ? d.name : x.l) + '</b><small>блюдо целиком</small></span>' + (d ? '</button>' : '</span>') + xb + '</div></section>';
         return;
       }
       var e = ix.g[x.k], ds = (e ? e.ids : []).map(function (id) { return byId[id]; }).filter(Boolean).sort(sortName);
-      h += '<section class="stp-g"><div class="stp-h"><span class="stp-t"><b>' + esc(e ? e.label : x.l) + '</b><small>ингредиент · ' + cntDishes(ds.length) + '</small></span><button class="stp-x" data-act="stpdel" data-v="' + esc(x.k) + '" aria-label="Убрать из стопа">' + ic('x') + '</button></div>';
-      var more = ds.length > 6 && !stp.open[x.k], shown = more ? ds.slice(0, 5) : ds;
-      if (ds.length) h += '<div class="group stp-l">' + shown.map(function (d) {
-        return '<button class="cell plain stp-d" data-act="open" data-v="' + esc(d.id) + '"><span class="ctx"><b>' + esc(d.name) + '</b><small>' + esc(d.sec) + ' · ' + esc(d.cat) + '</small></span><span class="trail">' + ic('chevR') + '</span></button>';
-      }).join('') + (more ? '<button class="cell plain stp-more" data-act="stpmore" data-v="' + esc(x.k) + '">Показать все ' + ds.length + '</button>' : '') + '</div>';
-      else h += '<p class="hint">В меню нет блюд с этим ингредиентом.</p>';
+      var more = ds.length > 5 && !stp.open[x.k], shown = more ? ds.slice(0, 3) : ds;
+      h += '<section class="stp-card"><div class="stp-h"><span class="stp-b">' + ic('stop') + '</span><span class="stp-t"><b>' + esc(e ? e.label : x.l) + '</b><small>' + (ds.length ? cntDishes(ds.length) + ' недоступно' : 'в меню нет блюд') + '</small></span>' + xb + '</div>';
+      if (ds.length) h += '<div class="stp-l">' + shown.map(stopRowD).join('') + (more ? '<button class="stp-more" data-act="stpmore" data-v="' + esc(x.k) + '">Показать ещё ' + (ds.length - 3) + '</button>' : '') + '</div>';
       h += '</section>';
     });
-    h += (i.A.length > 1 ? '<button class="stp-clr" data-act="stpclr">' + (stp.arm ? 'Точно очистить всё?' : 'Очистить весь список') + '</button>' : '') + '<div class="stp-bot"><button class="btn primary stp-add" data-act="stopadd">' + ic('plus') + 'Добавить</button></div></div>';
+    h += '<div class="stp-bot">' + (na > 1 ? '<button class="stp-clr" data-act="stpclr">' + (stp.arm ? 'Точно очистить всё?' : 'Очистить весь список') + '</button>' : '') + '<button class="btn primary stp-add" data-act="stopadd">' + ic('plus') + 'Добавить в стоп</button></div></div>';
     return h;
   }
   function stpFind(q) {
@@ -2863,27 +2900,29 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   function stopResHTML() {
     var act = {}; stpAct().forEach(function (x) { act[x.g + ':' + x.k] = true; });
     var q = (st.sq || '').trim(), h = '';
+    function go(on) { return '<span class="stp-go' + (on ? ' on' : '') + '">' + (on ? 'В стопе' : 'В стоп') + '</span>'; }
     function ingRow(e) {
       var on = act['i:' + e.k];
-      return '<button class="cell plain stp-r' + (on ? ' on' : '') + '" data-act="stpadd" data-g="i" data-v="' + esc(e.k) + '"><span class="ctx"><b>' + esc(e.label) + '</b><small>' + cntDishes(e.ids.length) + '</small></span><span class="trail">' + (on ? '<span class="stopb">в стопе</span>' : ic('plus')) + '</span></button>';
+      return '<button class="stp-r' + (on ? ' on' : '') + '" data-act="stpadd" data-g="i" data-v="' + esc(e.k) + '"><span class="stp-b sm">' + ic('stop') + '</span><span class="ctx"><b>' + esc(e.label) + '</b><small>' + cntDishes(e.ids.length) + '</small></span>' + go(on) + '</button>';
     }
     if (!q) {
-      var top = ingIdx().list.filter(function (e) { return !ING_HIDE.test(e.k) && e.ids.length > 1; }).slice(0, 16);
-      return '<div class="gh"><span class="eyebrow">Частые ингредиенты</span></div><div class="stp-chips">' + top.map(function (e) {
-        return '<button class="chip' + (act['i:' + e.k] ? ' on' : '') + '" data-act="stpadd" data-g="i" data-v="' + esc(e.k) + '">' + esc(e.label) + '<small>' + e.ids.length + '</small></button>';
-      }).join('') + '</div><p class="hint">Или начни вводить название выше. Стоп на ингредиент сразу отметит все блюда, где он есть.</p>';
+      var top = ingIdx().list.filter(function (e) { return !ING_HIDE.test(e.k) && e.ids.length > 1; }).slice(0, 12);
+      return '<div class="gh"><span class="eyebrow">Частые ингредиенты</span></div><div class="stp-tiles">' + top.map(function (e) {
+        var on = act['i:' + e.k];
+        return '<button class="stp-tile' + (on ? ' on' : '') + '" data-act="stpadd" data-g="i" data-v="' + esc(e.k) + '"><b>' + esc(e.label) + '</b><small>' + (on ? 'в стопе' : cntDishes(e.ids.length)) + '</small></button>';
+      }).join('') + '</div><p class="hint">Или найди нужное в поиске выше. Стоп на ингредиент сразу отметит все блюда, где он есть.</p>';
     }
     var r = stpFind(q);
-    if (r.ing.length) h += '<div class="gh"><span class="eyebrow">Ингредиенты</span></div><div class="group">' + r.ing.map(ingRow).join('') + '</div>';
-    if (r.dish.length) h += '<div class="gh"><span class="eyebrow">Блюдо целиком</span></div><div class="group">' + r.dish.map(function (d) {
+    if (r.ing.length) h += '<div class="gh"><span class="eyebrow">Ингредиенты</span><span class="cnt">' + r.ing.length + '</span></div><div class="stp-rows">' + r.ing.map(ingRow).join('') + '</div>';
+    if (r.dish.length) h += '<div class="gh"><span class="eyebrow">Блюдо целиком</span><span class="cnt">' + r.dish.length + '</span></div><div class="stp-rows">' + r.dish.map(function (d) {
       var on = act['d:' + d.id];
-      return '<button class="cell plain stp-r' + (on ? ' on' : '') + '" data-act="stpadd" data-g="d" data-v="' + esc(d.id) + '"><span class="ctx"><b>' + esc(d.name) + '</b><small>' + esc(d.sec) + ' · ' + esc(d.cat) + '</small></span><span class="trail">' + (on ? '<span class="stopb">в стопе</span>' : ic('plus')) + '</span></button>';
+      return '<button class="stp-r' + (on ? ' on' : '') + '" data-act="stpadd" data-g="d" data-v="' + esc(d.id) + '">' + thumbHTML(d) + '<span class="ctx"><b>' + esc(d.name) + '</b><small>' + esc(d.sec) + ' · ' + esc(d.cat) + '</small></span>' + go(on) + '</button>';
     }).join('') + '</div>';
     if (!h) h = '<div class="empty" style="margin-top:12px"><b>Ничего не нашли</b>Попробуй короче или по-другому.</div>';
     return h;
   }
   function stopAddHTML() {
-    return '<div class="stp"><h1 class="lt">В стоп</h1><div class="sbar nobg"><div class="sfield">' + ic('search') + '<input id="sq" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Ингредиент или блюдо" value="' + esc(st.sq) + '" aria-label="Что поставить в стоп"></div></div><div id="sres">' + stopResHTML() + '</div></div>';
+    return '<div class="stp"><div class="sbar"><div class="sfield">' + ic('search') + '<input id="sq" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Ингредиент или блюдо" value="' + esc(st.sq) + '" aria-label="Что поставить в стоп"></div></div><div id="sres">' + stopResHTML() + '</div></div>';
   }
   /* Telegram-style search mode: tab bar hides, recents show, filters sit at the bottom */
   function saOk() { return !st.menu.length && !st.hs && (st.tab === 'home' || st.tab === 'menu'); }
@@ -4137,7 +4176,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = 'fa122d495b';
+    var BUILD = '741f359e22';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
