@@ -1098,6 +1098,9 @@ html, body { overflow-x: clip; }
 .pr-row { grid-template-columns: 82px 1fr auto; }
 .pr-none { padding: 18px; color: var(--muted); font-size: 14.5px; border-top: .5px solid var(--line); }
 .rep-f { flex: none; padding: 13px 18px 11px; background: var(--accent-soft); }
+.rep-f .rate { display: flex; align-items: center; gap: 6px; }
+.rep-f .rate input { width: 74px; min-height: 36px; padding: 4px 10px; border-radius: 10px; border: 0; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line-2); color: inherit; font: inherit; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; }
+.rep-f .rate i { font-style: normal; color: var(--muted); font-size: 13.5px; }
 .rep-pay { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 18px; background: var(--accent-grad, var(--accent)); color: #fff; }
 .rep-pay span { font-size: 13.5px; opacity: .88; font-variant-numeric: tabular-nums; }
 .rep-pay b { font-size: 24px; font-weight: 750; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
@@ -1602,7 +1605,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   var inTG = !!(TG && TG.initData);
 
   /* ---------- state ---------- */
-  var store = { known: {}, fav: {}, recent: [], sec: 'all', cat: 'all', only: false, theme: 'auto', me: '', cl: false, ex: {}, rq: null };
+  var store = { known: {}, fav: {}, recent: [], sec: 'all', cat: 'all', only: false, theme: 'auto', me: '', cl: false, ex: {}, rq: null, rm: 0 };
   try {
     var raw = localStorage.getItem(KEY);
     var old = localStorage.getItem(OLDKEY);
@@ -1611,7 +1614,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       store.known = s0.known || {};
       if (raw) {
         store.fav = s0.fav || {}; store.recent = Array.isArray(s0.recent) ? s0.recent : [];
-        store.sec = s0.sec || 'all'; store.cat = s0.cat || 'all'; store.only = !!s0.only; store.theme = s0.theme || 'auto'; store.t = s0.t || 0; store.me = typeof s0.me === 'string' ? s0.me : ''; store.cl = !!s0.cl; store.ex = (s0.ex && typeof s0.ex === 'object') ? s0.ex : {}; store.rq = (s0.rq && typeof s0.rq === 'object' && s0.rq.d) ? s0.rq : null;
+        store.sec = s0.sec || 'all'; store.cat = s0.cat || 'all'; store.only = !!s0.only; store.theme = s0.theme || 'auto'; store.t = s0.t || 0; store.me = typeof s0.me === 'string' ? s0.me : ''; store.cl = !!s0.cl; store.ex = (s0.ex && typeof s0.ex === 'object') ? s0.ex : {}; store.rq = (s0.rq && typeof s0.rq === 'object' && s0.rq.d) ? s0.rq : null; store.rm = +s0.rm > 0 ? Math.round(+s0.rm) : 0;
       }
     }
   } catch (e) {}
@@ -2513,7 +2516,8 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     var rd = function (x) { return Math.round(x * 10) / 10; };
     var tail = mega ? ['', 'итого Cups ' + rd(done + fut) + ' ч', 'итого Мега ' + rd(mega) + ' ч', 'всего ' + rd(done + fut + mega) + ' ч'] : ['', 'итого ' + rd(done + fut) + ' ч'];
     var txt = [store.me || 'часы', ''].concat(rows.filter(function (r) { return !store.ex[r.key]; }).map(copyLine)).concat(tail).join('\n');
-    return { ps: ps, pk: pk, rows: rows, done: done, fut: fut, mega: mega, total: done + fut, text: txt };
+    var rm = store.rm || 0, payC = (done + fut) * RATE, payM = mega * rm;
+    return { ps: ps, pk: pk, rows: rows, done: done, fut: fut, mega: mega, total: done + fut, rm: rm, payC: payC, payM: payM, pay: payC + payM, text: txt };
   }
   function payViewHTML() {
     var h = '';
@@ -2524,7 +2528,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     h += '<div class="rep"><div class="rep-h"><b>' + (d.mega ? 'Часы: Cups и Мега' : 'Часы в Cups') + '</b><span>' + esc(store.me) + ' · ' + periodName(d.pk, true) + '</span></div><div class="rep-rows">' + d.rows.map(function (r) {
       var ex = !!store.ex[r.key];
       return '<button class="pr-row' + (ex ? ' ex' : '') + (r.done ? '' : ' fut') + '" data-act="sex" data-v="' + esc(r.key) + '" aria-pressed="' + ex + '"><span class="pr-d"><b>' + pad2(r.dt.getDate()) + '.' + pad2(r.dt.getMonth() + 1) + '</b><small>' + DOWSHORT[r.dow] + '</small></span><span class="pr-t">с ' + hhmm(r.s.s) + ' до ' + hhmm(endOf(r.s)) + (r.m ? '<small>Мега</small>' : '') + '</span><span class="pr-h">' + fmtH(r.h) + '</span></button>';
-    }).join('') + '</div><div class="rep-f"><span>итого' + (d.mega ? ' Cups' : '') + (d.fut > 0 ? '<em>отработано ' + fmtH(d.done) + ', впереди ' + fmtH(d.fut) + '</em>' : '') + '</span><b>' + fmtH(d.total) + '</b></div>' + (d.mega ? '<div class="rep-f rep-m"><span>итого Мега<em>часы без ставки, в рубли не считаю</em></span><b>' + fmtH(d.mega) + '</b></div><div class="rep-f rep-m"><span>всего часов</span><b>' + fmtH(d.total + d.mega) + '</b></div>' : '') + '<div class="rep-pay"><span>' + fmtH(d.total) + (d.mega ? ' (Cups)' : '') + ' × ' + RATE + '\u00A0₽</span><b>' + money(d.total * RATE) + '</b></div></div>';
+    }).join('') + '</div><div class="rep-f"><span>итого' + (d.mega ? ' Cups' : '') + (d.fut > 0 ? '<em>отработано ' + fmtH(d.done) + ', впереди ' + fmtH(d.fut) + '</em>' : '') + '</span><b>' + fmtH(d.total) + '</b></div>' + (d.mega ? '<div class="rep-f rep-m"><span>итого Мега</span><b>' + fmtH(d.mega) + '</b></div><div class="rep-f rep-m"><span>ставка в Меге<em>₽ в час, запомню у тебя</em></span><label class="rate"><input id="mrate" type="text" inputmode="numeric" maxlength="5" placeholder="0" value="' + (d.rm || '') + '" aria-label="Ставка в Меге, рублей в час"><i>₽/ч</i></label></div><div class="rep-f"><span>Cups<em>' + fmtH(d.total) + ' × ' + RATE + '\u00A0₽</em></span><b>' + money(d.payC) + '</b></div><div class="rep-f"><span>Мега<em id="mem">' + (d.rm ? fmtH(d.mega) + ' × ' + d.rm + '\u00A0₽' : 'впиши ставку выше') + '</em></span><b id="mpay">' + (d.rm ? money(d.payM) : '—') + '</b></div><div class="rep-pay"><span>Всего заработаешь<em id="mlbl" style="font-style:normal">' + (d.rm ? '' : ' (пока без Меги)') + '</em></span><b id="mtot">' + money(d.pay) + '</b></div>' : '<div class="rep-pay"><span>' + fmtH(d.total) + ' × ' + RATE + '\u00A0₽</span><b>' + money(d.total * RATE) + '</b></div>') + '</div>';
     h += '<div class="btns"><button class="btn primary" data-act="scp">' + ic('send') + 'Отправить в чат</button></div>';
     h += '<p class="hint">Закрытие считается до 21:00. Бледные строки: смены впереди, они уже учтены в итоге. Ставка ' + RATE + ' ₽/ч, без вычетов. Если в графике есть тёзка, нажми на чужую смену, и она не будет считаться.</p>';
     return h;
@@ -2713,7 +2717,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   function homePayHTML() {
     var d = payData(true); if (!d) return '';
-    return '<button class="hm-card pay2" data-act="gohours"><span class="p-top"><span class="eyebrow">Часы за ' + periodName(d.pk, true) + '</span>' + ic('chevR') + '</span><span class="p-nums"><b>' + fmtH(d.total) + '</b><b class="rub">' + money(d.total * RATE) + '</b></span>' + (d.fut > 0 ? '<span class="p-sub">Отработано ' + fmtH(d.done) + ', впереди ' + fmtH(d.fut) + ' по графику</span>' : '<span class="p-sub">Закрытие считается до 21:00</span>') + (d.mega ? '<span class="p-sub">Ещё в Меге ' + fmtH(d.mega) + ' (без ставки)</span>' : '') + '</button>';
+    return '<button class="hm-card pay2" data-act="gohours"><span class="p-top"><span class="eyebrow">Часы за ' + periodName(d.pk, true) + '</span>' + ic('chevR') + '</span><span class="p-nums"><b>' + fmtH(d.total) + '</b><b class="rub">' + money(d.pay) + '</b></span>' + (d.fut > 0 ? '<span class="p-sub">Отработано ' + fmtH(d.done) + ', впереди ' + fmtH(d.fut) + ' по графику</span>' : '<span class="p-sub">Закрытие считается до 21:00</span>') + (d.mega ? '<span class="p-sub">' + (d.rm ? 'В т. ч. Мега ' + fmtH(d.mega) + ' · ' + money(d.payM) : 'Ещё в Меге ' + fmtH(d.mega) + ': впиши ставку в часах') + '</span>' : '') + '</button>';
   }
   function homeTeamHTML() {
     var t = todayDay(); if (!t) return '';
@@ -2973,7 +2977,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     st.pv = '';
     var name = store.me || tgName() || 'Гость', pd = store.me ? payData(true) : null, k = knownIn(dishes);
     var h = '<div class="pf-head"><div class="av" id="av">' + esc(name.trim().charAt(0).toUpperCase()) + '</div><h1 class="pf-name">' + esc(name) + '</h1><p class="pf-sub">' + (store.me ? 'Сотрудник Cups' : 'Имя в графике не выбрано') + (tgUser && tgUser.username ? ' · @' + esc(tgUser.username) : '') + '</p></div>';
-    h += '<div class="pf-stats">' + (pd ? '<div><b>' + fmtH(pd.total) + '</b><small>часов, ' + periodName(pd.pk) + '</small></div><div><b>' + money(pd.total * RATE) + '</b><small>за период</small></div>' : '') + '<div><b>' + k + '/' + dishes.length + '</b><small>выучено</small></div></div>';
+    h += '<div class="pf-stats">' + (pd ? '<div><b>' + fmtH(pd.total) + '</b><small>часов, ' + periodName(pd.pk) + '</small></div><div><b>' + money(pd.pay) + '</b><small>за период' + (pd.mega && !pd.rm ? ' без Меги' : '') + '</small></div>' : '') + '<div><b>' + k + '/' + dishes.length + '</b><small>выучено</small></div></div>';
     h += '<div class="pf-rows"><button class="pf-row" data-act="pickme" aria-expanded="' + st.pm + '"><span class="pf-ic">' + ic('profile') + '</span><span class="pf-t">Имя в графике</span><span class="pf-v">' + (store.me ? esc(store.me) : 'выбрать') + '</span>' + ic('chevR', st.pm ? 'open' : '') + '</button>';
     if (st.pm) {
       var m = tgMatch();
@@ -3373,6 +3377,13 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     if (f && f.scrollIntoView) { try { f.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) { f.scrollIntoView(); } }
   }
   root.addEventListener('input', function (ev) {
+    if (ev.target && ev.target.id === 'mrate') {
+      var v = ev.target.value.replace(/\D/g, '').slice(0, 5); if (v !== ev.target.value) ev.target.value = v;
+      store.rm = +v || 0; save();
+      var d = payData(), a = document.getElementById('mpay'), b = document.getElementById('mtot'), c = document.getElementById('mem'), l = document.getElementById('mlbl');
+      if (d && a && b && c) { if (l) l.textContent = d.rm ? '' : ' (пока без Меги)'; a.textContent = d.rm ? money(d.payM) : '—'; b.textContent = money(d.pay); c.textContent = d.rm ? fmtH(d.mega) + ' × ' + d.rm + '\u00A0₽' : 'впиши ставку выше'; }
+      return;
+    }
     if (ev.target && ev.target.id === 'sq') { st.sq = ev.target.value; var sr = document.getElementById('sres'); if (sr) sr.innerHTML = stopResHTML(); return; }
     if (ev.target && ev.target.id === 'q') {
       st.q = ev.target.value;
@@ -3480,7 +3491,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   function b64u(s) { return b64(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
   function unb64u(s) { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return unb64(s); }
   function syncUrl() {
-    var o = { v: 1, s: { known: store.known, fav: store.fav, recent: store.recent.slice(0, 10), me: store.me, theme: store.theme, sec: store.sec, cat: store.cat, only: store.only, ex: store.ex, t: store.t } };
+    var o = { v: 1, s: { known: store.known, fav: store.fav, recent: store.recent.slice(0, 10), me: store.me, theme: store.theme, sec: store.sec, cat: store.cat, only: store.only, ex: store.ex, rm: store.rm || 0, t: store.t } };
     try { var tk = localStorage.getItem('ttk-adm'); if (tk) o.a = tk; } catch (e) {}
     if (tgUser) o.u = { first_name: tgUser.first_name || '', last_name: tgUser.last_name || '', username: tgUser.username || '', photo_url: tgUser.photo_url || '' };
     return location.origin + location.pathname + '#sync=' + b64u(JSON.stringify(o));
@@ -3551,7 +3562,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   var cl = { tok: '', code: '', timer: 0, busy: false, pulled: 0, err: '' };
   try { cl.tok = localStorage.getItem('ttk-dev') || ''; } catch (e) {}
   function clAuth() { return inTG ? 'tma ' + TG.initData : (cl.tok ? 'Bearer ' + cl.tok : ''); }
-  function clSnap() { return { known: store.known, fav: store.fav, recent: store.recent.slice(0, 10), me: store.me, theme: store.theme, ex: store.ex, rq: store.rq, cl: store.cl }; }
+  function clSnap() { return { known: store.known, fav: store.fav, recent: store.recent.slice(0, 10), me: store.me, theme: store.theme, ex: store.ex, rq: store.rq, cl: store.cl, rm: store.rm || 0 }; }
   var clLast = JSON.stringify(clSnap());
   function clReq(method, path, body, auth) {
     var h = {};
@@ -3575,6 +3586,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     if (s.theme) store.theme = s.theme;
     if (s.ex && typeof s.ex === 'object') store.ex = s.ex;
     renStore();
+    if (+s.rm > 0) store.rm = Math.round(+s.rm);
     store.rq = (s.rq && typeof s.rq === 'object' && s.rq.d) ? s.rq : null;
     store.cl = !!s.cl;
     if (store.me) closeWelcome();
@@ -4163,7 +4175,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = '70a61dfb3f';
+    var BUILD = 'c56f12c4a3';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
