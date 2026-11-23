@@ -2516,7 +2516,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     var rd = function (x) { return Math.round(x * 10) / 10; };
     var tail = mega ? ['', 'итого Cups ' + rd(done + fut) + ' ч', 'итого Мега ' + rd(mega) + ' ч', 'всего ' + rd(done + fut + mega) + ' ч'] : ['', 'итого ' + rd(done + fut) + ' ч'];
     var txt = [store.me || 'часы', ''].concat(rows.filter(function (r) { return !store.ex[r.key]; }).map(copyLine)).concat(tail).join('\n');
-    var rm = store.rm || 0, payC = (done + fut) * RATE, payM = mega * rm;
+    var rm = RATE, payC = (done + fut) * RATE, payM = mega * rm;
     return { ps: ps, pk: pk, rows: rows, done: done, fut: fut, mega: mega, total: done + fut, rm: rm, payC: payC, payM: payM, pay: payC + payM, text: txt };
   }
   function payViewHTML() {
@@ -2528,7 +2528,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     h += '<div class="rep"><div class="rep-h"><b>' + (d.mega ? 'Часы: Cups и Мега' : 'Часы в Cups') + '</b><span>' + esc(store.me) + ' · ' + periodName(d.pk, true) + '</span></div><div class="rep-rows">' + d.rows.map(function (r) {
       var ex = !!store.ex[r.key];
       return '<button class="pr-row' + (ex ? ' ex' : '') + (r.done ? '' : ' fut') + '" data-act="sex" data-v="' + esc(r.key) + '" aria-pressed="' + ex + '"><span class="pr-d"><b>' + pad2(r.dt.getDate()) + '.' + pad2(r.dt.getMonth() + 1) + '</b><small>' + DOWSHORT[r.dow] + '</small></span><span class="pr-t">с ' + hhmm(r.s.s) + ' до ' + hhmm(endOf(r.s)) + (r.m ? '<small>Мега</small>' : '') + '</span><span class="pr-h">' + fmtH(r.h) + '</span></button>';
-    }).join('') + '</div><div class="rep-f"><span>итого' + (d.mega ? ' Cups' : '') + (d.fut > 0 ? '<em>отработано ' + fmtH(d.done) + ', впереди ' + fmtH(d.fut) + '</em>' : '') + '</span><b>' + fmtH(d.total) + '</b></div>' + (d.mega ? '<div class="rep-f rep-m"><span>итого Мега</span><b>' + fmtH(d.mega) + '</b></div><div class="rep-f rep-m"><span>ставка в Меге<em>₽ в час, запомню у тебя</em></span><label class="rate"><input id="mrate" type="text" inputmode="numeric" maxlength="5" placeholder="0" value="' + (d.rm || '') + '" aria-label="Ставка в Меге, рублей в час"><i>₽/ч</i></label></div><div class="rep-f"><span>Cups<em>' + fmtH(d.total) + ' × ' + RATE + '\u00A0₽</em></span><b>' + money(d.payC) + '</b></div><div class="rep-f"><span>Мега<em id="mem">' + (d.rm ? fmtH(d.mega) + ' × ' + d.rm + '\u00A0₽' : 'впиши ставку выше') + '</em></span><b id="mpay">' + (d.rm ? money(d.payM) : '—') + '</b></div><div class="rep-pay"><span>Всего заработаешь<em id="mlbl" style="font-style:normal">' + (d.rm ? '' : ' (пока без Меги)') + '</em></span><b id="mtot">' + money(d.pay) + '</b></div>' : '<div class="rep-pay"><span>' + fmtH(d.total) + ' × ' + RATE + '\u00A0₽</span><b>' + money(d.total * RATE) + '</b></div>') + '</div>';
+    }).join('') + '</div><div class="rep-f"><span>итого' + (d.mega ? ' Cups' : '') + (d.fut > 0 ? '<em>отработано ' + fmtH(d.done) + ', впереди ' + fmtH(d.fut) + '</em>' : '') + '</span><b>' + fmtH(d.total) + '</b></div>' + (d.mega ? '<div class="rep-f rep-m"><span>итого Мега</span><b>' + fmtH(d.mega) + '</b></div><div class="rep-f"><span>Cups<em>' + fmtH(d.total) + ' × ' + RATE + '\u00A0₽</em></span><b>' + money(d.payC) + '</b></div><div class="rep-f"><span>Мега<em id="mem">' + (d.rm ? fmtH(d.mega) + ' × ' + d.rm + '\u00A0₽' : 'впиши ставку выше') + '</em></span><b id="mpay">' + (d.rm ? money(d.payM) : '—') + '</b></div><div class="rep-pay"><span>Всего заработаешь<em id="mlbl" style="font-style:normal">' + (d.rm ? '' : ' (пока без Меги)') + '</em></span><b id="mtot">' + money(d.pay) + '</b></div>' : '<div class="rep-pay"><span>' + fmtH(d.total) + ' × ' + RATE + '\u00A0₽</span><b>' + money(d.total * RATE) + '</b></div>') + '</div>';
     h += '<div class="btns"><button class="btn primary" data-act="scp">' + ic('send') + 'Отправить в чат</button></div>';
     h += '<p class="hint">Закрытие считается до 21:00. Бледные строки: смены впереди, они уже учтены в итоге. Ставка ' + RATE + ' ₽/ч, без вычетов. Если в графике есть тёзка, нажми на чужую смену, и она не будет считаться.</p>';
     return h;
@@ -4175,7 +4175,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = '47ca05c270';
+    var BUILD = 'e88be07c35';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
