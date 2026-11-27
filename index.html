@@ -37,61 +37,10 @@ var telegramReady = (function () {
   box-sizing: border-box; overflow: auto; padding: 24px;
   background: radial-gradient(ellipse at 50% 42%, #fcf5eb, #f3e5d5 70%, #edddcd);
   color: #372a20; text-align: center; font: 15px/1.5 system-ui, sans-serif;
-  transition: opacity .34s ease;
 }
-.startup-inner { display: grid; justify-items: center; gap: 8px; transition: transform .34s ease; }
-#startup.leaving { pointer-events: none; opacity: 0; }
-#startup.leaving .startup-inner { transform: translateY(-8px) scale(1.035); }
-.startup-art {
-  position: relative; width: 172px; height: 172px; margin-bottom: 10px; border-radius: 50%;
-  background: radial-gradient(circle at 44% 35%, #fdf6ec 36%, #ecd2b9 100%);
-  border: 1px solid #ae816157; box-shadow: 0 16px 40px #a66d4723;
-}
-.startup-cup {
-  position: absolute; top: 76px; left: 42px; width: 80px; height: 48px;
-  border-radius: 8px 8px 29px 29px;
-  background: linear-gradient(155deg, #79543b 12%, #4b3225 78%);
-  box-shadow: inset 0 3px #9b7357, 0 7px 10px #61422f26;
-  animation: cups-arrive .55s cubic-bezier(.16, 1, .3, 1) both;
-}
-.startup-cup::after {
-  content: ""; position: absolute; top: 9px; left: 74px; width: 21px; height: 20px;
-  border: 5px solid #5c3e2e; border-left: 0; border-radius: 0 18px 18px 0;
-}
-.startup-cup::before {
-  content: ""; position: absolute; top: 54px; left: -9px; width: 98px; height: 4px;
-  border-radius: 50%; background: #9c7357;
-}
-.startup-steam {
-  position: absolute; top: 38px; left: 62px; width: 12px; height: 32px;
-  border-left: 2px solid #8d6146; border-radius: 50%;
-  animation: cups-steam 1.75s ease-in-out infinite;
-}
-.startup-steam:nth-child(2) { left: 80px; animation-delay: .26s; }
-.startup-steam:nth-child(3) { left: 98px; animation-delay: .53s; }
-.startup-wordmark { font: 500 52px/1 Georgia, serif; letter-spacing: -.055em; animation: cups-arrive .6s .04s ease-out both; }
+.startup-inner { display: grid; justify-items: center; gap: 8px; }
+.startup-wordmark { font: 500 44px/1 Georgia, serif; letter-spacing: -.055em; }
 .startup-status { margin: 3px 0 0; max-width: 25ch; color: #6d503d; }
-.startup-progress { display: flex; gap: 5px; margin: 8px 0 0; }
-.startup-progress i { width: 5px; height: 5px; border-radius: 50%; background: #896147; animation: cups-dots 1.35s ease-in-out infinite; }
-.startup-progress i:nth-child(2) { animation-delay: .14s; }
-.startup-progress i:nth-child(3) { animation-delay: .28s; }
-@keyframes cups-arrive {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes cups-steam {
-  0% { opacity: 0; transform: translate(0, 9px) rotate(-16deg) scaleY(.65); }
-  38% { opacity: .8; }
-  100% { opacity: 0; transform: translate(6px, -11px) rotate(16deg); }
-}
-@keyframes cups-dots {
-  0%, 62%, 100% { opacity: .42; transform: translateY(0); }
-  30% { opacity: 1; transform: translateY(-4px); }
-}
-@media (prefers-reduced-motion: reduce) {
-  #startup, .startup-inner { transition: none; }
-  .startup-cup, .startup-wordmark, .startup-steam, .startup-progress i { animation: none; }
-}
 #startup-retry {
   min-height: 44px; padding: 6px 16px; border: 1px solid #956846; border-radius: 12px;
   background: #fcf5eb; color: #4b3225; font: inherit; cursor: pointer;
@@ -1026,8 +975,15 @@ html, body { overflow-x: clip; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .dpill[aria-pressed="true"] small, :root:not([data-theme="light"]) .dpill[aria-pressed="true"] b { color: #03160E; } }
 .dpill[aria-pressed="true"] i.mine, .dpill[aria-pressed="true"] i.gap { background: currentColor; }
 
-.me-note, .on-note { margin-bottom: 12px; align-items: flex-start; }
-.me-note b, .on-note b { font-weight: 650; }
+.day-section { margin-top: 14px; }
+.day-section h2 { margin: 0 0 7px; color: var(--muted); font-size: 13px; font-weight: 650; }
+.day-extra { list-style: none; margin: 0; padding: 0 14px; background: var(--surface); border-radius: 16px; }
+.day-extra li { padding: 9px 0; font-size: 14px; }
+.day-extra li + li { border-top: 1px solid var(--line); }
+.day-extra .warn { color: var(--cherry); }
+.day-mega li { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.day-mega .me { color: var(--accent); font-weight: 650; }
+.day-mega .shift-time { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .note.warn { margin-bottom: 12px; }
 .note.warn b { font-weight: 650; }
 
@@ -1617,16 +1573,11 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
 <body>
 <div id="startup">
   <div class="startup-inner">
-    <div class="startup-art" aria-hidden="true">
-      <i class="startup-steam"></i><i class="startup-steam"></i><i class="startup-steam"></i>
-      <div class="startup-cup"></div>
-    </div>
     <strong class="startup-wordmark">Cups</strong>
     <p id="startup-status" class="startup-status" role="status">Открываем приложение…</p>
-    <div id="startup-progress" class="startup-progress" aria-hidden="true"><i></i><i></i><i></i></div>
     <button id="startup-retry" type="button" hidden>Попробовать снова</button>
     <noscript>
-      <style>#startup-status, #startup-progress { display: none; }</style>
+      <style>#startup-status { display: none; }</style>
       <p class="startup-status">Для запуска нужен JavaScript.</p>
     </noscript>
   </div>
@@ -1635,22 +1586,20 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
 (function () {
   var startup = document.getElementById('startup');
   var status = document.getElementById('startup-status');
-  var progress = document.getElementById('startup-progress');
   var retry = document.getElementById('startup-retry');
-  function update(message, failed) {
-    if (!startup.isConnected || startup.classList.contains('leaving')) return;
+  function update(message) {
+    if (!startup.isConnected) return;
     status.textContent = message;
-    progress.hidden = failed;
     retry.hidden = false;
   }
   var timeout = setTimeout(function () {
-    update('Загрузка занимает больше времени, чем обычно.', false);
+    update('Загрузка занимает больше времени, чем обычно.');
   }, 10000);
   window.addEventListener('error', function (event) {
     if (!startup.isConnected || !event.message || !event.filename || /^script error/i.test(event.message)) return;
     if (event.filename.split('#')[0] !== location.href.split('#')[0]) return;
     clearTimeout(timeout);
-    update('Не удалось открыть приложение.', true);
+    update('Не удалось открыть приложение.');
   });
   retry.addEventListener('click', function () {
     var url = new URL(location.href);
@@ -1659,18 +1608,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   });
   startup.addEventListener('cups-rendered', function () {
     clearTimeout(timeout);
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      startup.remove();
-      return;
-    }
-    startup.setAttribute('aria-hidden', 'true');
-    retry.hidden = true;
-    startup.classList.add('leaving');
-    startup.addEventListener('transitionend', function (event) {
-      if (event.target === startup && event.propertyName === 'opacity') startup.remove();
-    });
-    // Transitions may be skipped if the document is already backgrounded.
-    setTimeout(function () { startup.remove(); }, 400);
+    startup.remove();
   }, { once: true });
   telegramReady.then(function () {
     var tg = window.Telegram && window.Telegram.WebApp;
@@ -2513,7 +2451,7 @@ function startCups() {
   function dayStripHTML(w, sd, today) {
     return '<div class="dstrip" role="group" aria-label="День недели">' + w.days.map(function (d, i) {
       var gaps = d.shifts.some(function (s) { return s.p == null; });
-      var mine = store.me && d.shifts.some(function (s) { return s.p === store.me; });
+      var mine = store.me && d.shifts.concat(d.mega || []).some(function (s) { return s.p === store.me; });
       return '<button class="dpill' + (i === today ? ' today' : '') + '" data-act="sday" data-v="' + i + '" aria-pressed="' + (i === sd) + '" aria-label="' + DOWFULL[i] + ', ' + d.n + '"><small>' + d.dow + '</small><b>' + d.n + '</b><i class="' + (gaps ? 'gap' : (mine ? 'mine' : '')) + '"></i></button>';
     }).join('') + '</div>';
   }
@@ -2538,28 +2476,34 @@ function startCups() {
   }
   function dayViewHTML(w, sd, todayIdx) {
     var d = w.days[sd], dt = dayDate(w, sd), list = d.shifts;
-    var staff = list.filter(function (s) { return s.p; }), gaps = list.filter(function (s) { return s.p == null; });
+    var staff = new Set(list.map(function (s) { return s.p; }).filter(Boolean));
+    var gaps = list.filter(function (s) { return s.p == null; });
+    var notes = d.notes || [], mega = sortShifts(d.mega || []);
     var h = dayStripHTML(w, sd, todayIdx);
-    var lo = Math.min.apply(null, list.map(function (s) { return s.s; })), hi = Math.max.apply(null, list.map(function (s) { return endOf(s); }));
     var cap = DOWFULL[sd].charAt(0).toUpperCase() + DOWFULL[sd].slice(1);
-    var uniq = {}; staff.forEach(function (s) { uniq[s.p] = 1; });
-    h += '<div class="gh"><span class="eyebrow">' + cap + ', ' + dt.getDate() + ' ' + MON[dt.getMonth()] + (sd === todayIdx ? ' · сегодня' : '') + '</span><span class="cnt">' + Object.keys(uniq).length + ' чел · ' + hm(lo) + '–' + hm(hi) + '</span></div>';
-    if (store.me) {
-      var mine = staff.filter(function (s) { return s.p === store.me; });
-      var mineM = (d.mega || []).filter(function (x) { return x.p === store.me; });
-      if (!mine.length && mineM.length) h += '<div class="note me-note">' + ic('clock') + '<span><b>' + esc(store.me) + ', в Cups выходной, смена в Меге ' + mineM.map(function (x) { return rng(x) + ', ' + fmtH((x.e - x.s) / 60); }).join(' и ') + '</b></span></div>';
-      else h += '<div class="note me-note">' + ic('clock') + '<span>' + (mine.length ? '<b>' + esc(store.me) + ', твоя смена ' + mine.map(function (s) { return rng(s) + (extOf(s) ? ' (до ' + hm(endOf(s)) + ')' : '') + ', ' + fmtH((endOf(s) - s.s) / 60); }).join(' и ') + '</b>' : '<b>' + esc(store.me) + ', в этот день у тебя выходной</b>') + '</span></div>';
+    var date = cap + ', ' + dt.getDate() + ' ' + MON[dt.getMonth()] + (sd === todayIdx ? ' · сегодня' : '');
+    var hours = '';
+    if (list.length) {
+      var lo = Math.min.apply(null, list.map(function (s) { return s.s; }));
+      var hi = Math.max.apply(null, list.map(function (s) { return endOf(s); }));
+      hours = staff.size + ' чел · ' + hm(lo) + '–' + hm(hi);
     }
-    if (gaps.length) h += '<div class="note warn">' + ic('warn') + '<span><b>Пока никого нет на ' + gaps.map(function (s) { return rng(s); }).join(' и ') + '.</b> Если можешь выйти, напиши управляющему.</span></div>';
-    (d.mega || []).forEach(function (x) { h += '<div class="note">' + ic('clock') + '<span>' + esc(x.p) + ' в Меге ' + rng(x) + '</span></div>'; });
-    (d.notes || []).forEach(function (x) { h += '<div class="note' + (x.w ? ' warn' : '') + '">' + ic(x.w ? 'warn' : 'clock') + '<span>' + (x.w ? '<b>' + esc(x.t) + '</b>' : esc(x.t)) + '</span></div>'; });
-    h += timelineHTML(w, sd, todayIdx);
-    if (sd === todayIdx) {
-      var n = new Date(), nm = n.getHours() * 60 + n.getMinutes();
-      var on = staff.filter(function (s) { return s.s <= nm && nm < endOf(s); }).map(function (s) { return s.p; });
-      if (on.length) h += '<div class="note on-note">' + ic('clock') + '<span><b>Сейчас на смене:</b> ' + on.map(esc).join(', ') + '</span></div>';
+    h += '<div class="gh"><span class="eyebrow">' + date + '</span>' + (hours ? '<span class="cnt">' + hours + '</span>' : '') + '</div>';
+    h += list.length ? timelineHTML(w, sd, todayIdx) : '<p class="hint">На Большой Красной смен пока нет.</p>';
+    if (list.some(function (s) { return extOf(s); })) h += '<p class="hint">Штриховой хвост после 20:00: закрытие, оно считается до 21:00.</p>';
+    if (mega.length) {
+      h += '<section class="day-section"><h2>Мега</h2><ul class="day-extra day-mega">' + mega.map(function (s) {
+        var me = s.p === store.me;
+        return '<li' + (me ? ' class="me"' : '') + '><span>' + esc(s.p) + (me ? ' · ты' : '') + '</span><span class="shift-time">' + hhmm(s.s) + '–' + hhmm(s.e) + '</span></li>';
+      }).join('') + '</ul></section>';
     }
-    h += '<p class="hint">Штриховой хвост после 20:00: закрытие, оно считается до 21:00.</p>';
+    if (gaps.length || notes.length) {
+      h += '<section class="day-section"><h2>Заметки на день</h2><ul class="day-extra">';
+      if (gaps.length) h += '<li class="warn">Нужен сотрудник на ' + gaps.map(rng).join(' и ') + '. Если можешь выйти, напиши управляющему.</li>';
+      h += notes.map(function (x) {
+        return '<li' + (x.w ? ' class="warn"' : '') + '>' + esc(x.t) + '</li>';
+      }).join('') + '</ul></section>';
+    }
     return h;
   }
   function weekViewHTML(w, todayIdx) {
@@ -4433,7 +4377,7 @@ function startCups() {
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = 'a9f89b0532';
+    var BUILD = '303607280f';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
