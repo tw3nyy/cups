@@ -2612,14 +2612,16 @@ function startCups() {
     var ps = Array.from(new Set(allPeriods().concat(today, personal.map(function (r) { return r.pk; })))).sort();
     var pk = !cur && ps.indexOf(st.pk) >= 0 ? st.pk : today;
     var rows = personal.filter(function (r) { return r.pk === pk; });
-    var included = rows.filter(function (r) { return r.done && !store.ex[r.key]; });
-    var main = 0, mega = 0, upcoming = 0;
-    included.forEach(function (r) { if (r.m) mega += r.h; else main += r.h; });
-    rows.forEach(function (r) { if (!r.done && !store.ex[r.key]) upcoming += r.h; });
+    var included = rows.filter(function (r) { return !store.ex[r.key]; });
+    var main = 0, mega = 0, worked = 0, upcoming = 0;
+    included.forEach(function (r) {
+      if (r.m) mega += r.h; else main += r.h;
+      if (r.done) worked += r.h; else upcoming += r.h;
+    });
+    var forecastHours = main + mega;
     var rd = function (x) { return Math.round(x * 10) / 10; };
-    var tail = mega ? ['', 'итого Cups ' + rd(main) + ' ч', 'итого Мега ' + rd(mega) + ' ч', 'всего ' + rd(main + mega) + ' ч'] : ['', 'итого ' + rd(main) + ' ч'];
+    var tail = mega ? ['', 'итого Cups ' + rd(main) + ' ч', 'итого Мега ' + rd(mega) + ' ч', 'всего ' + rd(forecastHours) + ' ч'] : ['', 'итого ' + rd(main) + ' ч'];
     var text = included.length ? [store.me, ''].concat(included.map(copyLine), tail).join('\n') : '';
-    var worked = main + mega, forecastHours = worked + upcoming;
     return {
       ps: ps, pk: pk, rows: rows, main: main, mega: mega, worked: worked, upcoming: upcoming,
       forecastHours: forecastHours, forecastPay: forecastHours * RATE, text: text
@@ -2694,7 +2696,7 @@ function startCups() {
       '<button class="btn primary" data-act="scp"' + (d.text ? '' : ' disabled') + '>' + ic('send') + (inTG ? 'Отправить отчёт' : 'Скопировать отчёт') + '</button></div>';
     if (st.reportEdit === 'new') h += reportForm(d);
     if (!d.rows.length) return h + '<p class="hint">За этот период смен пока нет.</p>';
-    h += '<p class="hint">Прошедшие смены берутся из графика. Нажми на смену, чтобы сверить время или исключить её из отчёта.</p>';
+    h += '<p class="hint">В отчёт входят все смены за период, включая предстоящие. Нажми на смену, чтобы поправить время или исключить её из отчёта.</p>';
     return h + '<div class="rep">' + d.rows.map(function (r) {
       var excluded = !!store.ex[r.key];
       var status = excluded ? 'Исключена' : !r.done ? 'По графику' : r.actual ? (r.manual ? 'Добавлена' : 'Исправлена') : '';
@@ -4393,7 +4395,7 @@ function startCups() {
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = '13ced29e43';
+    var BUILD = 'c8e6003eb2';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
