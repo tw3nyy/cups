@@ -2493,7 +2493,7 @@ function startCups() {
       var d = new Date(), nm = d.getHours() * 60 + d.getMinutes();
       if (nm >= lo * 60 && nm <= hi * 60) now = '<i class="tl-now" style="--p:' + ((nm - lo * 60) / span).toFixed(4) + '"></i>';
     }
-    return '<div class="tl" style="--n:' + (hi - lo) + '" role="img" aria-label="Смены за день"><div class="tl-row tl-ax"><span class="tl-n"></span><div class="tl-track">' + ax + '</div></div><div class="tl-body">' + rows + now + '</div></div>';
+    return '<div class="tl" style="--n:' + (hi - lo) + '" role="img" aria-label="Смены на БК за день"><div class="tl-row tl-ax"><span class="tl-n"></span><div class="tl-track">' + ax + '</div></div><div class="tl-body">' + rows + now + '</div></div>';
   }
   function dayViewHTML(w, sd, todayIdx) {
     var d = w.days[sd], dt = dayDate(w, sd), list = d.shifts;
@@ -2509,11 +2509,11 @@ function startCups() {
       var hi = Math.max.apply(null, list.map(function (s) { return endOf(s); }));
       hours = staff.size + ' чел · ' + hm(lo) + '–' + hm(hi);
     }
-    h += '<div class="gh"><span class="eyebrow">' + date + '</span>' + (hours ? '<span class="cnt">' + hours + '</span>' : '') + '</div>';
-    h += list.length ? timelineHTML(w, sd, todayIdx) : '<p class="hint">На Большой Красной смен пока нет.</p>';
+    h += '<div class="gh"><span class="eyebrow">' + shiftLocation(false) + ' · ' + date + '</span>' + (hours ? '<span class="cnt">' + hours + '</span>' : '') + '</div>';
+    h += list.length ? timelineHTML(w, sd, todayIdx) : '<p class="hint">На БК смен пока нет.</p>';
     if (list.some(function (s) { return extOf(s); })) h += '<p class="hint">Штриховой хвост после 20:00: закрытие, оно считается до 21:00.</p>';
     if (mega.length) {
-      h += '<section class="day-section"><h2>Мега</h2><ul class="day-extra day-mega">' + mega.map(function (s) {
+      h += '<section class="day-section"><h2>' + shiftLocation(true) + '</h2><ul class="day-extra day-mega">' + mega.map(function (s) {
         var me = s.p === store.me;
         return '<li' + (me ? ' class="me"' : '') + '><span>' + esc(s.p) + (me ? ' · ты' : '') + '</span><span class="shift-time">' + hhmm(s.s) + '–' + hhmm(s.e) + '</span></li>';
       }).join('') + '</ul></section>';
@@ -2532,7 +2532,7 @@ function startCups() {
     w.days.forEach(function (d) { d.shifts.forEach(function (s) { if (s.p && !people[s.p]) { people[s.p] = 1; order.push(s.p); } }); });
     order.sort(function (x, y) { return (y === store.me) - (x === store.me) || x.localeCompare(y, 'ru'); });
     var hasGap = w.days.some(function (d) { return d.shifts.some(function (s) { return s.p == null; }); });
-    var th = '<tr><th class="wk-n"></th>' + w.days.map(function (d, i) { return '<th class="' + (i === todayIdx ? 'today' : '') + '"><small>' + d.dow + '</small><b>' + d.n + '</b></th>'; }).join('') + '</tr>';
+    var th = '<tr><th class="wk-n">' + shiftLocation(false) + '</th>' + w.days.map(function (d, i) { return '<th class="' + (i === todayIdx ? 'today' : '') + '"><small>' + d.dow + '</small><b>' + d.n + '</b></th>'; }).join('') + '</tr>';
     var rows = order.map(function (p) {
       var tds = w.days.map(function (d, i) {
         var l = d.shifts.filter(function (s) { return s.p === p; });
@@ -2579,7 +2579,7 @@ function startCups() {
   function reportDate(d) {
     return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
   }
-  function reportLocation(mega) { return mega ? 'Мега' : 'Большая Красная'; }
+  function shiftLocation(mega) { return mega ? 'Мега' : 'БК'; }
   function reportClock(m) { return pad2(Math.floor(m / 60)) + ':' + pad2(m % 60); }
   function reportRows(name) {
     var scheduled = personShifts(name), now = Date.now();
@@ -2618,7 +2618,7 @@ function startCups() {
     return remaining.concat(edited).sort(function (a, b) { return a.dt - b.dt || a.s.s - b.s.s; });
   }
   function copyLine(r) {
-    return pad2(r.dt.getDate()) + '.' + pad2(r.dt.getMonth() + 1) + ' - с ' + hhmm(r.s.s) + ' до ' + hhmm(r.s.e) + ' (' + (Math.round(r.h * 10) / 10) + ' ч)' + (r.m ? ' Мега' : '');
+    return pad2(r.dt.getDate()) + '.' + pad2(r.dt.getMonth() + 1) + ' - с ' + hhmm(r.s.s) + ' до ' + hhmm(r.s.e) + ' (' + (Math.round(r.h * 10) / 10) + ' ч)' + ' ' + shiftLocation(r.m);
   }
   function payData(cur) {
     if (!store.me) return null;
@@ -2635,7 +2635,10 @@ function startCups() {
     });
     var forecastHours = main + mega;
     var rd = function (x) { return Math.round(x * 10) / 10; };
-    var tail = mega ? ['', 'итого Cups ' + rd(main) + ' ч', 'итого Мега ' + rd(mega) + ' ч', 'всего ' + rd(forecastHours) + ' ч'] : ['', 'итого ' + rd(main) + ' ч'];
+    var tail = [''];
+    if (main) tail.push('итого ' + shiftLocation(false) + ' ' + rd(main) + ' ч');
+    if (mega) tail.push('итого ' + shiftLocation(true) + ' ' + rd(mega) + ' ч');
+    if (main && mega) tail.push('всего ' + rd(forecastHours) + ' ч');
     var text = included.length ? [store.me, ''].concat(included.map(copyLine), tail).join('\n') : '';
     return {
       ps: ps, pk: pk, rows: rows, main: main, mega: mega, worked: worked, upcoming: upcoming,
@@ -2653,9 +2656,9 @@ function startCups() {
       row && !store.ex[row.key] ? '<button type="button" class="btn warn" data-act="reportexclude" data-v="' + esc(row.key) + '">Исключить из отчёта</button>' : '';
     return '<form id="report-form" class="rep report-form" tabindex="-1" aria-labelledby="report-form-title" data-key="' + esc(row ? row.key : '') + '">' +
       '<strong id="report-form-title">' + (row ? 'Изменить смену' : 'Добавить отработанную смену') + '</strong>' +
-      (row ? '<p class="report-context">' + row.dt.getDate() + ' ' + MON[row.dt.getMonth()] + ' ' + row.dt.getFullYear() + ' · ' + reportLocation(row.m) + '</p>' :
+      (row ? '<p class="report-context">' + row.dt.getDate() + ' ' + MON[row.dt.getMonth()] + ' ' + row.dt.getFullYear() + ' · ' + shiftLocation(row.m) + '</p>' :
         '<label>Дата<input required name="date" type="date" max="' + latest + '" value="' + date + '"></label>' +
-        '<label>Кофейня<select name="location"><option value="main">Большая Красная</option><option value="mega">Мега</option></select></label>') +
+        '<label>Кофейня<select name="location"><option value="main">' + shiftLocation(false) + '</option><option value="mega">' + shiftLocation(true) + '</option></select></label>') +
       '<p class="report-context">Личная правка для твоего отчёта.</p>' +
       '<div class="report-times"><label>Начало<input required name="start" type="time" value="' + (row ? reportClock(row.s.s) : '') + '"></label>' +
       '<label>Конец<input required name="end" type="time" value="' + (row ? reportClock(row.s.e) : '') + '"></label></div>' +
@@ -2668,7 +2671,7 @@ function startCups() {
     });
   }
   function shiftSummary(row) {
-    return row.dt.getDate() + ' ' + MON[row.dt.getMonth()] + ' · ' + reportLocation(row.m);
+    return row.dt.getDate() + ' ' + MON[row.dt.getMonth()] + ' · ' + shiftLocation(row.m);
   }
   function confirmReportChange(title, message, label, onConfirm) {
     if (document.querySelector('.report-dialog[open]')) return;
@@ -2750,8 +2753,8 @@ function startCups() {
       (d.upcoming ? '<dl class="rep-breakdown"><div><dt>Уже отработано</dt><dd>' + money(d.worked * RATE) +
         '<small>' + fmtH(d.worked) + '</small></dd></div><div><dt>Впереди по графику</dt><dd>' + money(d.upcoming * RATE) +
         '<small>' + fmtH(d.upcoming) + '</small></dd></div></dl>' : '') +
-      '<div class="rep-locations"><span>В отчёте:</span><span>Большая Красная <b>' + fmtH(d.main) + '</b></span>' +
-      (d.rows.some(function (r) { return r.m; }) ? '<span>Мега <b>' + fmtH(d.mega) + '</b></span>' : '') + '</div></section>';
+      '<div class="rep-locations"><span>В отчёте:</span><span>' + shiftLocation(false) + ' <b>' + fmtH(d.main) + '</b></span>' +
+      (d.rows.some(function (r) { return r.m; }) ? '<span>' + shiftLocation(true) + ' <b>' + fmtH(d.mega) + '</b></span>' : '') + '</div></section>';
     h += '<div class="report-actions"><button class="btn" data-act="reportedit" data-v="new">Добавить смену</button>' +
       '<button class="btn primary" data-act="scp"' + (d.text ? '' : ' disabled') + '>' + ic('send') + (inTG ? 'Отправить отчёт' : 'Скопировать отчёт') + '</button></div>';
     if (st.reportEdit === 'new') h += reportForm(d);
@@ -2763,7 +2766,7 @@ function startCups() {
       return '<div class="pr-item' + (excluded ? ' ex' : '') + '"><button class="pr-row" data-act="reportedit" data-v="' + esc(r.key) + '" aria-expanded="' + (st.reportEdit === r.key) + '">' +
         '<span class="pr-d"><b>' + pad2(r.dt.getDate()) + '.' + pad2(r.dt.getMonth() + 1) + '</b><small>' + DOWSHORT[r.dow] + '</small></span>' +
         '<span class="pr-t"><span class="pr-clock">' + reportClock(r.s.s) + '–' + reportClock(r.s.e) + '</span><small>' +
-        reportLocation(r.m) + (!excluded && status ? ' · ' + status : '') + '</small></span>' +
+        shiftLocation(r.m) + (!excluded && status ? ' · ' + status : '') + '</small></span>' +
         '<span class="pr-h">' + fmtH(r.h) + '</span></button>' +
         (excluded ? '<div class="pr-excluded"><strong>Исключена из отчёта</strong><button data-act="reportrestore" data-v="' + esc(r.key) +
           '" aria-label="Вернуть в отчёт смену ' + shiftSummary(r) + '">Вернуть в отчёт</button></div>' : '') +
@@ -2951,7 +2954,7 @@ function startCups() {
     var r = reportRows(store.me).filter(function (x) { return !x.done && !store.ex[x.key]; })[0];
     if (!r) return '<div class="hm-hero idle"><span class="eyebrow">Ближайшая смена</span><b class="hm-big">Смен в графике пока нет</b><span class="hm-sub">Как появится новый график, он покажется здесь.</span></div>';
     var now = Date.now(), live = now >= startMs(r);
-    return '<div class="hm-hero' + (live ? ' live' : '') + '"><span class="eyebrow">' + (live ? '<i class="pulse"></i>Сейчас на смене' : 'Ближайшая смена') + '</span><b class="hm-big">' + dayWord(r.dt) + ', ' + hhmm(r.s.s) + '–' + hhmm(r.s.e) + (r.m ? ' · Мега' : '') + '</b><span class="hm-sub">' + (live ? 'Осталось ' + dur(endMs(r) - now) : 'Через ' + dur(startMs(r) - now)) + ' · ' + fmtH(r.h) + '</span></div>';
+    return '<div class="hm-hero' + (live ? ' live' : '') + '"><span class="eyebrow">' + (live ? '<i class="pulse"></i>Сейчас на смене' : 'Ближайшая смена') + '</span><b class="hm-big">' + dayWord(r.dt) + ', ' + hhmm(r.s.s) + '–' + hhmm(r.s.e) + ' · ' + shiftLocation(r.m) + '</b><span class="hm-sub">' + (live ? 'Осталось ' + dur(endMs(r) - now) : 'Через ' + dur(startMs(r) - now)) + ' · ' + fmtH(r.h) + '</span></div>';
   }
   function homePayHTML() {
     var d = payData(true); if (!d) return '';
@@ -2964,7 +2967,7 @@ function startCups() {
     var t = todayDay(); if (!t) return '';
     var n = new Date(), nm = n.getHours() * 60 + n.getMinutes(), list = sortShifts(t.d.shifts);
     var staff = list.filter(function (s) { return s.p; }), gaps = list.filter(function (s) { return !s.p; });
-    var h = '<div class="gh"><span class="eyebrow">Сегодня в смену</span><span class="cnt">' + staff.length + '</span></div><div class="hm-card team">' + staff.map(function (s) {
+    var h = '<div class="gh"><span class="eyebrow">Сегодня в смену · ' + shiftLocation(false) + '</span><span class="cnt">' + staff.length + '</span></div><div class="hm-card team">' + staff.map(function (s) {
       var on = s.s <= nm && nm < endOf(s);
       return '<div class="tm-row' + (store.me === s.p ? ' me' : '') + (on ? ' on' : '') + '"><i class="tm-dot"></i><span class="tm-n">' + esc(s.p) + (s.t ? '<small>стажёр</small>' : '') + '</span><span class="tm-t">' + hm(s.s) + '–' + hm(endOf(s)) + '</span></div>';
     }).join('') + '</div>';
@@ -4473,7 +4476,7 @@ function startCups() {
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = '74172f8ea0';
+    var BUILD = 'ec0b87fcbc';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
