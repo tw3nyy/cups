@@ -11,13 +11,38 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Cups">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preload" as="script" href="https://telegram.org/js/telegram-web-app.js">
 <style>:root{padding-top:var(--top-inset);padding-bottom:var(--bottom-inset)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 <title>ТТК Cups</title>
+<style>
+#startup {
+  position: fixed; inset: 0; z-index: 100000; display: grid; place-items: center;
+  box-sizing: border-box; overflow: auto; padding: 24px;
+  background: radial-gradient(ellipse at 50% 26%, #3a2b22, #2a211b 62%, #211914);
+  color: #f2dbc8; text-align: center; font: 15px/1.5 system-ui, sans-serif;
+}
+.startup-inner { display: grid; justify-items: center; gap: 12px; }
+.startup-icon { display: block; width: 108px; height: 108px; border-radius: 28px; background: #2a211b; box-shadow: 0 0 0 1px #cda88e33, 0 12px 32px #160e0a66; }
+.startup-wordmark { font: 500 44px/1.08 Georgia, serif; letter-spacing: -.04em; }
+.startup-status { margin: 0; max-width: 24ch; color: #e3c9b5; }
+.startup-progress { width: 64px; height: 3px; overflow: hidden; margin: 4px 0 2px; border-radius: 5px; background: #cda88e40; }
+.startup-progress::after {
+  content: ""; display: block; width: 50%; height: 100%; border-radius: inherit; background: #e0b597;
+  animation: cups-loading 1.25s ease-in-out infinite alternate;
+}
+@keyframes cups-loading { to { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) {
+  .startup-progress::after { animation: none; margin: auto; }
+}
+#startup-retry {
+  min-height: 44px; padding: 6px 16px; border: 1px solid #cda88e; border-radius: 12px;
+  background: #2a211b; color: #f2dbc8; font: inherit; cursor: pointer;
+}
+</style>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap" media="print" onload="this.media='all'">
 <style>
 /* Modern iOS look: system type, grouped inset lists on a cool grey ground, floating glass tab bar,
    vivid section colours. Brand lives in the photography and the CUPS wordmark. */
@@ -1532,26 +1557,55 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
 
 </head>
 <body>
+<div id="startup">
+  <div class="startup-inner">
+    <img class="startup-icon" src="icon-192.png" width="108" height="108" alt="">
+    <strong class="startup-wordmark">Cups</strong>
+    <div id="startup-progress" class="startup-progress" aria-hidden="true"></div>
+    <p id="startup-status" class="startup-status" role="status">Открываем приложение…</p>
+    <button id="startup-retry" type="button" hidden>Попробовать снова</button>
+    <noscript>
+      <style>#startup-status, #startup-progress { display: none; }</style>
+      <p class="startup-status">Для запуска нужен JavaScript.</p>
+    </noscript>
+  </div>
+</div>
 <script>
-/* boot guard: a black screen becomes a readable message + reload button */
 (function () {
-  var errs = [];
-  function esc(s) { return String(s).replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
-  function empty() { var r = document.getElementById('root'); return !r || !r.children.length; }
-  function show() {
-    if (!errs.length || !document.body || document.getElementById('bootfail')) return;
-    var d = document.createElement('div'); d.id = 'bootfail';
-    d.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;z-index:99999;overflow:auto;padding:90px 20px 40px;background:#1c1c1e;color:#fff;font:15px/1.45 -apple-system,system-ui,sans-serif';
-    d.innerHTML = '<b style="font-size:18px">Приложение не запустилось</b><p style="color:#bbb;word-break:break-word">' + errs.slice(0, 4).join('<br>') + '</p><p><button id="bootbtn" style="font:inherit;font-weight:600;padding:12px 20px;border:0;border-radius:14px;background:#3ccb8f;color:#00170d">Обновить</button></p><p style="color:#888;font-size:13px">Если не помогает, пришли скрин этого экрана Саше.</p>';
-    document.body.appendChild(d);
-    document.getElementById('bootbtn').onclick = function () { location.replace(location.pathname + '?r=' + Date.now() + location.hash); };
+  var startup = document.getElementById('startup');
+  var status = document.getElementById('startup-status');
+  var progress = document.getElementById('startup-progress');
+  var retry = document.getElementById('startup-retry');
+  function update(message, failed) {
+    if (!startup.isConnected) return;
+    status.textContent = message;
+    progress.hidden = failed;
+    retry.hidden = false;
   }
-  window.addEventListener('error', function (e) {
-    if (!e || !e.message || /^script error/i.test(e.message)) return;
-    errs.push(esc(e.message) + ' (' + (e.lineno || '?') + ':' + (e.colno || '?') + ')');
-    setTimeout(function () { if (empty()) show(); }, 400);
+  var timeout = setTimeout(function () {
+    update('Загрузка занимает больше времени, чем обычно.', false);
+  }, 10000);
+  window.addEventListener('error', function (event) {
+    if (!startup.isConnected || !event.message || !event.filename || /^script error/i.test(event.message)) return;
+    if (event.filename.split('#')[0] !== location.href.split('#')[0]) return;
+    clearTimeout(timeout);
+    update('Не удалось открыть приложение.', true);
   });
-  window.addEventListener('load', function () { setTimeout(function () { if (empty()) { errs.push('пустой экран, скрипт не отрисовал интерфейс'); show(); } }, 2500); });
+  retry.addEventListener('click', function () {
+    var url = new URL(location.href);
+    url.searchParams.set('r', Date.now());
+    location.replace(url.href);
+  });
+})();
+</script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+(function () {
+  var tg = window.Telegram && window.Telegram.WebApp;
+  if (!tg || !tg.initData) return;
+  // Let Telegram reveal the startup screen while the menu data loads.
+  try { tg.setHeaderColor('#2a211b'); tg.setBackgroundColor('#2a211b'); } catch (e) {}
+  try { tg.ready(); } catch (e) {}
 })();
 </script>
 <div id="root"></div>
@@ -4267,10 +4321,11 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
 
   try { if (/[#&]welcome\b/.test(location.hash)) { localStorage.removeItem('ttk-ask-done'); store.me = ''; save(); history.replaceState(null, '', location.pathname + location.search); } } catch (e) {}
   render({ scroll: 0 });
+  document.getElementById('startup').remove();
   showWelcome();
   if (inTG) {
     try {
-      TG.ready(); TG.expand();
+      TG.expand();
       if (TG.BackButton) TG.BackButton.onClick(function () { goBack(); });
       TG.onEvent('themeChanged', function () { applyTheme(); render({ scroll: window.scrollY }); });
     } catch (e) {}
@@ -4278,7 +4333,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = 'c37c36de3e';
+    var BUILD = '30e92783b5';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
