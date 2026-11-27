@@ -1101,7 +1101,13 @@ html, body { overflow-x: clip; }
 .prs { margin-top: 0; margin-bottom: 14px; }
 .rep { border-radius: 22px; background: var(--glass-strong); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-line), var(--glass-shadow); overflow: hidden; }
 .rep-h { display: flex; flex-direction: column; gap: 4px; padding: 16px; }
-.rep-h > strong { font-size: 30px; font-variant-numeric: tabular-nums; }
+.rep-h > strong { color: var(--ink); font-size: clamp(36px, 10vw, 48px); line-height: 1.12; letter-spacing: -.035em; font-variant-numeric: tabular-nums; }
+.rep-h > .rep-pay-label { color: var(--ink-2); font-weight: 650; margin-top: 5px; }
+.rep-breakdown { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 10px 0 3px; padding-top: 10px; border-top: 1px solid var(--line); }
+.rep-breakdown > div { display: grid; gap: 3px; }
+.rep-breakdown dt, .rep-breakdown small { color: var(--muted); font-size: 13px; }
+.rep-breakdown dd { margin: 0; font-weight: 650; font-variant-numeric: tabular-nums; }
+.rep-breakdown small { display: block; font-weight: 400; }
 .rep-h > span, .rep-locations { color: var(--muted); font-size: 13.5px; }
 .rep-locations { display: flex; flex-wrap: wrap; column-gap: 16px; row-gap: 4px; margin-top: 5px; }
 .rep-locations b { color: var(--ink); font-variant-numeric: tabular-nums; }
@@ -1155,6 +1161,7 @@ html, body { overflow-x: clip; }
 .p-nums { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .p-nums b { font-size: 26px; font-weight: 750; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
 .p-nums b.rub { color: var(--accent); }
+.p-nums .pay-hours { color: var(--ink-2); font-size: 15px; }
 .p-sub { font-size: 13.5px; color: var(--muted); }
 .hm-card.team { padding: 6px 0; gap: 0; }
 .tm-row { display: grid; grid-template-columns: 14px 1fr auto; align-items: center; gap: 10px; padding: 11px 18px; font-size: 15.5px; }
@@ -2612,7 +2619,11 @@ function startCups() {
     var rd = function (x) { return Math.round(x * 10) / 10; };
     var tail = mega ? ['', 'итого Cups ' + rd(main) + ' ч', 'итого Мега ' + rd(mega) + ' ч', 'всего ' + rd(main + mega) + ' ч'] : ['', 'итого ' + rd(main) + ' ч'];
     var text = included.length ? [store.me, ''].concat(included.map(copyLine), tail).join('\n') : '';
-    return { ps: ps, pk: pk, rows: rows, main: main, mega: mega, upcoming: upcoming, total: main + mega, text: text };
+    var worked = main + mega, forecastHours = worked + upcoming;
+    return {
+      ps: ps, pk: pk, rows: rows, main: main, mega: mega, worked: worked, upcoming: upcoming,
+      forecastHours: forecastHours, forecastPay: forecastHours * RATE, text: text
+    };
   }
   function reportForm(d, row) {
     var now = new Date(), latest = reportDate(now);
@@ -2672,10 +2683,13 @@ function startCups() {
       return '<button class="chip" data-act="spr" data-v="' + k + '" aria-pressed="' + (k === d.pk) + '">' + periodName(k) + '</button>';
     }).join('') + '</div>';
     h += '<section class="rep rep-h"><span>' + esc(store.me) + ' · ' + periodName(d.pk, true) + '</span>' +
-      '<strong>' + fmtH(d.total) + '</strong><span>В отчёте · ' + money(d.total * RATE) + ' по ставке ' + RATE + ' ₽/ч</span>' +
-      '<div class="rep-locations"><span>Большая Красная <b>' + fmtH(d.main) + '</b></span>' +
-      (d.rows.some(function (r) { return r.m; }) ? '<span>Мега <b>' + fmtH(d.mega) + '</b></span>' : '') + '</div>' +
-      (d.upcoming ? '<span>Предстоит по графику ' + fmtH(d.upcoming) + '</span>' : '') + '</section>';
+      '<span class="rep-pay-label">' + (d.upcoming ? 'Ожидаемый заработок' : 'Заработок за период') + '</span>' +
+      '<strong>' + money(d.forecastPay) + '</strong><span>' + fmtH(d.forecastHours) + ' за период · ставка ' + RATE + ' ₽/ч</span>' +
+      (d.upcoming ? '<dl class="rep-breakdown"><div><dt>Уже отработано</dt><dd>' + money(d.worked * RATE) +
+        '<small>' + fmtH(d.worked) + '</small></dd></div><div><dt>Впереди по графику</dt><dd>' + money(d.upcoming * RATE) +
+        '<small>' + fmtH(d.upcoming) + '</small></dd></div></dl>' : '') +
+      '<div class="rep-locations"><span>В отчёте:</span><span>Большая Красная <b>' + fmtH(d.main) + '</b></span>' +
+      (d.rows.some(function (r) { return r.m; }) ? '<span>Мега <b>' + fmtH(d.mega) + '</b></span>' : '') + '</div></section>';
     h += '<div class="report-actions"><button class="btn" data-act="reportedit" data-v="new">Добавить смену</button>' +
       '<button class="btn primary" data-act="scp"' + (d.text ? '' : ' disabled') + '>' + ic('send') + (inTG ? 'Отправить отчёт' : 'Скопировать отчёт') + '</button></div>';
     if (st.reportEdit === 'new') h += reportForm(d);
@@ -2875,8 +2889,10 @@ function startCups() {
   }
   function homePayHTML() {
     var d = payData(true); if (!d) return '';
-    return '<button class="hm-card pay2" data-act="gohours"><span class="p-top"><span class="eyebrow">Часы за ' + periodName(d.pk, true) + '</span>' + ic('chevR') + '</span><span class="p-nums"><b>' + fmtH(d.total) + '</b><b class="rub">' + money(d.total * RATE) + '</b></span>' +
-      (d.upcoming ? '<span class="p-sub">Предстоит по графику ' + fmtH(d.upcoming) + '</span>' : '') + '</button>';
+    return '<button class="hm-card pay2" data-act="gohours"><span class="p-top"><span class="eyebrow">' +
+      (d.upcoming ? 'Прогноз за ' : 'Заработок за ') + periodName(d.pk, true) + '</span>' + ic('chevR') +
+      '</span><span class="p-nums"><b class="rub">' + money(d.forecastPay) + '</b><span class="pay-hours">' + fmtH(d.forecastHours) + '</span></span>' +
+      (d.upcoming ? '<span class="p-sub">Уже отработано ' + fmtH(d.worked) + '</span>' : '') + '</button>';
   }
   function homeTeamHTML() {
     var t = todayDay(); if (!t) return '';
@@ -3136,7 +3152,7 @@ function startCups() {
     st.pv = '';
     var name = store.me || tgName() || 'Гость', pd = store.me ? payData(true) : null, k = knownIn(dishes);
     var h = '<div class="pf-head"><div class="av" id="av">' + esc(name.trim().charAt(0).toUpperCase()) + '</div><h1 class="pf-name">' + esc(name) + '</h1><p class="pf-sub">' + (store.me ? 'Сотрудник Cups' : 'Имя в графике не выбрано') + (tgUser && tgUser.username ? ' · @' + esc(tgUser.username) : '') + '</p></div>';
-    h += '<div class="pf-stats">' + (pd ? '<div><b>' + fmtH(pd.total) + '</b><small>часов, ' + periodName(pd.pk) + '</small></div><div><b>' + money(pd.total * RATE) + '</b><small>за период' + '</small></div>' : '') + '<div><b>' + k + '/' + dishes.length + '</b><small>выучено</small></div></div>';
+    h += '<div class="pf-stats">' + (pd ? '<div><b>' + fmtH(pd.forecastHours) + '</b><small>часов, ' + periodName(pd.pk) + '</small></div><div><b>' + money(pd.forecastPay) + '</b><small>' + (pd.upcoming ? 'прогноз' : 'за период') + '</small></div>' : '') + '<div><b>' + k + '/' + dishes.length + '</b><small>выучено</small></div></div>';
     h += '<div class="pf-rows"><button class="pf-row" data-act="pickme" aria-expanded="' + st.pm + '"><span class="pf-ic">' + ic('profile') + '</span><span class="pf-t">Имя в графике</span><span class="pf-v">' + (store.me ? esc(store.me) : 'выбрать') + '</span>' + ic('chevR', st.pm ? 'open' : '') + '</button>';
     if (st.pm) {
       var m = tgMatch();
@@ -4377,7 +4393,7 @@ function startCups() {
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = '303607280f';
+    var BUILD = '13ced29e43';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
