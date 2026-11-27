@@ -1061,21 +1061,27 @@ html, body { overflow-x: clip; }
 .wn-b button:active:not(:disabled) { transform: scale(.92); }
 .prs { margin-top: 0; margin-bottom: 14px; }
 .rep { border-radius: 22px; background: var(--glass-strong); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-line), var(--glass-shadow); overflow: hidden; }
-.rep-h { padding: 16px 18px 12px; display: flex; flex-direction: column; gap: 2px; }
-.rep-h b { font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
-.rep-h span { font-size: 13.5px; color: var(--muted); }
-.pr-row { display: grid; grid-template-columns: 52px 1fr auto; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 11px 18px; border-top: .5px solid var(--line); min-height: 52px; }
+.rep-h { display: flex; flex-direction: column; gap: 4px; padding: 16px; }
+.rep-h > strong { font-size: 30px; font-variant-numeric: tabular-nums; }
+.rep-h > span, .rep-locations { color: var(--muted); font-size: 13.5px; }
+.rep-locations { display: flex; flex-wrap: wrap; column-gap: 16px; row-gap: 4px; margin-top: 5px; }
+.rep-locations b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.report-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.report-actions .btn { flex: 1 1 auto; width: auto; min-height: 44px; }
+.pr-row { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 10px 16px; min-height: 52px; }
+.pr-row + .pr-row { border-top: 1px solid var(--line); }
 .pr-row:active { background: var(--fill); }
-.pr-d { display: flex; flex-direction: column; line-height: 1.15; }
-.pr-d b { font-size: 16px; font-weight: 650; font-variant-numeric: tabular-nums; }
-.pr-d small { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
-.pr-t { font-size: 15.5px; font-variant-numeric: tabular-nums; display: flex; flex-direction: column; }
-.pr-t small { font-size: 11.5px; color: var(--accent); font-weight: 600; }
-.pr-h { font-weight: 650; font-size: 15.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.pr-row.ex .pr-d b, .pr-row.ex .pr-t, .pr-row.ex .pr-h { text-decoration: line-through; opacity: .45; }
-.rep-f { display: flex; align-items: baseline; justify-content: space-between; padding: 14px 18px 16px; border-top: 1px solid var(--line-2); background: var(--accent-soft); }
-.rep-f span { font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
-.rep-f b { font-size: 24px; font-weight: 750; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.pr-d, .pr-t { display: flex; flex-direction: column; gap: 2px; font-variant-numeric: tabular-nums; }
+.pr-d small, .pr-t small { font-size: 12px; color: var(--muted); }
+.pr-h { font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pr-row.ex .pr-h { color: var(--muted); }
+.report-form { display: grid; gap: 12px; margin: 12px 0; padding: 16px; scroll-margin-top: 80px; }
+.report-form label { display: grid; gap: 4px; min-width: 0; font-size: 14px; }
+.report-form input, .report-form select { box-sizing: border-box; width: 100%; min-width: 0; min-height: 44px; padding: 8px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--surface); color: var(--ink); font: inherit; }
+.report-times { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.report-form .report-actions { margin: 0; }
+.report-error { margin: 0; color: var(--cherry); font-size: 13px; }
+.report-error:empty { display: none; }
 .pay { margin-top: 12px; border-radius: 22px; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--accent-grad, var(--accent)); color: #fff; box-shadow: var(--accent-glow, none); }
 .pay-l { display: flex; flex-direction: column; gap: 2px; }
 .pay-l small { font-size: 12.5px; opacity: .85; }
@@ -1084,26 +1090,7 @@ html, body { overflow-x: clip; }
 .pay + .btns, .fut-note + .btns { margin-top: 14px; }
 .wk td span.long { font-size: 8.5px; letter-spacing: -.06em; }
 
-/* pay report: one look for everyone; rows share the height that fits between header and tab bar */
 .pay, .fut-note { display: none; }
-.rep { display: flex; flex-direction: column; }
-.rep-h { flex: none; padding: 16px 18px 12px; }
-.rep-rows { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; }
-.pr-row { flex: 1 1 46px; min-height: 26px; max-height: 52px; padding: 0 18px; grid-template-columns: 1fr auto auto; gap: 12px; }
-.pr-d { flex-direction: row; align-items: baseline; gap: 7px; min-width: 76px; }
-.pr-d b { font-size: 16px; }
-.pr-d small { font-size: 11.5px; }
-.pr-t { font-size: 15.5px; flex-direction: row; }
-.pr-t small { display: none; }
-.pr-row { grid-template-columns: 82px 1fr auto; }
-.pr-none { padding: 18px; color: var(--muted); font-size: 14.5px; border-top: .5px solid var(--line); }
-.rep-f { flex: none; padding: 13px 18px 11px; background: var(--accent-soft); }
-.rep-f .rate { display: flex; align-items: center; gap: 6px; }
-.rep-f .rate input { width: 74px; min-height: 36px; padding: 4px 10px; border-radius: 10px; border: 0; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line-2); color: inherit; font: inherit; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; }
-.rep-f .rate i { font-style: normal; color: var(--muted); font-size: 13.5px; }
-.rep-pay { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 18px; background: var(--accent-grad, var(--accent)); color: #fff; }
-.rep-pay span { font-size: 13.5px; opacity: .88; font-variant-numeric: tabular-nums; }
-.rep-pay b { font-size: 24px; font-weight: 750; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
 
 /* ---- staff mode: study switcher, home, profile ---- */
 .study-seg { margin: calc(var(--nav-h) - 2px) 0 14px; }
@@ -1191,17 +1178,6 @@ html, body { overflow-x: clip; }
 .sbar.big + #mres > .hscroll.flt { margin-top: 0; }
 .hscroll.rec { margin-top: 0; }
 #mres > .gh:first-child { padding-top: 14px; }
-
-/* future shifts live inside the report, dimmed and tagged */
-.pr-row.fut .pr-d, .pr-row.fut .pr-h { opacity: .6; }
-.pr-row.fut .pr-t { color: var(--muted); }
-.pr-t { align-items: baseline; }
-.pr-t small { display: inline; margin-left: 8px; font-size: 11px; font-weight: 600; letter-spacing: .02em; padding: 2px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
-.rep-f span em { display: block; font-style: normal; text-transform: none; letter-spacing: 0; font-weight: 500; font-size: 12px; margin-top: 2px; }
-.rep-f { align-items: center; }
-.pr-t { white-space: nowrap; }
-.pr-t small { margin-left: 7px; }
-.pr-row.fut { box-shadow: inset 3px 0 0 var(--accent); }
 
 /* dark v2: warm espresso instead of cold black with colour smudges */
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
@@ -1549,7 +1525,6 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
 
 .rep-m { background: transparent; border-top: .5px solid var(--line); }
 .rep-m b { font-size: 19px; }
-.rep-f em { display: block; font-style: normal; font-size: 11.5px; text-transform: none; letter-spacing: 0; font-weight: 500; opacity: .8; margin-top: 2px; }
 .pr-t small.mg, .pr-t small { }
 
 </style>
@@ -1605,7 +1580,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   var inTG = !!(TG && TG.initData);
 
   /* ---------- state ---------- */
-  var store = { known: {}, fav: {}, recent: [], sec: 'all', cat: 'all', only: false, theme: 'auto', me: '', cl: false, ex: {}, rq: null, rm: 0 };
+  var store = { known: {}, fav: {}, recent: [], sec: 'all', cat: 'all', only: false, theme: 'auto', me: '', cl: false, ex: {}, worked: {}, rq: null, rm: 0 };
   try {
     var raw = localStorage.getItem(KEY);
     var old = localStorage.getItem(OLDKEY);
@@ -1614,7 +1589,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       store.known = s0.known || {};
       if (raw) {
         store.fav = s0.fav || {}; store.recent = Array.isArray(s0.recent) ? s0.recent : [];
-        store.sec = s0.sec || 'all'; store.cat = s0.cat || 'all'; store.only = !!s0.only; store.theme = s0.theme || 'auto'; store.t = s0.t || 0; store.me = typeof s0.me === 'string' ? s0.me : ''; store.cl = !!s0.cl; store.ex = (s0.ex && typeof s0.ex === 'object') ? s0.ex : {}; store.rq = (s0.rq && typeof s0.rq === 'object' && s0.rq.d) ? s0.rq : null; store.rm = +s0.rm > 0 ? Math.round(+s0.rm) : 0;
+        store.sec = s0.sec || 'all'; store.cat = s0.cat || 'all'; store.only = !!s0.only; store.theme = s0.theme || 'auto'; store.t = s0.t || 0; store.me = typeof s0.me === 'string' ? s0.me : ''; store.cl = !!s0.cl; store.ex = (s0.ex && typeof s0.ex === 'object') ? s0.ex : {}; store.worked = (s0.worked && typeof s0.worked === 'object') ? s0.worked : {}; store.rq = (s0.rq && typeof s0.rq === 'object' && s0.rq.d) ? s0.rq : null; store.rm = +s0.rm > 0 ? Math.round(+s0.rm) : 0;
       }
     }
   } catch (e) {}
@@ -1622,9 +1597,11 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   var REN = { 'Крис': 'Кристина 👩🏽‍💼', 'Алина': 'Алина 👩🏼‍💼' };
   function renStore() {
     if (REN[store.me]) store.me = REN[store.me];
-    if (store.ex && typeof store.ex === 'object') Object.keys(store.ex).forEach(function (k) {
-      var i = k.lastIndexOf('|'), n = k.slice(i + 1);
-      if (i > 0 && REN[n]) { store.ex[k.slice(0, i + 1) + REN[n]] = store.ex[k]; delete store.ex[k]; }
+    [store.ex, store.worked].forEach(function (entries) {
+      Object.keys(entries).forEach(function (k) {
+        var i = k.lastIndexOf('|'), n = k.slice(i + 1);
+        if (i > 0 && REN[n]) { entries[k.slice(0, i + 1) + REN[n]] = entries[k]; delete entries[k]; }
+      });
     });
   }
   renStore();
@@ -1694,7 +1671,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   var st = {
     tab: 'home', menu: [], q: '', sf: 'all', dp: 0, flt: {},
     cardMode: 'n2c', cards: null, quiz: null, sheet: false,
-    scrollTab: {}, hg: '', hc: 'all', rqs: -1, rqt: null, anim: '', resetArm: false, sd: null, sv: 'day', wi: null, pk: null, study: 'menu', pm: false, from: '', sa: false, hs: '', sq: ''
+    scrollTab: {}, hg: '', hc: 'all', rqs: -1, rqt: null, anim: '', resetArm: false, sd: null, sv: 'day', wi: null, pk: null, reportEdit: null, study: 'menu', pm: false, from: '', sa: false, hs: '', sq: ''
   };
   var tgUser = (inTG && TG.initDataUnsafe && TG.initDataUnsafe.user) || null;
   /* the Telegram profile (name, @username, avatar) is remembered so the browser copy can show it too */
@@ -2506,32 +2483,140 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     });
     return out.sort(function (x, y) { return x.dt - y.dt || x.s.s - y.s.s; });
   }
-  function copyLine(r) { return pad2(r.dt.getDate()) + '.' + pad2(r.dt.getMonth() + 1) + ' - с ' + hhmm(r.s.s) + ' до ' + hhmm(endOf(r.s)) + ' (' + (Math.round(r.h * 10) / 10) + ' ч)' + (r.m ? ' Мега' : ''); }
+  function reportDate(d) {
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  }
+  function reportLocation(mega) { return mega ? 'Мега' : 'Большая Красная'; }
+  function reportClock(m) { return pad2(Math.floor(m / 60)) + ':' + pad2(m % 60); }
+  function reportRows(name) {
+    var scheduled = personShifts(name);
+    var actual = Object.keys(store.worked).filter(function (key) {
+      return key.slice(key.lastIndexOf('|') + 1) === name;
+    }).map(function (key) {
+      var entry = store.worked[key], date = entry.date.split('-').map(Number);
+      var dt = new Date(date[0], date[1] - 1, date[2]);
+      return {
+        key: key, dt: dt, pk: periodKey(dt), dow: (dt.getDay() + 6) % 7,
+        s: { s: entry.start, e: entry.end }, m: entry.mega,
+        done: true, h: (entry.end - entry.start) / 60, manual: entry.manual, actual: true
+      };
+    });
+    scheduled.forEach(function (row) {
+      row.s = { s: row.s.s, e: endOf(row.s) };
+    });
+    var matched = {};
+    var remaining = scheduled.filter(function (row) {
+      var exact = actual.find(function (r) { return r.key === row.key; });
+      if (exact) { matched[exact.key] = row.key; return false; }
+      return true;
+    }).filter(function (row, index, rows) {
+      var date = reportDate(row.dt);
+      var samePoint = actual.filter(function (r) {
+        return !matched[r.key] && r.m === row.m && reportDate(r.dt) === date;
+      });
+      var match = samePoint.find(function (r) { return r.s.s === row.s.s && r.s.e === row.s.e; });
+      // Keep an edited shift if a later update moves its scheduled start time.
+      if (!match && samePoint.length === 1 && !samePoint[0].manual &&
+          rows.filter(function (r) { return r.m === row.m && reportDate(r.dt) === date; }).length === 1) match = samePoint[0];
+      if (match) matched[match.key] = row.key;
+      return !match;
+    });
+    return remaining.concat(actual).sort(function (a, b) { return a.dt - b.dt || a.s.s - b.s.s; });
+  }
+  function copyLine(r) {
+    return pad2(r.dt.getDate()) + '.' + pad2(r.dt.getMonth() + 1) + ' - с ' + hhmm(r.s.s) + ' до ' + hhmm(r.s.e) + ' (' + (Math.round(r.h * 10) / 10) + ' ч)' + (r.m ? ' Мега' : '');
+  }
   function payData(cur) {
-    var ps = allPeriods(); if (!ps.length || !store.me) return null;
-    var today = periodKey(new Date()), pk = !cur && st.pk && ps.indexOf(st.pk) >= 0 ? st.pk : (ps.indexOf(today) >= 0 ? today : ps[ps.length - 1]);
-    var rows = personShifts(store.me).filter(function (r) { return r.pk === pk; });
-    var done = 0, fut = 0, mega = 0;
-    rows.forEach(function (r) { if (store.ex[r.key]) return; if (r.m) mega += r.h; else if (r.done) done += r.h; else fut += r.h; });
+    if (!store.me) return null;
+    var personal = reportRows(store.me);
+    var today = periodKey(new Date());
+    var ps = Array.from(new Set(allPeriods().concat(today, personal.map(function (r) { return r.pk; })))).sort();
+    var pk = !cur && ps.indexOf(st.pk) >= 0 ? st.pk : today;
+    var rows = personal.filter(function (r) { return r.pk === pk; });
+    var included = rows.filter(function (r) { return r.done && !store.ex[r.key]; });
+    var main = 0, mega = 0, upcoming = 0;
+    included.forEach(function (r) { if (r.m) mega += r.h; else main += r.h; });
+    rows.forEach(function (r) { if (!r.done && !store.ex[r.key]) upcoming += r.h; });
     var rd = function (x) { return Math.round(x * 10) / 10; };
-    var tail = mega ? ['', 'итого Cups ' + rd(done + fut) + ' ч', 'итого Мега ' + rd(mega) + ' ч', 'всего ' + rd(done + fut + mega) + ' ч'] : ['', 'итого ' + rd(done + fut) + ' ч'];
-    var txt = [store.me || 'часы', ''].concat(rows.filter(function (r) { return !store.ex[r.key]; }).map(copyLine)).concat(tail).join('\n');
-    var rm = RATE, payC = (done + fut) * RATE, payM = mega * rm;
-    return { ps: ps, pk: pk, rows: rows, done: done, fut: fut, mega: mega, total: done + fut, rm: rm, payC: payC, payM: payM, pay: payC + payM, text: txt };
+    var tail = mega ? ['', 'итого Cups ' + rd(main) + ' ч', 'итого Мега ' + rd(mega) + ' ч', 'всего ' + rd(main + mega) + ' ч'] : ['', 'итого ' + rd(main) + ' ч'];
+    var text = included.length ? [store.me, ''].concat(included.map(copyLine), tail).join('\n') : '';
+    return { ps: ps, pk: pk, rows: rows, main: main, mega: mega, upcoming: upcoming, total: main + mega, text: text };
+  }
+  function reportForm(d, row) {
+    var now = new Date(), latest = reportDate(now);
+    var period = d.pk.split('-').map(Number);
+    var lastDay = period[2] === 1 ? 15 : new Date(period[0], period[1], 0).getDate();
+    var periodEnd = reportDate(new Date(period[0], period[1] - 1, lastDay));
+    var date = row ? reportDate(row.dt) : (periodEnd < latest ? periodEnd : latest);
+    var controls = row && row.manual ?
+      '<button type="button" class="btn" data-act="reportdelete" data-v="' + esc(row.key) + '">Удалить смену</button>' :
+      row ? '<button type="button" class="btn" data-act="reportexclude" data-v="' + esc(row.key) + '">' +
+        (store.ex[row.key] ? 'Вернуть в отчёт' : 'Исключить из отчёта') + '</button>' : '';
+    return '<form id="report-form" class="rep report-form" data-key="' + esc(row ? row.key : '') + '">' +
+      '<strong>' + (row ? 'Фактическое время' : 'Добавить отработанную смену') + '</strong>' +
+      '<label>Дата<input required name="date" type="date" max="' + latest + '" value="' + date + '"' + (row ? ' readonly' : '') + '></label>' +
+      (row ? '<span>' + reportLocation(row.m) + '</span>' :
+        '<label>Кофейня<select name="location"><option value="main">Большая Красная</option><option value="mega">Мега</option></select></label>') +
+      '<div class="report-times"><label>Начало<input required name="start" type="time" value="' + (row ? reportClock(row.s.s) : '') + '"></label>' +
+      '<label>Конец<input required name="end" type="time" value="' + (row ? reportClock(row.s.e) : '') + '"></label></div>' +
+      '<p class="report-error" role="alert"></p><div class="report-actions"><button class="btn primary" type="submit">Сохранить</button>' +
+      '<button class="btn" type="button" data-act="reportcancel">Отмена</button>' + controls + '</div></form>';
+  }
+  function overlapsWorkedShift(key, date, start, end) {
+    return reportRows(store.me).some(function (r) {
+      return r.key !== key && !store.ex[r.key] && reportDate(r.dt) === date && r.s.s < end && start < r.s.e;
+    });
+  }
+  function saveWorkedShift(form) {
+    var d = payData(), key = form.getAttribute('data-key');
+    var row = d && d.rows.find(function (r) { return r.key === key; });
+    if (!d || (key && !row)) return;
+    var fields = form.elements, date = fields.namedItem('date').value;
+    var parts = date.split('-').map(Number);
+    var dt = new Date(parts[0], parts[1] - 1, parts[2]);
+    var times = ['start', 'end'].map(function (name) {
+      var time = fields.namedItem(name).value.split(':').map(Number);
+      return time[0] * 60 + time[1];
+    });
+    var start = times[0], end = times[1], mega = row ? row.m : fields.namedItem('location').value === 'mega';
+    var error = form.querySelector('.report-error');
+    if (!(end > start)) { error.textContent = 'Конец смены должен быть позже начала.'; return; }
+    if (new Date(parts[0], parts[1] - 1, parts[2], 0, end).getTime() > Date.now()) {
+      error.textContent = 'Фактическое время можно сохранить после окончания смены.'; return;
+    }
+    if (overlapsWorkedShift(key, date, start, end)) { error.textContent = 'На это время уже есть смена. Открой её и поправь часы.'; return; }
+    if (!key) key = date + '|manual-' + Date.now() + '|' + store.me;
+    store.worked[key] = { date: date, start: start, end: end, mega: mega, manual: !row || row.manual };
+    save();
+    st.pk = periodKey(dt);
+    st.reportEdit = null;
+    render({ scroll: window.scrollY });
+    toast('Смена сохранена');
   }
   function payViewHTML() {
-    var h = '';
-    if (!store.me) return '<div class="note">' + ic('clock') + '<span><b>Выбери себя</b> в строке «Кто ты?» выше. Покажу твои часы за период (1–15 и 16–конец месяца) и сколько это в рублях.</span></div>';
     var d = payData();
-    h += '<div class="hscroll prs" role="group" aria-label="Период">' + d.ps.slice().reverse().map(function (k) { return '<button class="chip" data-act="spr" data-v="' + k + '" aria-pressed="' + (k === d.pk) + '">' + periodName(k) + '</button>'; }).join('') + '</div>';
-    if (!d.rows.length) return h + '<div class="note">' + ic('clock') + '<span><b>' + esc(store.me) + '</b>, в этом периоде смен в графике нет.</span></div>';
-    h += '<div class="rep"><div class="rep-h"><b>' + (d.mega ? 'Часы: Cups и Мега' : 'Часы в Cups') + '</b><span>' + esc(store.me) + ' · ' + periodName(d.pk, true) + '</span></div><div class="rep-rows">' + d.rows.map(function (r) {
-      var ex = !!store.ex[r.key];
-      return '<button class="pr-row' + (ex ? ' ex' : '') + (r.done ? '' : ' fut') + '" data-act="sex" data-v="' + esc(r.key) + '" aria-pressed="' + ex + '"><span class="pr-d"><b>' + pad2(r.dt.getDate()) + '.' + pad2(r.dt.getMonth() + 1) + '</b><small>' + DOWSHORT[r.dow] + '</small></span><span class="pr-t">с ' + hhmm(r.s.s) + ' до ' + hhmm(endOf(r.s)) + (r.m ? '<small>Мега</small>' : '') + '</span><span class="pr-h">' + fmtH(r.h) + '</span></button>';
-    }).join('') + '</div><div class="rep-f"><span>итого' + (d.mega ? ' Cups' : '') + (d.fut > 0 ? '<em>отработано ' + fmtH(d.done) + ', впереди ' + fmtH(d.fut) + '</em>' : '') + '</span><b>' + fmtH(d.total) + '</b></div>' + (d.mega ? '<div class="rep-f rep-m"><span>итого Мега</span><b>' + fmtH(d.mega) + '</b></div><div class="rep-f"><span>Cups<em>' + fmtH(d.total) + ' × ' + RATE + '\u00A0₽</em></span><b>' + money(d.payC) + '</b></div><div class="rep-f"><span>Мега<em id="mem">' + (d.rm ? fmtH(d.mega) + ' × ' + d.rm + '\u00A0₽' : 'впиши ставку выше') + '</em></span><b id="mpay">' + (d.rm ? money(d.payM) : '—') + '</b></div><div class="rep-pay"><span>Всего заработаешь<em id="mlbl" style="font-style:normal">' + (d.rm ? '' : ' (пока без Меги)') + '</em></span><b id="mtot">' + money(d.pay) + '</b></div>' : '<div class="rep-pay"><span>' + fmtH(d.total) + ' × ' + RATE + '\u00A0₽</span><b>' + money(d.total * RATE) + '</b></div>') + '</div>';
-    h += '<div class="btns"><button class="btn primary" data-act="scp">' + ic('send') + 'Отправить в чат</button></div>';
-    h += '<p class="hint">Закрытие считается до 21:00. Бледные строки: смены впереди, они уже учтены в итоге. Ставка ' + RATE + ' ₽/ч, без вычетов. Если в графике есть тёзка, нажми на чужую смену, и она не будет считаться.</p>';
-    return h;
+    if (!d) return '<div class="note">' + ic('clock') + '<span>Выбери своё имя в графике, чтобы увидеть часы за полмесяца.</span></div>';
+    var h = '<div class="hscroll prs" role="group" aria-label="Период">' + d.ps.slice().reverse().map(function (k) {
+      return '<button class="chip" data-act="spr" data-v="' + k + '" aria-pressed="' + (k === d.pk) + '">' + periodName(k) + '</button>';
+    }).join('') + '</div>';
+    h += '<section class="rep rep-h"><span>' + esc(store.me) + ' · ' + periodName(d.pk, true) + '</span>' +
+      '<strong>' + fmtH(d.total) + '</strong><span>В отчёте · ' + money(d.total * RATE) + ' по ставке ' + RATE + ' ₽/ч</span>' +
+      '<div class="rep-locations"><span>Большая Красная <b>' + fmtH(d.main) + '</b></span>' +
+      (d.rows.some(function (r) { return r.m; }) ? '<span>Мега <b>' + fmtH(d.mega) + '</b></span>' : '') + '</div>' +
+      (d.upcoming ? '<span>Предстоит по графику ' + fmtH(d.upcoming) + '</span>' : '') + '</section>';
+    h += '<div class="report-actions"><button class="btn" data-act="reportedit" data-v="new">Добавить смену</button>' +
+      '<button class="btn primary" data-act="scp"' + (d.text ? '' : ' disabled') + '>' + ic('send') + (inTG ? 'Отправить отчёт' : 'Скопировать отчёт') + '</button></div>';
+    if (st.reportEdit === 'new') h += reportForm(d);
+    if (!d.rows.length) return h + '<p class="hint">За этот период смен пока нет.</p>';
+    h += '<p class="hint">Прошедшие смены берутся из графика. Нажми на смену, чтобы сверить время или исключить её из отчёта.</p>';
+    return h + '<div class="rep">' + d.rows.map(function (r) {
+      var excluded = !!store.ex[r.key];
+      var status = excluded ? 'Исключена' : !r.done ? 'По графику' : r.actual ? (r.manual ? 'Добавлена' : 'Исправлена') : '';
+      return '<button class="pr-row' + (excluded ? ' ex' : '') + '" data-act="reportedit" data-v="' + esc(r.key) + '" aria-expanded="' + (st.reportEdit === r.key) + '">' +
+        '<span class="pr-d"><b>' + pad2(r.dt.getDate()) + '.' + pad2(r.dt.getMonth() + 1) + '</b><small>' + DOWSHORT[r.dow] + '</small></span>' +
+        '<span class="pr-t">' + reportClock(r.s.s) + '–' + reportClock(r.s.e) + '<small>' + reportLocation(r.m) + (status ? ' · ' + status : '') + '</small></span>' +
+        '<span class="pr-h">' + fmtH(r.h) + '</span></button>' + (st.reportEdit === r.key ? reportForm(d, r) : '');
+    }).join('') + '</div>';
   }
   function copyText(t) {
     function fb() {
@@ -2642,19 +2727,20 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     var info = schedInfo();
     if (st.sv === 'req') { var rq0 = reqViewHTML(); return '<h1 class="lt">Пожелания</h1><p class="lt-sub">' + rq0.range + '</p>' + rq0.html + '<p class="small">Откроется окно Telegram с готовым текстом: выбери чат «Графики» и нажми отправить. Вне Telegram текст просто копируется.</p>'; }
     var h = '<h1 class="lt">Смены</h1>';
-    if (!info) return h + '<div class="empty"><b>Графика пока нет</b><span>Когда его добавят, он появится здесь.</span></div>';
-    var w = info.w, today = info.today;
+    if (!info && st.sv !== 'hours') return h + '<div class="empty"><b>Графика пока нет</b><span>Когда его добавят, он появится здесь.</span></div>';
+    var w = info && info.w, today = info ? info.today : -1;
     var sd = st.sd != null ? Math.min(Math.max(st.sd, 0), 6) : (today >= 0 ? today : 0);
-    if (st.sv === 'hours') h += '<div class="wnav"><p class="lt-sub">Часы и зарплата по периодам</p></div>';
+    if (st.sv === 'hours') h += '<div class="wnav"><p class="lt-sub">Мои часы</p></div>';
     else h += '<div class="wnav"><p class="lt-sub">Неделя ' + weekRange(w) + '</p><span class="wn-b"><button data-act="swk" data-v="-1" aria-label="Предыдущая неделя"' + (info.i === 0 ? ' disabled' : '') + '>' + ic('chevL') + '</button><button data-act="swk" data-v="1" aria-label="Следующая неделя"' + (info.i === info.n - 1 ? ' disabled' : '') + '>' + ic('chevR') + '</button></span></div>';
     h += '<div class="seg" role="group" aria-label="Вид">' + [['day', 'День'], ['week', 'Неделя'], ['hours', 'Часы']].map(function (t) {
       return '<button data-act="sview" data-v="' + t[0] + '" aria-pressed="' + (st.sv === t[0]) + '">' + t[1] + '</button>';
     }).join('') + '</div>';
-    if (info.missing && st.sv !== 'hours') h += '<div class="note warn" style="margin-top:12px">' + ic('warn') + '<span>Графика на текущую неделю в приложении ещё нет, показана неделя ' + weekRange(w) + '.</span></div>';
+    if (st.sv !== 'hours' && info.missing) h += '<div class="note warn" style="margin-top:12px">' + ic('warn') + '<span>Графика на текущую неделю в приложении ещё нет, показана неделя ' + weekRange(w) + '.</span></div>';
     if (!store.me) h += meRowHTML(schedPeople());
     if (st.sv === 'week') h += weekViewHTML(w, today);
     else if (st.sv === 'hours') h += payViewHTML();
     else h += dayViewHTML(w, sd, today);
+    if (st.sv === 'hours') return h;
     h += rqEntryHTML();
     h += '<p class="small">График из рабочего чата. Если что-то поменяли, ориентируйся на чат.' + (store.me ? ' Это не ты? Имя меняется в профиле.' : '') + '</p>';
     return h;
@@ -2717,7 +2803,8 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   function homePayHTML() {
     var d = payData(true); if (!d) return '';
-    return '<button class="hm-card pay2" data-act="gohours"><span class="p-top"><span class="eyebrow">Часы за ' + periodName(d.pk, true) + '</span>' + ic('chevR') + '</span><span class="p-nums"><b>' + fmtH(d.total) + '</b><b class="rub">' + money(d.pay) + '</b></span>' + (d.fut > 0 ? '<span class="p-sub">Отработано ' + fmtH(d.done) + ', впереди ' + fmtH(d.fut) + ' по графику</span>' : '<span class="p-sub">Закрытие считается до 21:00</span>') + (d.mega ? '<span class="p-sub">' + (d.rm ? 'В т. ч. Мега ' + fmtH(d.mega) + ' · ' + money(d.payM) : 'Ещё в Меге ' + fmtH(d.mega) + ': впиши ставку в часах') + '</span>' : '') + '</button>';
+    return '<button class="hm-card pay2" data-act="gohours"><span class="p-top"><span class="eyebrow">Часы за ' + periodName(d.pk, true) + '</span>' + ic('chevR') + '</span><span class="p-nums"><b>' + fmtH(d.total) + '</b><b class="rub">' + money(d.total * RATE) + '</b></span>' +
+      (d.upcoming ? '<span class="p-sub">Предстоит по графику ' + fmtH(d.upcoming) + '</span>' : '') + '</button>';
   }
   function homeTeamHTML() {
     var t = todayDay(); if (!t) return '';
@@ -2977,7 +3064,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     st.pv = '';
     var name = store.me || tgName() || 'Гость', pd = store.me ? payData(true) : null, k = knownIn(dishes);
     var h = '<div class="pf-head"><div class="av" id="av">' + esc(name.trim().charAt(0).toUpperCase()) + '</div><h1 class="pf-name">' + esc(name) + '</h1><p class="pf-sub">' + (store.me ? 'Сотрудник Cups' : 'Имя в графике не выбрано') + (tgUser && tgUser.username ? ' · @' + esc(tgUser.username) : '') + '</p></div>';
-    h += '<div class="pf-stats">' + (pd ? '<div><b>' + fmtH(pd.total) + '</b><small>часов, ' + periodName(pd.pk) + '</small></div><div><b>' + money(pd.pay) + '</b><small>за период' + (pd.mega && !pd.rm ? ' без Меги' : '') + '</small></div>' : '') + '<div><b>' + k + '/' + dishes.length + '</b><small>выучено</small></div></div>';
+    h += '<div class="pf-stats">' + (pd ? '<div><b>' + fmtH(pd.total) + '</b><small>часов, ' + periodName(pd.pk) + '</small></div><div><b>' + money(pd.total * RATE) + '</b><small>за период' + '</small></div>' : '') + '<div><b>' + k + '/' + dishes.length + '</b><small>выучено</small></div></div>';
     h += '<div class="pf-rows"><button class="pf-row" data-act="pickme" aria-expanded="' + st.pm + '"><span class="pf-ic">' + ic('profile') + '</span><span class="pf-t">Имя в графике</span><span class="pf-v">' + (store.me ? esc(store.me) : 'выбрать') + '</span>' + ic('chevR', st.pm ? 'open' : '') + '</button>';
     if (st.pm) {
       var m = tgMatch();
@@ -3069,21 +3156,10 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     if (opts.scroll != null) window.scrollTo(0, opts.scroll);
     var newWk = root.querySelector('.wk-scroll');
     if (newWk) { if (wkX != null) newWk.scrollLeft = wkX; else { var ti = parseInt(newWk.getAttribute('data-today'), 10); newWk.scrollLeft = ti > 0 ? Math.max(0, (ti - 1) * 80) : 0; } }
-    fitRep(false);
     mountAvatar();
     onScroll();
     syncBack();
   }
-  /* pay report card: as tall as the gap between the header and the tab bar, rows share the space evenly */
-  function fitRep(align) {
-    var r = root.querySelector('.rep'); if (!r) return;
-    var nav = root.querySelector('.nav'), tb = root.querySelector('.tabbar-in'); if (!nav || !tb) return;
-    var nb = nav.getBoundingClientRect().bottom, tt = tb.getBoundingClientRect().top;
-    var avail = Math.floor(tt - nb - 24);
-    if (avail > 200) r.style.maxHeight = avail + 'px';
-    if (align) window.scrollTo(0, Math.max(0, r.getBoundingClientRect().top + (window.scrollY || 0) - nb - 12));
-  }
-  window.addEventListener('resize', function () { fitRep(false); });
   function syncBack() {
     if (!inTG || !TG.BackButton) return;
     try { if ((st.tab === 'menu' && st.menu.length) || st.sheet || saOn() || (st.tab === 'shifts' && st.sv === 'req') || (st.tab === 'profile' && st.pv) || (st.tab === 'home' && st.hs)) TG.BackButton.show(); else TG.BackButton.hide(); } catch (e) {}
@@ -3145,6 +3221,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 2100);
   }
   function switchTab(t) {
+    st.reportEdit = null;
     if (t === 'study') t = inStudy(st.tab) ? st.tab : (st.study || 'menu');
     if (inStudy(t)) st.study = t;
     if (t !== 'profile') st.pv = '';
@@ -3265,7 +3342,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     if (!t || t.disabled) return;
     var act = t.getAttribute('data-act'), v = t.getAttribute('data-v');
     var c = st.cards, q = st.quiz;
-    var HK = { rqc: 'light', rqsd: 'med', rqsx: 'light', rqp: 'sel', rqcp: 'light', rqclr: 'med', tab: 'sel', open: 'light', sec: 'light', scat: 'sel', sf: 'sel', flt: 'sel', setsec: 'sel', setcat: 'sel', only: 'sel', cmode: 'sel', bchip: 'sel', star: 'med', sheet: 'light', qstart: 'med', qnext: 'light', theme: 'sel', hg: 'sel', hc: 'sel', go: 'sel', gohours: 'light', pickme: 'sel', sday: 'sel', sview: 'sel', swk: 'sel', spr: 'sel', sex: 'sel', scp: 'light', sme: 'sel', sclose: 'light', rclear: 'med', back: 'light', ph: 'sel', openq: 'light', stopopen: 'light', stopadd: 'light', stpadd: 'med', stpdel: 'light', stpclr: 'med' };
+    var HK = { rqc: 'light', rqsd: 'med', rqsx: 'light', rqp: 'sel', rqcp: 'light', rqclr: 'med', tab: 'sel', open: 'light', sec: 'light', scat: 'sel', sf: 'sel', flt: 'sel', setsec: 'sel', setcat: 'sel', only: 'sel', cmode: 'sel', bchip: 'sel', star: 'med', sheet: 'light', qstart: 'med', qnext: 'light', theme: 'sel', hg: 'sel', hc: 'sel', go: 'sel', gohours: 'light', pickme: 'sel', sday: 'sel', sview: 'sel', swk: 'sel', spr: 'sel', reportedit: 'light', scp: 'light', sme: 'sel', sclose: 'light', rclear: 'med', back: 'light', ph: 'sel', openq: 'light', stopopen: 'light', stopadd: 'light', stpadd: 'med', stpdel: 'light', stpclr: 'med' };
     if (HK[act]) buzz(HK[act]);
     if (act === 'swed') { swOpen = null; edOpen(v); return; }
     if (act === 'swdel') {
@@ -3295,7 +3372,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
         if (st.tab !== 'shifts') { st.scrollTab.shifts = 0; switchTab('shifts'); } else render({ scroll: 0 });
         return;
       case 'go': switchTab(v); return;
-      case 'gohours': st.sv = 'hours'; st.scrollTab.shifts = 0; if (st.tab !== 'shifts') switchTab('shifts'); else render({ scroll: 0 }); fitRep(false); return;
+      case 'gohours': st.sv = 'hours'; st.scrollTab.shifts = 0; if (st.tab !== 'shifts') switchTab('shifts'); else render({ scroll: 0 }); return;
       case 'pickme': st.pm = !st.pm; render({ scroll: window.scrollY }); return;
       case 'sec': pushMenu({ kind: 'sec', sec: v, cat: 'all' }); return;
       case 'scat': topMenu().cat = v; document.getElementById('mres').innerHTML = menuInner(); return;
@@ -3343,8 +3420,36 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       case 'qnext': q.i++; q.answered = false; q.picked = -1; if (q.i >= q.qs.length) q.done = true; render({ scroll: 0 }); return;
       case 'sday': st.sd = +v; render({ scroll: window.scrollY }); return;
       case 'swk': { var inf = schedInfo(); st.wi = Math.min(Math.max(inf.i + (+v), 0), inf.n - 1); st.sd = null; render({ scroll: window.scrollY }); return; }
-      case 'spr': st.pk = v; render({ scroll: window.scrollY, fit: true }); return;
-      case 'sex': { if (store.ex[v]) delete store.ex[v]; else store.ex[v] = true; save(); render({ scroll: window.scrollY }); return; }
+      case 'spr': st.pk = v; st.reportEdit = null; render({ scroll: window.scrollY }); return;
+      case 'reportedit': {
+        st.reportEdit = v;
+        render({ scroll: window.scrollY });
+        var form = document.getElementById('report-form');
+        if (form) { form.scrollIntoView({ block: 'nearest' }); form.elements.namedItem(v === 'new' ? 'date' : 'start').focus({ preventScroll: true }); }
+        return;
+      }
+      case 'reportcancel':
+      case 'reportexclude':
+      case 'reportdelete': {
+        var report = payData();
+        var row = report && report.rows.find(function (r) { return r.key === v; });
+        if (row && act === 'reportexclude') {
+          if (store.ex[v] && overlapsWorkedShift(v, reportDate(row.dt), row.s.s, row.s.e)) {
+            toast('На это время уже есть другая смена');
+            return;
+          }
+          if (store.ex[v]) delete store.ex[v]; else store.ex[v] = true;
+          save();
+        }
+        if (row && row.manual && act === 'reportdelete') {
+          delete store.worked[v];
+          delete store.ex[v];
+          save();
+        }
+        st.reportEdit = null;
+        render({ scroll: window.scrollY });
+        return;
+      }
       case 'rqp': {
         var pp = v.split('|'), ri = +pp[0], rd = rqData();
         if (pp[1] === 'off') delete rd[ri]; else { var tt = pp[1].split('-'); rd[ri] = [+tt[0], +tt[1]]; }
@@ -3355,11 +3460,11 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
       case 'rqsd': { if (document.querySelector('#sheet.out')) return; rqData()[st.rqs] = [st.rqt.s, st.rqt.e]; save(); closeSheets(); return; }
       case 'rqcp': { var rt = rqText(); if (rt) sendToChat(rt); return; }
       case 'rqclr': store.rq = { k: rqWeek().key, d: {} };  save(); render({ scroll: window.scrollY }); return;
-      case 'scp': { var pd = payData(); if (pd) sendToChat(pd.text); return; }
-      case 'sview': st.sv = v; render({ scroll: window.scrollY, fit: v === 'hours' }); return;
+      case 'scp': { var pd = payData(); if (pd && pd.text) sendToChat(pd.text); return; }
+      case 'sview': st.sv = v; st.reportEdit = null; render({ scroll: window.scrollY }); return;
       case 'sme': {
-        store.me = store.me === v ? '' : v; if (st.tab === 'profile') st.pm = false; save();
-        if (!store.me) { try { localStorage.removeItem('ttk-ask-done'); } catch (x) {} setTimeout(showWelcome, 150); } render({ scroll: window.scrollY, fit: st.sv === 'hours' && !!store.me });
+        st.reportEdit = null; store.me = store.me === v ? '' : v; if (st.tab === 'profile') st.pm = false; save();
+        if (!store.me) { try { localStorage.removeItem('ttk-ask-done'); } catch (x) {} setTimeout(showWelcome, 150); } render({ scroll: window.scrollY });
         return;
       }
       case 'instgo': if (inTG) { try { TG.addToHomeScreen(); } catch (x) {} return; } if (inst.ev) { var iv = inst.ev; inst.ev = null; try { iv.prompt(); } catch (x) {} render({ scroll: window.scrollY }); } else { inst.help = true; render({ scroll: window.scrollY }); } return;
@@ -3376,14 +3481,12 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     var f = document.getElementById('fb');
     if (f && f.scrollIntoView) { try { f.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) { f.scrollIntoView(); } }
   }
+  root.addEventListener('submit', function (ev) {
+    if (ev.target.id !== 'report-form') return;
+    ev.preventDefault();
+    saveWorkedShift(ev.target);
+  });
   root.addEventListener('input', function (ev) {
-    if (ev.target && ev.target.id === 'mrate') {
-      var v = ev.target.value.replace(/\D/g, '').slice(0, 5); if (v !== ev.target.value) ev.target.value = v;
-      store.rm = +v || 0; save();
-      var d = payData(), a = document.getElementById('mpay'), b = document.getElementById('mtot'), c = document.getElementById('mem'), l = document.getElementById('mlbl');
-      if (d && a && b && c) { if (l) l.textContent = d.rm ? '' : ' (пока без Меги)'; a.textContent = d.rm ? money(d.payM) : '—'; b.textContent = money(d.pay); c.textContent = d.rm ? fmtH(d.mega) + ' × ' + d.rm + '\u00A0₽' : 'впиши ставку выше'; }
-      return;
-    }
     if (ev.target && ev.target.id === 'sq') { st.sq = ev.target.value; var sr = document.getElementById('sres'); if (sr) sr.innerHTML = stopResHTML(); return; }
     if (ev.target && ev.target.id === 'q') {
       st.q = ev.target.value;
@@ -3577,7 +3680,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
     tgUser = { first_name: String(u.first_name || ''), last_name: String(u.last_name || ''), username: String(u.username || ''), photo_url: /^https:\/\//.test(u.photo_url || '') ? u.photo_url : '' };
     try { localStorage.setItem('ttk-prof', JSON.stringify(tgUser)); } catch (e) {}
   }
-  function clBusyUI() { return !!(st.quiz || st.cards || adm.ed || adm.dirty || st.tab === 'cards' || st.tab === 'quiz'); }
+  function clBusyUI() { return !!(st.reportEdit || st.quiz || st.cards || adm.ed || adm.dirty || st.tab === 'cards' || st.tab === 'quiz'); }
   function clApply(s, t) {
     if (s.known && typeof s.known === 'object') store.known = s.known;
     if (s.fav && typeof s.fav === 'object') store.fav = s.fav;
@@ -4175,7 +4278,7 @@ textarea.edin { height: auto; min-height: 66px; padding: 12px 14px; resize: none
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = '0498e84ad2';
+    var BUILD = 'c37c36de3e';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
