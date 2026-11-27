@@ -1114,12 +1114,16 @@ html, body { overflow-x: clip; }
 .report-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
 .report-actions .btn { flex: 1 1 auto; width: auto; min-height: 44px; }
 .pr-row { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 10px 16px; min-height: 52px; }
-.pr-row + .pr-row { border-top: 1px solid var(--line); }
+.pr-item + .pr-item { border-top: 1px solid var(--line); }
 .pr-row:active { background: var(--fill); }
 .pr-d, .pr-t { display: flex; flex-direction: column; gap: 2px; font-variant-numeric: tabular-nums; }
 .pr-d small, .pr-t small { font-size: 12px; color: var(--muted); }
 .pr-h { font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.pr-row.ex .pr-h { color: var(--muted); }
+.pr-item.ex { background: var(--fill); }
+.pr-item.ex .pr-d b, .pr-item.ex .pr-clock, .pr-item.ex .pr-h { color: var(--muted); text-decoration: line-through; }
+.pr-excluded { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 10px; align-items: center; padding: 0 16px 6px; }
+.pr-excluded strong { font-size: 13px; font-weight: 700; }
+.pr-excluded button { min-height: 44px; padding: 4px 0; color: var(--accent); font-size: 13px; font-weight: 650; text-decoration: underline; }
 .report-form { display: grid; gap: 12px; margin: 12px 0; padding: 16px; scroll-margin-top: 80px; }
 .report-form label { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; min-width: 0; font-size: 14px; }
 .report-form input, .report-form select { display: block; box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; min-height: 44px; padding: 8px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--surface); color: var(--ink); font: inherit; }
@@ -1132,6 +1136,11 @@ html, body { overflow-x: clip; }
 .report-form .report-actions { margin: 0; }
 .report-error { margin: 0; color: var(--cherry); font-size: 13px; }
 .report-error:empty { display: none; }
+.report-dialog { box-sizing: border-box; width: min(400px, calc(100% - 32px)); max-height: calc(100% - 32px); padding: 20px; border: 1px solid var(--line); border-radius: 22px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.report-dialog::backdrop { background: rgba(0, 0, 0, .48); }
+.report-dialog h2 { margin: 0; font-size: 20px; }
+.report-dialog p { margin: 10px 0; white-space: pre-line; overflow-wrap: anywhere; }
+.report-dialog .report-actions { margin-bottom: 0; }
 .pay { margin-top: 12px; border-radius: 22px; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--accent-grad, var(--accent)); color: #fff; box-shadow: var(--accent-glow, none); }
 .pay-l { display: flex; flex-direction: column; gap: 2px; }
 .pay-l small { font-size: 12.5px; opacity: .85; }
@@ -2640,9 +2649,8 @@ function startCups() {
     var periodEnd = reportDate(new Date(period[0], period[1] - 1, lastDay));
     var date = row ? reportDate(row.dt) : (periodEnd < latest ? periodEnd : latest);
     var controls = row && row.manual ?
-      '<button type="button" class="btn" data-act="reportdelete" data-v="' + esc(row.key) + '">Удалить смену</button>' :
-      row ? '<button type="button" class="btn" data-act="reportexclude" data-v="' + esc(row.key) + '">' +
-        (store.ex[row.key] ? 'Вернуть в отчёт' : 'Исключить из отчёта') + '</button>' : '';
+      '<button type="button" class="btn warn" data-act="reportdelete" data-v="' + esc(row.key) + '">Удалить добавленную смену</button>' :
+      row && !store.ex[row.key] ? '<button type="button" class="btn warn" data-act="reportexclude" data-v="' + esc(row.key) + '">Исключить из отчёта</button>' : '';
     return '<form id="report-form" class="rep report-form" tabindex="-1" aria-labelledby="report-form-title" data-key="' + esc(row ? row.key : '') + '">' +
       '<strong id="report-form-title">' + (row ? 'Изменить смену' : 'Добавить отработанную смену') + '</strong>' +
       (row ? '<p class="report-context">' + row.dt.getDate() + ' ' + MON[row.dt.getMonth()] + ' ' + row.dt.getFullYear() + ' · ' + reportLocation(row.m) + '</p>' :
@@ -2658,6 +2666,31 @@ function startCups() {
     return reportRows(store.me).some(function (r) {
       return r.key !== key && !store.ex[r.key] && reportDate(r.dt) === date && r.s.s < end && start < r.s.e;
     });
+  }
+  function shiftSummary(row) {
+    return row.dt.getDate() + ' ' + MON[row.dt.getMonth()] + ' · ' + reportLocation(row.m);
+  }
+  function confirmReportChange(title, message, label, onConfirm) {
+    if (document.querySelector('.report-dialog[open]')) return;
+    var dialog = document.createElement('dialog');
+    if (typeof dialog.showModal !== 'function') {
+      if (window.confirm(title + '\n\n' + message)) onConfirm();
+      return;
+    }
+    dialog.className = 'report-dialog';
+    dialog.setAttribute('aria-labelledby', 'report-confirm-title');
+    dialog.setAttribute('aria-describedby', 'report-confirm-message');
+    dialog.innerHTML = '<form method="dialog"><h2 id="report-confirm-title">' + esc(title) + '</h2>' +
+      '<p id="report-confirm-message">' + esc(message) + '</p><div class="report-actions">' +
+      '<button class="btn" value="cancel" autofocus>Отмена</button>' +
+      '<button class="btn primary" value="confirm">' + esc(label) + '</button></div></form>';
+    dialog.addEventListener('close', function () {
+      var confirmed = dialog.returnValue === 'confirm';
+      dialog.remove();
+      if (confirmed) onConfirm();
+    }, { once: true });
+    document.body.appendChild(dialog);
+    dialog.showModal();
   }
   function saveWorkedShift(form) {
     var d = payData(), key = form.getAttribute('data-key');
@@ -2676,14 +2709,34 @@ function startCups() {
     if (!row && new Date(parts[0], parts[1] - 1, parts[2], 0, end).getTime() > Date.now()) {
       error.textContent = 'Фактическое время можно сохранить после окончания смены.'; return;
     }
-    if (overlapsWorkedShift(key, date, start, end)) { error.textContent = 'На это время уже есть смена. Открой её и поправь часы.'; return; }
-    if (!key) key = date + '|manual-' + Date.now() + '|' + store.me;
-    store.worked[key] = { date: date, start: start, end: end, mega: mega, manual: !row || row.manual };
-    save();
-    st.pk = periodKey(dt);
-    st.reportEdit = null;
-    render({ scroll: window.scrollY });
-    toast('Смена сохранена');
+    if (row && row.s.s === start && row.s.e === end) {
+      st.reportEdit = null;
+      render({ scroll: window.scrollY });
+      return;
+    }
+    var name = store.me;
+    function commitTime() {
+      if (store.me !== name || !form.isConnected) return;
+      if (overlapsWorkedShift(key, date, start, end)) {
+        error.textContent = 'На это время уже есть смена. Открой её и поправь часы.';
+        return;
+      }
+      if (!key) key = date + '|manual-' + Date.now() + '|' + name;
+      store.worked[key] = { date: date, start: start, end: end, mega: mega, manual: !row || row.manual };
+      save();
+      st.pk = periodKey(dt);
+      st.reportEdit = null;
+      render({ scroll: window.scrollY });
+      toast('Смена сохранена');
+    }
+    if (!row) { commitTime(); return; }
+    if (overlapsWorkedShift(key, date, start, end)) {
+      error.textContent = 'На это время уже есть смена. Открой её и поправь часы.';
+      return;
+    }
+    var message = shiftSummary(row) + '\nБыло: ' + reportClock(row.s.s) + '–' + reportClock(row.s.e) +
+      '\nБудет: ' + reportClock(start) + '–' + reportClock(end);
+    confirmReportChange('Изменить время смены?', message, 'Подтвердить', commitTime);
   }
   function payViewHTML() {
     var d = payData();
@@ -2706,11 +2759,15 @@ function startCups() {
     h += '<p class="hint">В отчёт входят все смены за период, включая предстоящие. Нажми на смену, чтобы поправить время или исключить её из отчёта.</p>';
     return h + '<div class="rep">' + d.rows.map(function (r) {
       var excluded = !!store.ex[r.key];
-      var status = excluded ? 'Исключена' : !r.done ? (r.edited ? 'По личному плану' : 'По графику') : r.edited ? (r.manual ? 'Добавлена' : 'Исправлена') : '';
-      return '<button class="pr-row' + (excluded ? ' ex' : '') + '" data-act="reportedit" data-v="' + esc(r.key) + '" aria-expanded="' + (st.reportEdit === r.key) + '">' +
+      var status = !r.done ? (r.edited ? 'По личному плану' : 'По графику') : r.edited ? (r.manual ? 'Добавлена' : 'Исправлена') : '';
+      return '<div class="pr-item' + (excluded ? ' ex' : '') + '"><button class="pr-row" data-act="reportedit" data-v="' + esc(r.key) + '" aria-expanded="' + (st.reportEdit === r.key) + '">' +
         '<span class="pr-d"><b>' + pad2(r.dt.getDate()) + '.' + pad2(r.dt.getMonth() + 1) + '</b><small>' + DOWSHORT[r.dow] + '</small></span>' +
-        '<span class="pr-t">' + reportClock(r.s.s) + '–' + reportClock(r.s.e) + '<small>' + reportLocation(r.m) + (status ? ' · ' + status : '') + '</small></span>' +
-        '<span class="pr-h">' + fmtH(r.h) + '</span></button>' + (st.reportEdit === r.key ? reportForm(d, r) : '');
+        '<span class="pr-t"><span class="pr-clock">' + reportClock(r.s.s) + '–' + reportClock(r.s.e) + '</span><small>' +
+        reportLocation(r.m) + (!excluded && status ? ' · ' + status : '') + '</small></span>' +
+        '<span class="pr-h">' + fmtH(r.h) + '</span></button>' +
+        (excluded ? '<div class="pr-excluded"><strong>Исключена из отчёта</strong><button data-act="reportrestore" data-v="' + esc(r.key) +
+          '" aria-label="Вернуть в отчёт смену ' + shiftSummary(r) + '">Вернуть в отчёт</button></div>' : '') +
+        (st.reportEdit === r.key ? reportForm(d, r) : '') + '</div>';
     }).join('') + '</div>';
   }
   function copyText(t) {
@@ -3526,25 +3583,39 @@ function startCups() {
         return;
       }
       case 'reportcancel':
+        st.reportEdit = null; render({ scroll: window.scrollY }); return;
+      case 'reportrestore':
       case 'reportexclude':
       case 'reportdelete': {
-        var report = payData();
+        var report = payData(), name = store.me;
         var row = report && report.rows.find(function (r) { return r.key === v; });
-        if (row && act === 'reportexclude') {
-          if (store.ex[v] && overlapsWorkedShift(v, reportDate(row.dt), row.s.s, row.s.e)) {
+        if (!row) return;
+        if (act === 'reportrestore') {
+          if (overlapsWorkedShift(v, reportDate(row.dt), row.s.s, row.s.e)) {
             toast('На это время уже есть другая смена');
             return;
           }
-          if (store.ex[v]) delete store.ex[v]; else store.ex[v] = true;
-          save();
-        }
-        if (row && row.manual && act === 'reportdelete') {
-          delete store.worked[v];
           delete store.ex[v];
-          save();
+          save(); st.reportEdit = null; render({ scroll: window.scrollY });
+          toast('Смена возвращена в отчёт');
+          return;
         }
-        st.reportEdit = null;
-        render({ scroll: window.scrollY });
+        var deleting = act === 'reportdelete';
+        if (deleting && !row.manual) return;
+        var details = shiftSummary(row) + ' · ' + reportClock(row.s.s) + '–' + reportClock(row.s.e);
+        confirmReportChange(deleting ? 'Удалить добавленную смену?' : 'Исключить смену из отчёта?',
+          details + (deleting ? '' : '\nСмену можно вернуть прямо из списка.'),
+          deleting ? 'Удалить' : 'Исключить', function () {
+            if (store.me !== name) return;
+            if (deleting) {
+              delete store.worked[v];
+              delete store.ex[v];
+            } else {
+              store.ex[v] = true;
+            }
+            save(); st.reportEdit = null; render({ scroll: window.scrollY });
+            toast(deleting ? 'Добавленная смена удалена' : 'Смена исключена из отчёта');
+          });
         return;
       }
       case 'rqp': {
@@ -4402,7 +4473,7 @@ function startCups() {
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = 'd4f7f4a1dc';
+    var BUILD = '74172f8ea0';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
