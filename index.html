@@ -1141,6 +1141,14 @@ html, body { overflow-x: clip; }
 .report-dialog h2 { margin: 0; font-size: 20px; }
 .report-dialog p { margin: 10px 0; white-space: pre-line; overflow-wrap: anywhere; }
 .report-dialog .report-actions { margin-bottom: 0; }
+.shared-form.report-form { margin: 0; padding: 0; }
+.shared-form .shared-trainee { display: flex; align-items: center; gap: 8px; }
+.shared-form .shared-trainee input { width: 18px; min-height: 18px; accent-color: var(--accent); }
+.report-dialog .shared-history { list-style: none; padding: 0; margin: 12px 0; }
+.shared-history li { display: grid; gap: 4px; padding: 9px 0; }
+.shared-history li + li { border-top: 1px solid var(--line); }
+.shared-history small { font-size: 13px; color: var(--muted); }
+.shared-history span { font-size: 14px; }
 .pay { margin-top: 12px; border-radius: 22px; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--accent-grad, var(--accent)); color: #fff; box-shadow: var(--accent-glow, none); }
 .pay-l { display: flex; flex-direction: column; gap: 2px; }
 .pay-l small { font-size: 12.5px; opacity: .85; }
@@ -2436,9 +2444,16 @@ function startCups() {
   function extOf(s) { return s.p != null && !s.m && s.e === CL.at ? CL.extra : 0; }
   function endOf(s) { return s.e + extOf(s); }
   function weeksSorted() {
-    var ws = SCHED.weeks || [];
-    ws.forEach(function (w) { var p = w.start.split('-'); w._d = new Date(+p[0], +p[1] - 1, +p[2]); });
-    return ws.slice().sort(function (x, y) { return x._d - y._d; });
+    return (SCHED.weeks || []).map(function (w) {
+      var p = w.start.split('-');
+      var start = new Date(+p[0], +p[1] - 1, +p[2]);
+      var week = { start: w.start, _d: start };
+      week.days = w.days.map(function (day, i) {
+        var update = sharedSchedule.days[reportDate(dayDate(week, i))];
+        return update ? Object.assign({}, day, { shifts: update.shifts, mega: update.mega }) : day;
+      });
+      return week;
+    }).sort(function (x, y) { return x._d - y._d; });
   }
   function dayDate(w, i) { return new Date(w._d.getFullYear(), w._d.getMonth(), w._d.getDate() + i); }
   function schedInfo() {
@@ -2455,7 +2470,7 @@ function startCups() {
   }
   function schedPeople() {
     var seen = {}, out = [];
-    weeksSorted().forEach(function (w) { w.days.forEach(function (d) { d.shifts.forEach(function (s) { if (s.p && !seen[s.p]) { seen[s.p] = 1; out.push(s.p); } }); }); });
+    weeksSorted().forEach(function (w) { w.days.forEach(function (d) { d.shifts.concat(d.mega || []).forEach(function (s) { if (s.p && !seen[s.p]) { seen[s.p] = 1; out.push(s.p); } }); }); });
     return out.sort(function (x, y) { return x.localeCompare(y, 'ru'); });
   }
   function sortShifts(l) {
@@ -2676,7 +2691,7 @@ function startCups() {
     return row.dt.getDate() + ' ' + MON[row.dt.getMonth()] + ' · ' + shiftLocation(row.m);
   }
   function confirmReportChange(title, message, label, onConfirm) {
-    if (document.querySelector('.report-dialog[open]')) return;
+    if (document.querySelector('.report-dialog[open]:not(.shared-schedule-dialog)')) return;
     var dialog = document.createElement('dialog');
     if (typeof dialog.showModal !== 'function') {
       if (window.confirm(title + '\n\n' + message)) onConfirm();
@@ -2896,10 +2911,18 @@ function startCups() {
     if (!store.me) h += meRowHTML(schedPeople());
     if (st.sv === 'week') h += weekViewHTML(w, today);
     else if (st.sv === 'hours') h += payViewHTML();
-    else h += dayViewHTML(w, sd, today);
+    else {
+      h += dayViewHTML(w, sd, today);
+      var date = reportDate(dayDate(w, sd));
+      if (sharedSchedule.edit) {
+        h += '<div class="report-actions"><button class="btn" data-act="shared-edit" data-v="' + date + '">Редактировать общий график</button>' +
+          (sharedSchedule.manage ? '<button class="btn plain" data-act="shared-history" data-v="' + date + '">История правок</button>' : '') + '</div>';
+      }
+    }
     if (st.sv === 'hours') return h;
     h += rqEntryHTML();
-    h += '<p class="small">График из рабочего чата. Если что-то поменяли, ориентируйся на чат.' + (store.me ? ' Это не ты? Имя меняется в профиле.' : '') + '</p>';
+    h += '<p class="small">' + (sharedSchedule.ready ? 'График из рабочего чата с опубликованными правками.' :
+      'График из рабочего чата. Если что-то поменяли, ориентируйся на чат.') + (store.me ? ' Это не ты? Имя меняется в профиле.' : '') + '</p>';
     return h;
   }
 
@@ -3292,6 +3315,7 @@ function startCups() {
 
   function render(opts) {
     opts = opts || {};
+    scheduleAccessCheck();
     ingC = null; stpC = null;
     var oldSheet = document.getElementById('sheet'), sheetTop = oldSheet ? oldSheet.scrollTop : 0;
     var oldMe = root.querySelector('.me-row'), meX = oldMe ? oldMe.scrollLeft : null;
@@ -3577,6 +3601,8 @@ function startCups() {
         qResult(cb.dish, cb.chips.every(function (ch, k) { return !!cb.sel[k] === ch.ok; })); render({ scroll: window.scrollY }); revealFb(); return;
       }
       case 'qnext': q.i++; q.answered = false; q.picked = -1; if (q.i >= q.qs.length) q.done = true; render({ scroll: 0 }); return;
+      case 'shared-edit': showSharedDayEditor(v); return;
+      case 'shared-history': showScheduleHistory(v); return;
       case 'sday': st.sd = +v; render({ scroll: window.scrollY }); return;
       case 'swk': { var inf = schedInfo(); st.wi = Math.min(Math.max(inf.i + (+v), 0), inf.n - 1); st.sd = null; render({ scroll: window.scrollY }); return; }
       case 'spr': st.pk = v; st.reportEdit = null; render({ scroll: window.scrollY }); return;
@@ -3838,6 +3864,209 @@ function startCups() {
   var cl = { tok: '', code: '', timer: 0, busy: false, pulled: 0, err: '' };
   try { cl.tok = localStorage.getItem('ttk-dev') || ''; } catch (e) {}
   function clAuth() { return inTG ? 'tma ' + TG.initData : (cl.tok ? 'Bearer ' + cl.tok : ''); }
+  var sharedSchedule = { days: {}, ready: false, accessKey: '', edit: false, manage: false, loading: false };
+  function sharedScheduleRequest(method, path, body) {
+    var headers = {};
+    var auth = clAuth();
+    if (auth) headers.Authorization = auth;
+    if (auth && adm.tok) headers['X-Cups-Admin'] = adm.tok;
+    if (body) headers['Content-Type'] = 'application/json';
+    return fetch(API + path, {
+      method: method, headers: headers, cache: 'no-store', body: body ? JSON.stringify(body) : undefined
+    }).then(function (response) {
+      return response.json().then(function (data) { return { status: response.status, data: data }; });
+    });
+  }
+  function scheduleAccessCheck() {
+    if (!sharedSchedule.ready || !window.fetch || !window.HTMLDialogElement || !HTMLDialogElement.prototype.showModal) return;
+    var auth = clAuth();
+    var key = auth ? auth + '\n' + (adm.tok || '') : '';
+    if (key === sharedSchedule.accessKey) return;
+    sharedSchedule.accessKey = key;
+    sharedSchedule.edit = sharedSchedule.manage = false;
+    if (!auth) return;
+    sharedScheduleRequest('GET', '/api/schedule/access').then(function (r) {
+      if (key !== sharedSchedule.accessKey) return;
+      sharedSchedule.edit = r.status === 200 && r.data.edit === true;
+      sharedSchedule.manage = r.status === 200 && r.data.manage === true;
+      if ((st.tab === 'shifts' || st.tab === 'home') && !clBusyUI()) render({ scroll: window.scrollY });
+    }).catch(function () {
+      if (key === sharedSchedule.accessKey) sharedSchedule.accessKey = '';
+    });
+  }
+  function acceptSharedDay(day) {
+    if (!day || !/^\d{4}-\d{2}-\d{2}$/.test(day.day) || !Number.isSafeInteger(day.rev) ||
+        !Array.isArray(day.shifts) || !Array.isArray(day.mega)) return false;
+    var known = sharedSchedule.days[day.day];
+    if (known && known.rev >= day.rev) return false;
+    sharedSchedule.days[day.day] = day;
+    return true;
+  }
+  function fetchSharedSchedule() {
+    if (!window.fetch || !/^https?:$/.test(location.protocol) || sharedSchedule.loading) return;
+    sharedSchedule.loading = true;
+    fetch(API + '/api/schedule', { cache: 'no-store' }).then(function (r) {
+      return r.ok ? r.json() : null;
+    }).then(function (data) {
+      if (!data || !Array.isArray(data.days)) return;
+      sharedSchedule.ready = true;
+      var changed = data.days.map(acceptSharedDay).some(Boolean);
+      scheduleAccessCheck();
+      if (changed && !clBusyUI() && (st.tab === 'shifts' || st.tab === 'home' || st.tab === 'profile')) {
+        render({ scroll: window.scrollY });
+      }
+    }).catch(function () {}).finally(function () { sharedSchedule.loading = false; });
+  }
+  function sharedShiftLabel(shift) {
+    if (!shift) return '—';
+    return (shift.p || 'Нужен сотрудник') + ' · ' + reportClock(shift.s) + '–' + reportClock(shift.e);
+  }
+  function showScheduleDialog(title, body) {
+    var dialog = document.createElement('dialog');
+    dialog.className = 'report-dialog shared-schedule-dialog';
+    dialog.setAttribute('aria-labelledby', 'shared-schedule-title');
+    dialog.innerHTML = '<h2 id="shared-schedule-title">' + esc(title) + '</h2>' + body;
+    dialog.addEventListener('close', function () { dialog.remove(); }, { once: true });
+    document.body.appendChild(dialog);
+    dialog.showModal();
+    return dialog;
+  }
+  function showSharedDayEditor(date) {
+    if (!sharedSchedule.edit) return;
+    var weeks = weeksSorted();
+    var day;
+    weeks.some(function (week) {
+      return week.days.some(function (item, i) {
+        if (reportDate(dayDate(week, i)) !== date) return false;
+        day = item;
+        return true;
+      });
+    });
+    if (!day) return;
+    var roster = { shifts: day.shifts, mega: day.mega || [] };
+    var known = sharedSchedule.days[date], rev = known ? known.rev : 0;
+    var options = ['shifts', 'mega'].map(function (point) {
+      return '<optgroup label="' + shiftLocation(point === 'mega') + '">' + roster[point].map(function (shift, i) {
+        return '<option value="' + point + ':' + i + '">' + esc(sharedShiftLabel(shift)) + '</option>';
+      }).join('') + '</optgroup>';
+    }).join('');
+    var dialog = showScheduleDialog('Общий график · ' + date.split('-').reverse().join('.'),
+      '<form class="report-form shared-form">' +
+      '<label>Смена<select name="slot"><option value="new">Добавить смену</option>' + options + '</select></label>' +
+      '<label>Точка<select name="point"><option value="shifts">БК</option><option value="mega">Мега</option></select></label>' +
+      '<label>Имя сотрудника<input name="person" type="text" maxlength="80" list="shared-schedule-people" autocomplete="off"></label>' +
+      '<datalist id="shared-schedule-people">' + schedPeople().map(function (name) {
+        return '<option value="' + esc(name) + '"></option>';
+      }).join('') + '</datalist>' +
+      '<div class="report-times"><label>Начало<input required name="start" type="time"></label>' +
+      '<label>Конец<input required name="end" type="time"></label></div>' +
+      '<label class="shared-trainee"><input type="checkbox" name="trainee">Стажёр</label>' +
+      '<p class="report-error" role="alert"></p><div class="report-actions">' +
+      '<button class="btn primary" type="submit">Опубликовать</button>' +
+      '<button class="btn" type="button" data-close>Отмена</button>' +
+      '<button class="btn warn" type="button" data-remove hidden>Удалить смену</button></div></form>');
+    var form = dialog.querySelector('form'), f = form.elements;
+    var slot = f.namedItem('slot'), point = f.namedItem('point'), person = f.namedItem('person');
+    var start = f.namedItem('start'), end = f.namedItem('end'), trainee = f.namedItem('trainee');
+    var error = form.querySelector('.report-error'), remove = form.querySelector('[data-remove]');
+    var submit = form.querySelector('[type="submit"]'), close = form.querySelector('[data-close]');
+    var index = -1, previous = null, busy = false;
+    function selectSlot() {
+      var parts = slot.value.split(':');
+      index = slot.value === 'new' ? -1 : +parts[1];
+      if (index !== -1) point.value = parts[0];
+      previous = index === -1 ? null : roster[point.value][index];
+      point.disabled = index !== -1;
+      remove.hidden = index === -1;
+      person.value = previous && previous.p || '';
+      start.value = previous ? reportClock(previous.s) : '';
+      end.value = previous ? reportClock(previous.e) : '';
+      trainee.checked = !!(previous && previous.t);
+      selectPoint();
+    }
+    function selectPoint() {
+      var mega = point.value === 'mega';
+      person.required = mega;
+      trainee.closest('label').hidden = mega;
+      error.textContent = '';
+    }
+    function minutes(input) {
+      var parts = input.value.split(':').map(Number);
+      return parts[0] * 60 + parts[1];
+    }
+    function publish(next) {
+      if (busy) return;
+      var bk = point.value === 'shifts';
+      var body = { day: date, rev: rev, point: point.value, index: index, previous: previous, next: next };
+      var description = date.split('-').reverse().join('.') + ' · ' + shiftLocation(!bk) +
+        '\nБыло: ' + sharedShiftLabel(previous) + '\nБудет: ' + sharedShiftLabel(next);
+      confirmReportChange('Опубликовать изменение для всех?', description, 'Подтвердить', function () {
+        if (!dialog.isConnected || busy) return;
+        busy = submit.disabled = remove.disabled = true;
+        sharedScheduleRequest('POST', '/api/schedule', body).then(function (r) {
+          if (r.status === 200) {
+            acceptSharedDay(r.data); dialog.close(); render({ scroll: window.scrollY });
+            toast('Общий график обновлён');
+          } else if (r.status === 409) {
+            error.textContent = 'График уже изменился. Закрой редактор и открой его снова.';
+            fetchSharedSchedule();
+          } else {
+            var messages = {
+              overlap: 'У сотрудника уже есть смена на это время.',
+              shift: 'Проверь имя и время смены.',
+              same: 'В смене ничего не изменилось.',
+              permission: 'Для этой правки нужны права редактора графика.'
+            };
+            error.textContent = messages[r.data.error] || 'Не удалось сохранить правку. Попробуй ещё раз.';
+          }
+        }).catch(function () {
+          error.textContent = 'Не удалось получить ответ. Проверь график перед повторной отправкой.';
+          fetchSharedSchedule();
+        }).finally(function () { busy = submit.disabled = remove.disabled = false; });
+      });
+    }
+    slot.addEventListener('change', selectSlot);
+    point.addEventListener('change', selectPoint);
+    close.addEventListener('click', function () { if (!busy) dialog.close(); });
+    dialog.addEventListener('cancel', function (event) { if (busy) event.preventDefault(); });
+    remove.addEventListener('click', function () { publish(null); });
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      var s = minutes(start), e = minutes(end), p = person.value.trim() || null;
+      if (!(s < e)) { error.textContent = 'Конец смены должен быть позже начала.'; return; }
+      publish(point.value === 'mega' ? { p: p, s: s, e: e } : { p: p, s: s, e: e, t: trainee.checked });
+    });
+    selectSlot();
+  }
+  function showScheduleHistory(date) {
+    if (!sharedSchedule.manage) return;
+    var dialog = showScheduleDialog('История · ' + date.split('-').reverse().join('.'),
+      '<ol class="shared-history" aria-live="polite"></ol><p class="report-context" role="status"></p>' +
+      '<div class="report-actions"><button class="btn" type="button" data-more hidden>Показать ещё</button>' +
+      '<button class="btn" type="button" data-close>Закрыть</button></div>');
+    var list = dialog.querySelector('ol'), status = dialog.querySelector('[role="status"]');
+    var more = dialog.querySelector('[data-more]'), next;
+    function load() {
+      more.hidden = true;
+      status.textContent = 'Загружаем…';
+      var href = '/api/schedule/history?day=' + encodeURIComponent(date) + (next ? '&before=' + next : '');
+      sharedScheduleRequest('GET', href).then(function (r) {
+        if (r.status !== 200 || !Array.isArray(r.data.changes)) throw new Error('history');
+        status.textContent = !next && !r.data.changes.length ? 'За этот день правок ещё нет.' : '';
+        list.insertAdjacentHTML('beforeend', r.data.changes.map(function (change) {
+          var time = new Date(change.t).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' });
+          return '<li><b>' + esc(change.actor) + '</b><small>' + esc(time) + ' · ' +
+            shiftLocation(change.point === 'mega') + '</small><span>Было: ' + esc(sharedShiftLabel(change.previous)) +
+            '</span><span>Стало: ' + esc(sharedShiftLabel(change.next)) + '</span></li>';
+        }).join(''));
+        next = r.data.next;
+        more.hidden = !next;
+      }).catch(function () { status.textContent = 'Не удалось загрузить историю.'; });
+    }
+    dialog.querySelector('[data-close]').addEventListener('click', function () { dialog.close(); });
+    more.addEventListener('click', load);
+    load();
+  }
   function clSnap() { return { known: store.known, fav: store.fav, recent: store.recent.slice(0, 10), me: store.me, theme: store.theme, ex: store.ex, rq: store.rq, cl: store.cl, rm: store.rm || 0 }; }
   var clLast = JSON.stringify(clSnap());
   function clReq(method, path, body, auth) {
@@ -4459,9 +4688,11 @@ function startCups() {
       Object.keys(adm.pend).forEach(function (id) { PH[id] = adm.pend[id]; });
     } catch (e) {}
   })();
-  fetchMenu(); stpFetch();
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) { fetchMenu(); stpFetch(); } });
-  setInterval(function () { if (!document.hidden) stpFetch(); }, 60000);
+  fetchMenu(); stpFetch(); fetchSharedSchedule();
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) { fetchMenu(); stpFetch(); fetchSharedSchedule(); }
+  });
+  setInterval(function () { if (!document.hidden) { stpFetch(); fetchSharedSchedule(); } }, 60000);
   admLoadCloud();
 
   try { if (/[#&]welcome\b/.test(location.hash)) { localStorage.removeItem('ttk-ask-done'); store.me = ''; save(); history.replaceState(null, '', location.pathname + location.search); } } catch (e) {}
@@ -4478,7 +4709,7 @@ function startCups() {
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = '1fc0334537';
+    var BUILD = '479c8fb4b2';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
