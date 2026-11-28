@@ -2646,18 +2646,20 @@ function startCups() {
     };
   }
   function reportForm(d, row) {
-    var now = new Date(), latest = reportDate(now);
+    var today = reportDate(new Date());
     var period = d.pk.split('-').map(Number);
+    var firstDay = period[2] === 1 ? 1 : 16;
     var lastDay = period[2] === 1 ? 15 : new Date(period[0], period[1], 0).getDate();
+    var periodStart = reportDate(new Date(period[0], period[1] - 1, firstDay));
     var periodEnd = reportDate(new Date(period[0], period[1] - 1, lastDay));
-    var date = row ? reportDate(row.dt) : (periodEnd < latest ? periodEnd : latest);
+    var date = today < periodStart ? periodStart : today > periodEnd ? periodEnd : today;
     var controls = row && row.manual ?
       '<button type="button" class="btn warn" data-act="reportdelete" data-v="' + esc(row.key) + '">Удалить добавленную смену</button>' :
       row && !store.ex[row.key] ? '<button type="button" class="btn warn" data-act="reportexclude" data-v="' + esc(row.key) + '">Исключить из отчёта</button>' : '';
     return '<form id="report-form" class="rep report-form" tabindex="-1" aria-labelledby="report-form-title" data-key="' + esc(row ? row.key : '') + '">' +
-      '<strong id="report-form-title">' + (row ? 'Изменить смену' : 'Добавить отработанную смену') + '</strong>' +
+      '<strong id="report-form-title">' + (row ? 'Изменить смену' : 'Добавить смену') + '</strong>' +
       (row ? '<p class="report-context">' + row.dt.getDate() + ' ' + MON[row.dt.getMonth()] + ' ' + row.dt.getFullYear() + ' · ' + shiftLocation(row.m) + '</p>' :
-        '<label>Дата<input required name="date" type="date" max="' + latest + '" value="' + date + '"></label>' +
+        '<label>Дата<input required name="date" type="date" value="' + date + '"></label>' +
         '<label>Кофейня<select name="location"><option value="main">' + shiftLocation(false) + '</option><option value="mega">' + shiftLocation(true) + '</option></select></label>') +
       '<p class="report-context">Личная правка для твоего отчёта.</p>' +
       '<div class="report-times"><label>Начало<input required name="start" type="time" value="' + (row ? reportClock(row.s.s) : '') + '"></label>' +
@@ -2709,8 +2711,8 @@ function startCups() {
     var start = times[0], end = times[1], mega = row ? row.m : fields.namedItem('location').value === 'mega';
     var error = form.querySelector('.report-error');
     if (!(end > start)) { error.textContent = 'Конец смены должен быть позже начала.'; return; }
-    if (!row && new Date(parts[0], parts[1] - 1, parts[2], 0, end).getTime() > Date.now()) {
-      error.textContent = 'Фактическое время можно сохранить после окончания смены.'; return;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || reportDate(dt) !== date) {
+      error.textContent = 'Укажи дату смены.'; return;
     }
     if (row && row.s.s === start && row.s.e === end) {
       st.reportEdit = null;
@@ -4476,7 +4478,7 @@ function startCups() {
   }
   /* auto-update: version.txt on the server holds the build id; if it differs, reload through a fresh URL so cached copies are skipped */
   (function () {
-    var BUILD = 'ec0b87fcbc';
+    var BUILD = '3702ddc987';
     if (BUILD.charAt(0) === '_' || !/^https?:$/.test(location.protocol) || !window.fetch) return;
     function check() {
       try {
